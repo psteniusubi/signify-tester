@@ -1,0 +1,21 @@
+{
+  "name": "signify-tester",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "@types/libsodium-wrappers-sumo": "^0.7.5",
+    "typescript": "^4.9.3",
+    "vite": "^4.1.0"
+  },
+  "dependencies": {
+    "js-base64": "^3.7.5",
+    "libsodium-wrappers-sumo": "^0.7.10",
+    "blake3": "^2.1.7"
+  }
+}

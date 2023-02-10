@@ -1,0 +1,8 @@
+:root {
+  font-family: sans-serif;
+}
+
+div#output {
+  font-family: monospace;
+  white-space: pre;  
+}
