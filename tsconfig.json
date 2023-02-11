@@ -27,5 +27,8 @@
   "include": [
     "src",
     "signify-ts/src"
+  ],
+  "exclude": [
+    "signify-ts/src/keri/util/platform-node.ts"
   ]
 }
