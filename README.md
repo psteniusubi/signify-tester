@@ -2,12 +2,12 @@
 
 ## Clone repos
 
-Checkout ubisecure-reasearch branch of signify-ts below signify-tester
+Checkout `ubisecure-wip` branch of `signify-ts` into a folder below `signify-tester`
 
 ```
-git clone git@bitbucket.org:jeps/signify-tester.git
+git clone https://github.com/psteniusubi/signify-tester.git
 cd signify-tester
-git clone git@bitbucket.org:jeps/signify-ts.git -b ubisecure-research
+git clone https://github.com/psteniusubi/signify-ts.git -b ubisecure-wip
 ```
 
 # Launching signify-tester
