@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
+    "publish-github": "tsc && vite build --base=/signify-tester/ --outDir=./docs/",
     "preview": "vite preview"
   },
   "devDependencies": {
