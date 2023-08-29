@@ -7,8 +7,23 @@
 </head>
 
 <body>
-  <div id="message">Testing</div>
-  <button type="button" id="boot">Boot</button>
+  <form id="main">
+    <div>
+      <input type="text" name="bran" value="client1" title="bran" placeholder="bran" />
+      <button type="button" name="refresh">Refresh</button>
+    </div>
+    <div>
+      <input type="text" name="identifier_alias" value="" title="alias" placeholder="alias" />
+      <button type="button" name="create_identifier">Create Identifier</button>
+    </div>
+    <div>
+      <input type="text" name="contact_alias" value="" title="alias" placeholder="alias" />
+      <input type="text" name="contact_oobi" value="" title="oobi" placeholder="oobi" />
+      <button type="button" name="add_contact">Add Contact</button>
+    </div>
+  </form>
+  <div id="identifiers"></div>
+  <div id="contacts"></div>
   <div id="output"></div>
 </body>
 

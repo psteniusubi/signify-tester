@@ -2,6 +2,14 @@
   font-family: sans-serif;
 }
 
+div#identifiers div span {
+  margin-right: 1em;
+}
+
+div#contacts div span {
+  margin-right: 1em;
+}
+
 div#output {
   font-family: monospace;
   white-space: pre;  
