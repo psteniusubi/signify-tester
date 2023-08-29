@@ -18,17 +18,11 @@
     "noImplicitReturns": true,
     "skipLibCheck": true,
     "baseUrl": ".",
-    "paths": {
-      "platform": [
-        "src/platform-browser.ts"
-      ],
-    },
+    "paths": {},
   },
   "include": [
     "src",
     "signify-ts/src"
   ],
-  "exclude": [
-    "signify-ts/src/keri/util/platform-node.ts"
-  ]
+  "exclude": []
 }

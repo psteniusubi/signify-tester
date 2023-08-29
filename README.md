@@ -2,18 +2,24 @@
 
 ## Clone repos
 
-Checkout `ubisecure-wip` branch of `signify-ts` into a folder below `signify-tester`
+Checkout `signify-ts` and `signify-tester`
 
 ```
+cd ~/
 git clone https://github.com/psteniusubi/signify-tester.git
-cd signify-tester
-git clone https://github.com/psteniusubi/signify-ts.git -b ubisecure-wip
+git clone https://github.com/psteniusubi/signify-ts.git 
+```
+
+Create symlink ~/signify-tester/signify-ts -> ~/signify-ts
+
+```
+ln -sf ../signify-ts ~/signify-tester/
 ```
 
 # Launching signify-tester
 
 ```
-cd signify-tester
+cd ~/signify-tester
 npm install
 npm run dev
 ```
