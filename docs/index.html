@@ -4,29 +4,102 @@
 <head>
   <title>Signify Client</title>
   
-  <script type="module" crossorigin src="/signify-tester/assets/index-7efe49f9.js"></script>
-  <link rel="stylesheet" href="/signify-tester/assets/index-6c0d3b24.css">
+  <script type="module" crossorigin src="/signify-tester/assets/index-4c8de406.js"></script>
+  <link rel="stylesheet" href="/signify-tester/assets/index-865e91e6.css">
 </head>
 
 <body>
-  <form id="main">
-    <div>
-      <input type="text" name="bran" value="client1" title="bran" placeholder="bran" />
-      <button type="button" name="refresh">Refresh</button>
-    </div>
-    <div>
-      <input type="text" name="identifier_alias" value="" title="alias" placeholder="alias" />
-      <button type="button" name="create_identifier">Create Identifier</button>
-    </div>
-    <div>
-      <input type="text" name="contact_alias" value="" title="alias" placeholder="alias" />
-      <input type="text" name="contact_oobi" value="" title="oobi" placeholder="oobi" />
-      <button type="button" name="add_contact">Add Contact</button>
-    </div>
-  </form>
-  <div id="identifiers"></div>
-  <div id="contacts"></div>
-  <div id="output"></div>
+  <section id="client">
+    <h1>Client</h1>
+    <form>
+      <div>
+        <label>
+          Status
+          <input type="text" readonly="readonly" name="status" title="status" placeholder="status" />
+        </label>
+        <label>
+          Agent
+          <input type="text" readonly="readonly" name="agent" title="agent" placeholder="agent" />
+        </label>
+        <label>
+          Controller
+          <input type="text" readonly="readonly" name="controller" title="controller" placeholder="controller" />
+        </label>
+      </div>
+      <div>
+        <label>
+          Passcode
+          <input type="text" name="passcode" title="passcode" placeholder="passcode" />
+        </label>
+      </div>
+      <div>
+        <button type="submit" title="Connect to existing agent">Login</button>
+        <button type="button" name="register" title="Register and connect to new agent">Register</button>
+        <button type="reset" title="Disconnect">Reset</button>
+        <button type="button" name="generate" title="Generate passcode and register">Generate</button>
+      </div>
+    </form>
+  </section>
+  <section id="identifiers">
+    <h1>Identifiers</h1>
+    <table>
+      <thead>
+        <th>Name</th>
+        <th>ID</th>
+        <th>OOBI</th>
+      </thead>
+      <tbody></tbody>
+    </table>
+    <form>
+      <div>
+        <label>
+          Name
+          <input type="text" name="name" title="name" placeholder="name" />
+        </label>
+      </div>
+      <div>
+        <button type="submit" title="Create identifier">Create</button>
+        <button type="button" name="refresh" title="Refresh">Refresh</button>
+      </div>
+    </form>
+  </section>
+  <section id="contacts">
+    <h1>Contacts</h1>
+    <table>
+      <thead>
+        <th>Name</th>
+        <th>ID</th>
+        <th>OOBI</th>
+      </thead>
+      <tbody></tbody>
+    </table>
+    <form>
+      <div>
+        <label>
+          Name
+          <input type="text" name="name" title="name" placeholder="name" />
+        </label>
+        <label>
+          OOBI
+          <input type="text" name="oobi" title="oobi" placeholder="oobi" />
+        </label>
+      </div>
+      <div>
+        <button type="submit" title="Add contact">Add</button>
+        <button type="button" name="refresh" title="Refresh">Refresh</button>
+      </div>
+    </form>
+  </section>
+  <section>
+    <h1>Multi-Sig Group</h1>
+  </section>
+  <section>
+    <h1>Issued Credentials</h1>
+  </section>
+  <section>
+    <h1>Received Credentials</h1>
+  </section>
+
 </body>
 
 </html>
