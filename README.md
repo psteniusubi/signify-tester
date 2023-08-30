@@ -37,3 +37,5 @@ git commit
 git push
 git switch master
 ```
+
+Navigate to https://psteniusubi.github.io/signify-tester/ with your browser
