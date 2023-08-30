@@ -39,3 +39,9 @@ git switch master
 ```
 
 Navigate to https://psteniusubi.github.io/signify-tester/ with your browser
+
+## Compare to master
+
+```
+git diff master github-pages  -- . ':!docs'
+```
