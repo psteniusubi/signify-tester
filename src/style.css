@@ -2,15 +2,10 @@
   font-family: sans-serif;
 }
 
-div#identifiers div span {
-  margin-right: 1em;
+.error {
+  background-color: salmon;
 }
 
-div#contacts div span {
-  margin-right: 1em;
-}
-
-div#output {
-  font-family: monospace;
-  white-space: pre;  
+.success {
+  background-color: lightgreen;
 }
