@@ -26,3 +26,14 @@ npm run dev
 
 Navigate to http://localhost:5173/ with your browser
 
+# Publish to github
+
+```
+git switch github-pages
+git merge master
+npm run publish-github
+git add -A
+git commit
+git push
+git switch master
+```
