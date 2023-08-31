@@ -1,11 +1,6 @@
 import { signify } from "./client";
 import { wait_operation } from "./signify";
-
-export const WITS: string[] = [
-    "BBilc4-L3tFUnfM_wJr4S4OJanAv_VmF_dJNN6vkf2Ha",
-    "BLskRTInXnMxWaGqcpSyMgo0nYbalW99cGZESrz3zapM",
-    "BIKKuvBwpmDVA4Ds-EpL5bt9OqPzWPja2LigFYZN2YfX"
-];
+import { WITS } from "./config";
 
 async function async_oobi(td: HTMLTableCellElement, name: string) {
     try {

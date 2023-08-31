@@ -1,10 +1,10 @@
 import { ready, SignifyClient, Tier, Salter } from 'signify-ts/src';
 import Base64 from "urlsafe-base64"
 import { Buffer } from 'buffer';
+import { KERIA_HOSTNAME } from './config';
 
 export let signify: SignifyClient | null = null;
 
-const hostname: string = "localhost";
 const KEY: string = "signify-tester/passcode";
 
 function random_seed() {
@@ -33,7 +33,7 @@ export async function load_client() {
         try {
             await ready();
             let bran = passcode.value as string;
-            let _signify = new SignifyClient(`http://${hostname}:3901`, bran.padEnd(21, "_"), Tier.low, `http://${hostname}:3903`);
+            let _signify = new SignifyClient(`http://${KERIA_HOSTNAME}:3901`, bran.padEnd(21, "_"), Tier.low, `http://${KERIA_HOSTNAME}:3903`);
             await _signify.connect();
             status.classList.add("success");
             status.value = "connected";
@@ -58,7 +58,7 @@ export async function load_client() {
         try {
             await ready();
             let bran = passcode.value as string;
-            let _signify = new SignifyClient(`http://${hostname}:3901`, bran.padEnd(21, "_"), Tier.low, `http://${hostname}:3903`);
+            let _signify = new SignifyClient(`http://${KERIA_HOSTNAME}:3901`, bran.padEnd(21, "_"), Tier.low, `http://${KERIA_HOSTNAME}:3903`);
             let res = await _signify.boot();
             if (!res.ok) throw new Error(await res.text());
             await _signify.connect();
