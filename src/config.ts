@@ -1,31 +1,37 @@
 const WITS_PUBLIC: string[] = [
-    "BMwi0qCA499qYI7bU95PKYb5HCHYQpqCzTU2KfBrUF4A",
-    "BNIekMfCpuvISWeqzXLuI9rcsm79u67aBtOShacvzbJM",
-    "BAe5X1Ey4VMeGrb37VRooSX8QpHkUZQaqdCT2ibQS-Lo"
+    "BOyuCyHFluqsV0rAYLxJuBSY-ObuLSOL3RaCQdwN1aL0",
+    "BJqgbfyC0ZLIOSLqYLtwrVYo44o-VMA4l5kX7Ooxe3y0",
+    "BNAsMJ69E5kxnpzAQKDzDghZMdk3nr1-zosV22oXmQGw"
 ];
-const KERIA_HOSTNAME_PUBLIC: string = "10.44.1.71";
+const KERIA_ADMIN_PUBLIC: string = "https://keri-admin.io.ubidemo1.com";
+const KERIA_BOOT_PUBLIC: string = "https://keri-boot.io.ubidemo1.com";
 
 const WITS_LOCAL: string[] = [
     "BBilc4-L3tFUnfM_wJr4S4OJanAv_VmF_dJNN6vkf2Ha",
     "BLskRTInXnMxWaGqcpSyMgo0nYbalW99cGZESrz3zapM",
     "BIKKuvBwpmDVA4Ds-EpL5bt9OqPzWPja2LigFYZN2YfX"
 ];
-const KERIA_HOSTNAME_LOCAL: string = "localhost";
+const KERIA_ADMIN_LOCAL: string = "http://localhost:3901";
+const KERIA_BOOT_LOCAL: string = "http://localhost:3903";
 
 let _WITS: string[];
-let _KERIA_HOSTNAME: string;
+let _KERIA_ADMIN: string;
+let _KERIA_BOOT: string;
 
 let url = new URL(import.meta.url);
 switch (url.hostname) {
-    case "localhost":
+    case "xxlocalhost":
         _WITS = WITS_LOCAL;
-        _KERIA_HOSTNAME = KERIA_HOSTNAME_LOCAL;
+        _KERIA_ADMIN = KERIA_ADMIN_LOCAL;
+        _KERIA_BOOT = KERIA_BOOT_LOCAL;
         break;
     default:
         _WITS = WITS_PUBLIC;
-        _KERIA_HOSTNAME = KERIA_HOSTNAME_PUBLIC;
+        _KERIA_ADMIN = KERIA_ADMIN_PUBLIC;
+        _KERIA_BOOT = KERIA_BOOT_PUBLIC;
         break;
 }
 
 export const WITS = _WITS;
-export const KERIA_HOSTNAME = _KERIA_HOSTNAME;
+export const KERIA_ADMIN = _KERIA_ADMIN;
+export const KERIA_BOOT = _KERIA_BOOT;
