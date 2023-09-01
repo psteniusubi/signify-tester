@@ -6,7 +6,22 @@ async function async_oobi(td: HTMLTableCellElement, name: string) {
     try {
         let oobi = await signify!.oobis().get(name, "agent");
         // console.log(JSON.stringify(oobi));
-        td.innerText = oobi!.oobis[0];
+        let input = document.createElement("input") as HTMLInputElement;
+        input.type = "text";
+        input.readOnly = true;
+        input.value = oobi!.oobis[0];
+        td.appendChild(input);
+
+        let button = document.createElement("button");
+        button.innerText = "Copy";
+        button.title = "Copy OOBI value to Clipboard";
+        button.addEventListener("click", async (e: Event) => {
+            e.preventDefault();
+            input.focus();
+            input.select();
+            await navigator.clipboard.writeText(input.value);
+        });
+        td.append(button);
     } catch {
         td.innerText = "error";
         td.classList.add("error");
@@ -48,11 +63,11 @@ export async function load_identifiers() {
         for (let i of res.aids) {
             // console.log(JSON.stringify(i));
             let tr = table.insertRow();
-            let td = tr.insertCell();
+            let td = tr.insertCell(); // name
             td.innerText = i.name;
-            td = tr.insertCell();
+            td = tr.insertCell(); // id
             td.innerText = i.prefix;
-            td = tr.insertCell();
+            td = tr.insertCell(); // oobi
             async_oobi(td, i.name);
             ++count;
         }
