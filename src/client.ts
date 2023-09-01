@@ -16,6 +16,8 @@ function random_seed() {
 export async function load_client() {
     const form = document.querySelector("#client form") as HTMLFormElement;
     const status = form.elements.namedItem("status") as HTMLInputElement;
+    const hostname = form.elements.namedItem("hostname") as HTMLInputElement;
+    hostname.defaultValue = KERIA_ADMIN;
     const agent = form.elements.namedItem("agent") as HTMLInputElement;
     const controller = form.elements.namedItem("controller") as HTMLInputElement;
     const passcode = form.elements.namedItem("passcode") as HTMLInputElement;
@@ -30,6 +32,7 @@ export async function load_client() {
         agent.value = "";
         controller.value = "";
         status.classList.remove("success", "error");
+        Array.from(document.forms).filter(i => i !== form).forEach(i => i.dispatchEvent(new Event("reset")));
         try {
             await ready();
             let bran = passcode.value as string;
@@ -42,6 +45,7 @@ export async function load_client() {
             signify = _signify;
             localStorage.setItem(KEY, bran);
             passcode.defaultValue = bran;
+            Array.from(document.forms).filter(i => i !== form).forEach(i => (i.elements.namedItem("refresh") as HTMLButtonElement).dispatchEvent(new Event("click")));
         } catch (e) {
             console.error(e);
             status.classList.add("error");
@@ -55,20 +59,14 @@ export async function load_client() {
         agent.value = "";
         controller.value = "";
         status.classList.remove("success", "error");
+        Array.from(document.forms).filter(i => i !== form).forEach(i => i.dispatchEvent(new Event("reset")));
         try {
             await ready();
             let bran = passcode.value as string;
             let _signify = new SignifyClient(KERIA_ADMIN, bran.padEnd(21, "_"), Tier.low, KERIA_BOOT);
             let res = await _signify.boot();
             if (!res.ok) throw new Error(await res.text());
-            await _signify.connect();
-            status.classList.add("success");
-            status.value = "connected";
-            agent.value = _signify.agent!.pre;
-            controller.value = _signify.controller.pre;
-            signify = _signify;
-            localStorage.setItem(KEY, bran);
-            passcode.defaultValue = bran;
+            form.dispatchEvent(new SubmitEvent("submit"));
         } catch (e) {
             console.error(e);
             status.classList.add("error");
@@ -76,8 +74,11 @@ export async function load_client() {
         }
     });
     form.addEventListener("reset", async (e: Event) => {
+        e.preventDefault();
+        form.reset();
         status.classList.remove("success", "error");
         signify = null;
+        Array.from(document.forms).filter(i => i !== form).forEach(i => i.dispatchEvent(new Event("reset")));
     });
     generate.addEventListener("click", async (e: Event) => {
         e.preventDefault();

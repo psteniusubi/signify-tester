@@ -20,7 +20,7 @@ let _KERIA_BOOT: string;
 
 let url = new URL(import.meta.url);
 switch (url.hostname) {
-    case "xxlocalhost":
+    case "localhost":
         _WITS = WITS_LOCAL;
         _KERIA_ADMIN = KERIA_ADMIN_LOCAL;
         _KERIA_BOOT = KERIA_BOOT_LOCAL;

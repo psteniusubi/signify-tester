@@ -30,8 +30,6 @@ export async function load_identifiers() {
             op = await signify.identifiers().addEndRole(name.value, "agent", signify.agent?.pre);
             op = await wait_operation(signify, op);
 
-            form.dispatchEvent(new Event("reset"));
-
             refresh.dispatchEvent(new Event("click"));
         } catch {
             name.classList.add("error");
@@ -42,14 +40,11 @@ export async function load_identifiers() {
         e.preventDefault();
         // reset
         form.dispatchEvent(new Event("reset"));
-        // erase table
-        while (table.rows.length > 1) {
-            table.deleteRow(1);
-        }
         // signify client
         if (signify === null) return;
         // get identifiers
         let res = await signify!.identifiers().list();
+        let count = 1;
         for (let i of res.aids) {
             // console.log(JSON.stringify(i));
             let tr = table.insertRow();
@@ -59,11 +54,20 @@ export async function load_identifiers() {
             td.innerText = i.prefix;
             td = tr.insertCell();
             async_oobi(td, i.name);
+            ++count;
         }
+        name.value = `name${count}`;
     });
 
     form.addEventListener("reset", async (e: Event) => {
+        e.preventDefault();
+        // reset
         form.reset();
+        //  remove error status
         name.classList.remove("error");
+        // erase table
+        while (table.rows.length > 1) {
+            table.deleteRow(1);
+        }
     });
 }
