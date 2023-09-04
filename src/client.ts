@@ -1,7 +1,8 @@
 import { ready, SignifyClient, Tier, Salter } from 'signify-ts/src';
 import Base64 from "urlsafe-base64"
 import { Buffer } from 'buffer';
-import { KERIA_ADMIN, KERIA_BOOT } from './config';
+import { KERIA_ADMIN, KERIA_BOOT, get_passcodes, save_passcode } from './config';
+import { sleep } from './helper';
 
 export let signify: SignifyClient | null = null;
 
@@ -13,6 +14,20 @@ function random_seed() {
     return Base64.encode(buf).substring(0, 21);
 }
 
+async function load_history() {
+    const form = document.querySelector("#client form") as HTMLFormElement;
+    const history = form.elements.namedItem("history") as HTMLSelectElement;
+    history.innerHTML = "";
+    let option = document.createElement("option");
+    option.defaultSelected = true;
+    history.appendChild(option);
+    for (let i of (await get_passcodes()).sort()) {
+        option = document.createElement("option");
+        option.innerText = i;
+        history.appendChild(option);
+    }
+}
+
 export async function load_client() {
     const form = document.querySelector("#client form") as HTMLFormElement;
     const status = form.elements.namedItem("status") as HTMLInputElement;
@@ -22,9 +37,11 @@ export async function load_client() {
     const controller = form.elements.namedItem("controller") as HTMLInputElement;
     const passcode = form.elements.namedItem("passcode") as HTMLInputElement;
     const register = form.elements.namedItem("register") as HTMLButtonElement;
-    const generate = form.elements.namedItem("generate") as HTMLButtonElement;
-    passcode.defaultValue = localStorage.getItem(KEY) ?? random_seed();
+    const history = form.elements.namedItem("history") as HTMLSelectElement;
+    passcode.value = random_seed();
+    await load_history();
     signify = null;
+    // login
     form.addEventListener("submit", async (e: SubmitEvent) => {
         e.preventDefault();
         signify = null;
@@ -43,15 +60,16 @@ export async function load_client() {
             agent.value = _signify.agent!.pre;
             controller.value = _signify.controller.pre;
             signify = _signify;
-            localStorage.setItem(KEY, bran);
-            passcode.defaultValue = bran;
+            save_passcode(bran);
             Array.from(document.forms).filter(i => i !== form).forEach(i => (i.elements.namedItem("refresh") as HTMLButtonElement).dispatchEvent(new Event("click")));
+            load_history();
         } catch (e) {
             console.error(e);
             status.classList.add("error");
             status.value = `error ${e}`;
         }
     });
+    // register
     register.addEventListener("click", async (e: Event) => {
         e.preventDefault();
         signify = null;
@@ -74,16 +92,15 @@ export async function load_client() {
         }
     });
     form.addEventListener("reset", async (e: Event) => {
-        e.preventDefault();
-        form.reset();
         status.classList.remove("success", "error");
         signify = null;
         Array.from(document.forms).filter(i => i !== form).forEach(i => i.dispatchEvent(new Event("reset")));
+        await sleep(0);
+        passcode.value = random_seed();
+        await load_history();
     });
-    generate.addEventListener("click", async (e: Event) => {
-        e.preventDefault();
-        form.dispatchEvent(new Event("reset"));
-        passcode.defaultValue = passcode.value = random_seed();
-        register.dispatchEvent(new Event("click"));
+    history.addEventListener("change", e => {
+        passcode.value = history.value;
+        form.dispatchEvent(new SubmitEvent("submit"));
     });
 }
