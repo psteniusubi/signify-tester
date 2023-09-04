@@ -33,7 +33,7 @@ git switch github-pages
 git merge master
 npm run publish-github
 git add -A
-git commit
+git commit -m publish
 git push
 git switch master
 ```
