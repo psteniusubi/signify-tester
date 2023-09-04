@@ -60,9 +60,9 @@ export async function load_client() {
             agent.value = _signify.agent!.pre;
             controller.value = _signify.controller.pre;
             signify = _signify;
-            save_passcode(bran);
             Array.from(document.forms).filter(i => i !== form).forEach(i => (i.elements.namedItem("refresh") as HTMLButtonElement).dispatchEvent(new Event("click")));
-            load_history();
+            await save_passcode(bran);
+            await load_history();
         } catch (e) {
             console.error(e);
             status.classList.add("error");
