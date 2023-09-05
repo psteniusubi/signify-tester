@@ -1,12 +1,10 @@
 import { ready, SignifyClient, Tier, Salter } from 'signify-ts/src';
 import Base64 from "urlsafe-base64"
 import { Buffer } from 'buffer';
-import { KERIA_ADMIN, KERIA_BOOT, get_passcodes, save_passcode } from './config';
+import { KERIA_ADMIN, KERIA_BOOT, get_passcodes, remove_passcode, save_passcode } from './config';
 import { sleep } from './helper';
 
 export let signify: SignifyClient | null = null;
-
-const KEY: string = "signify-tester/passcode";
 
 function random_seed() {
     let buf = Buffer.alloc(20);
@@ -67,6 +65,8 @@ export async function load_client() {
             console.error(e);
             status.classList.add("error");
             status.value = `error ${e}`;
+            await remove_passcode(passcode.value);
+            await load_history();
         }
     });
     // register

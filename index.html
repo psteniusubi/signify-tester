@@ -6,9 +6,11 @@
   <script type="module">
     import './src/style.css';
     import { load_client } from "./src/client";
+    import { load_notifications } from "./src/notifications";
     import { load_identifiers } from "./src/identifiers";
     import { load_contacts } from "./src/contacts";
     load_client();
+    load_notifications();
     load_identifiers();
     load_contacts();
   </script>
@@ -113,7 +115,10 @@
   <section>
     <h1>Received Credentials</h1>
   </section>
-
+  <section id="notifications">
+    <h1>Notifications</h1>
+    <div class="code"></div>
+  </section>
 </body>
 
 </html>

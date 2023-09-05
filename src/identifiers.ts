@@ -39,7 +39,8 @@ export async function load_identifiers() {
         name.classList.remove("error");
         if (signify === null) return;
         try {
-            let op = await signify.identifiers().create(name.value, { toad: 3, wits: WITS });
+            let res = signify.identifiers().create(name.value, { toad: 3, wits: WITS });
+            let op = await res.op();
             op = await wait_operation(signify, op);
 
             op = await signify.identifiers().addEndRole(name.value, "agent", signify.agent?.pre);
