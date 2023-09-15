@@ -1,6 +1,7 @@
 import { signify } from "./client";
 import { wait_operation } from "./signify";
 import { WITS } from "./config";
+import { CreateIdentiferArgs } from "signify-ts";
 
 async function async_oobi(td: HTMLTableCellElement, name: string) {
     try {
@@ -32,6 +33,7 @@ export async function load_identifiers() {
     const table = document.querySelector("#identifiers table") as HTMLTableElement;
     const form = document.querySelector("#identifiers form") as HTMLFormElement;
     const name = form.elements.namedItem("name") as HTMLInputElement;
+    const salt = form.elements.namedItem("salt") as HTMLInputElement;
     const refresh = form.elements.namedItem("refresh") as HTMLButtonElement;
 
     form.addEventListener("submit", async (e: SubmitEvent) => {
@@ -39,7 +41,9 @@ export async function load_identifiers() {
         name.classList.remove("error");
         if (signify === null) return;
         try {
-            let res = signify.identifiers().create(name.value, { toad: 3, wits: WITS });
+            let args: CreateIdentiferArgs = { toad: WITS.length, wits: WITS };
+            if (salt.value !== "") args.bran = salt.value;
+            let res = signify.identifiers().create(name.value, args);
             let op = await res.op();
             op = await wait_operation(signify, op);
 

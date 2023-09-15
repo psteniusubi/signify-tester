@@ -9,10 +9,12 @@
     import { load_notifications } from "./src/notifications";
     import { load_identifiers } from "./src/identifiers";
     import { load_contacts } from "./src/contacts";
+    import { load_multisig } from "./src/multisig";
     load_client();
     load_notifications();
     load_identifiers();
     load_contacts();
+    load_multisig();
   </script>
 </head>
 
@@ -71,6 +73,10 @@
           Name
           <input type="text" name="name" title="name" placeholder="name" autocomplete="off" />
         </label>
+        <label>
+          Salt
+          <input type="text" name="salt" title="salt" placeholder="salt" autocomplete="off" />
+        </label>
       </div>
       <div>
         <button type="submit" title="Create identifier">Create</button>
@@ -106,8 +112,14 @@
       </div>
     </form>
   </section>
-  <section>
+  <section id="multisig">
     <h1>Multi-Sig Group</h1>
+    <form autocomplete="off">
+      <div>
+        <button type="button" name="create" title="create">Create</button>
+        <!-- <button type="button" name="send" title="send">Send</button> -->
+      </div>
+    </form>
   </section>
   <section>
     <h1>Issued Credentials</h1>

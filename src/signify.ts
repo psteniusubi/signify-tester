@@ -1,4 +1,4 @@
-import { SignifyClient } from 'signify-ts/src';
+import { SignifyClient } from 'signify-ts';
 import { sleep } from './helper';
 
 export async function wait_operation(client: SignifyClient, op: any): Promise<any> {
@@ -9,4 +9,9 @@ export async function wait_operation(client: SignifyClient, op: any): Promise<an
         ms *= 1.2;
     }
     return op;
+}
+
+export async function get_contact(client: SignifyClient, alias: string): Promise<any> {
+    let res = await client.contacts().list(undefined, "alias", `^${alias}$`);
+    return res.pop();
 }
