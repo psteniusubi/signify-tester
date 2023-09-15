@@ -1,6 +1,6 @@
 import { signify } from "./client";
 import { get_contact } from "./signify";
-import { Algos, CreateIdentiferArgs } from "signify-ts";
+import { Algos, CreateIdentiferArgs, Siger, d, messagize } from "signify-ts";
 import { WITS } from "./config";
 import { json2string } from "./helper";
 
@@ -28,36 +28,21 @@ async function create_multisig_group(): Promise<void> {
     };
     console.log(json2string(kargs));
     let res = await signify.identifiers().create("group1", kargs);
-    console.log(json2string(res));
     console.log(json2string(await res.op()));
-}
 
-// async function send_multisig_group(): Promise<void> {
-//     if (signify === null) return;
-//     let name1 = await signify.identifiers().get("name1");
-//     console.log(json2string(name1));
-//     let name1_state = (await signify.keyStates().get(name1.prefix)).pop();
-//     console.log(json2string(name1_state));
-//     let contact1 = (await signify.contacts().list(undefined, "alias", `^${"contact1"}$`)).pop();
-//     console.log(json2string(contact1));
-//     let contact1_state = (await signify.keyStates().get(contact1.id)).pop();
-//     console.log(json2string(contact1_state));
-//     let aid = name1;
-//     let payload = {
-//         gid: undefined, // serder.pre
-//         smids: [name1_state.i, contact1_state.i],
-//         rmids: [name1_state.i, contact1_state.i]
-//     };
-//     let embeds = {
-//         icp: [] // [ serder, atc ]
-//     };
-//     let recp = [
-//         contact1.id
-//     ];
-//     let res = await signify.exchanges().send("name1", "multisig", aid, "/multisig/icp", payload, embeds, recp);
-//     console.log(json2string(res));
-//     console.log(json2string(await res.op()));
-// }
+    let serder = res.serder
+    let sigs = res.sigs
+    let sigers = sigs.map((sig: any) => new Siger({ qb64: sig }));
+    let ims = d(messagize(serder, sigers));
+    let atc = ims.substring(serder.size);
+    let embeds = {
+        icp: [serder, atc],
+    }
+    let smids = states.map((state) => state['i']);
+    let recp = [contact1_state].map((state) => state['i']);
+    await signify.exchanges().send("name1", "group1", name1, "/multisig/icp",
+        { 'gid': serder.pre, smids: smids, rmids: smids }, embeds, recp)
+}
 
 export async function load_multisig(): Promise<void> {
     const form = document.querySelector("#multisig form") as HTMLFormElement;
@@ -68,9 +53,4 @@ export async function load_multisig(): Promise<void> {
         if (signify === null) return;
         await create_multisig_group();
     });
-    // send.addEventListener("click", async e => {
-    //     e.preventDefault();
-    //     if (signify === null) return;
-    //     await send_multisig_group();
-    // });
 }
