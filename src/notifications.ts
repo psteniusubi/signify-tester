@@ -13,9 +13,11 @@ export async function load_notifications(): Promise<void> {
                 show_notification(signify, list.notes);
             } catch {
                 div.innerText = "";
+                show_notification(signify, []);
             }
         } else {
             div.innerText = "";
+            show_notification(null, []);
         }
         await sleep(2500);
     }
@@ -30,11 +32,12 @@ async function get_states(client: SignifyClient, ids: string[]): Promise<any[]> 
     return states;
 }
 
-async function show_notification(client: SignifyClient, notifications: any[]): Promise<void> {
+async function show_notification(client: SignifyClient | null, notifications: any[]): Promise<void> {
     const section = document.querySelector("#reply") as HTMLElement;
     const found = new Set<string>();
     for (let n of notifications) {
         if ("a" in n && "r" in n.a && "d" in n.a) {
+            if (client === null) continue;
             found.add(n.a.d);
             let form = section.querySelector(`form#${n.a.d}`);
             if (form === null) {
