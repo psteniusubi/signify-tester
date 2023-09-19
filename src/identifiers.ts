@@ -1,16 +1,17 @@
 import { signify } from "./client";
-import { wait_operation } from "./signify";
+import { wait_operation, create_single_identifier, list_identifiers, get_oobi } from "./signify";
 import { WITS } from "./config";
-import { CreateIdentiferArgs } from "signify-ts";
+import { CreateIdentiferArgs, SignifyClient } from "signify-ts";
 
-async function async_oobi(td: HTMLTableCellElement, name: string) {
+async function async_oobi(client: SignifyClient, td: HTMLTableCellElement, name: string) {
     try {
-        let oobi = await signify!.oobis().get(name, "agent");
+        // let oobi = await client.oobis().get(name, "agent");
+        let oobi = await get_oobi(client, name, "agent");
         // console.log(JSON.stringify(oobi));
         let input = document.createElement("input") as HTMLInputElement;
         input.type = "text";
         input.readOnly = true;
-        input.value = oobi!.oobis[0];
+        input.value = oobi.oobis![0];
         td.appendChild(input);
 
         let button = document.createElement("button");
@@ -41,15 +42,7 @@ export async function load_identifiers() {
         name.classList.remove("error");
         if (signify === null) return;
         try {
-            let args: CreateIdentiferArgs = { toad: WITS.length, wits: WITS };
-            if (salt.value !== "") args.bran = salt.value;
-            let res = signify.identifiers().create(name.value, args);
-            let op = await res.op();
-            op = await wait_operation(signify, op);
-
-            op = await signify.identifiers().addEndRole(name.value, "agent", signify.agent?.pre);
-            op = await wait_operation(signify, op);
-
+            await create_single_identifier(signify, name.value, salt.value !== "" ? salt.value : undefined);
             refresh.dispatchEvent(new Event("click"));
         } catch {
             name.classList.add("error");
@@ -62,18 +55,18 @@ export async function load_identifiers() {
         form.dispatchEvent(new Event("reset"));
         // signify client
         if (signify === null) return;
-        // get identifiers
-        let res = await signify!.identifiers().list();
+        // list identifiers
+        let res = await list_identifiers(signify);
         let count = 1;
         for (let i of res.aids) {
             // console.log(JSON.stringify(i));
             let tr = table.insertRow();
             let td = tr.insertCell(); // name
-            td.innerText = i.name;
+            td.innerText = i.name ?? "";
             td = tr.insertCell(); // id
-            td.innerText = i.prefix;
+            td.innerText = i.prefix ?? "";
             td = tr.insertCell(); // oobi
-            async_oobi(td, i.name);
+            async_oobi(signify, td, i.name ?? "");
             ++count;
         }
         name.value = `name${count}`;

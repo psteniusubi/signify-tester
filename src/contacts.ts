@@ -1,5 +1,5 @@
 import { signify } from "./client";
-import { wait_operation } from "./signify";
+import { resolve_oobi, list_contacts } from "./signify";
 
 export async function load_contacts() {
     const table = document.querySelector("#contacts table") as HTMLTableElement;
@@ -14,8 +14,7 @@ export async function load_contacts() {
         name.classList.remove("error");
         if (signify === null) return;
         try {
-            let op = await signify.oobis().resolve(oobi.value, name.value);
-            op = await wait_operation(signify, op);
+            await resolve_oobi(signify, name.value, oobi.value);
             oobi.value = "";
             refresh.dispatchEvent(new Event("click"));
         } catch {
@@ -30,20 +29,20 @@ export async function load_contacts() {
         // signify client
         if (signify === null) return;
         // get identifiers
-        let res = await signify!.contacts().list();
+        let res = await list_contacts(signify);
         let count = 1;
         for (let i of res) {
             // console.log(JSON.stringify(i));
             let tr = table.insertRow();
             let td = tr.insertCell(); // name
-            td.innerText = i.alias;
+            td.innerText = i.alias ?? "";
             td = tr.insertCell(); // id
-            td.innerText = i.id;
+            td.innerText = i.id ?? "";
             td = tr.insertCell(); // oobi
             let input = document.createElement("input");
             input.type = "text";
             input.readOnly = true;
-            input.value = i.oobi;
+            input.value = i.oobi ?? "";
             td.appendChild(input);
             let button = document.createElement("button");
             button.innerText = "Copy";
