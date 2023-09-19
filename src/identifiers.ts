@@ -1,11 +1,9 @@
 import { signify } from "./client";
-import { wait_operation, create_single_identifier, list_identifiers, get_oobi } from "./signify";
-import { WITS } from "./config";
-import { CreateIdentiferArgs, SignifyClient } from "signify-ts";
+import { create_single_identifier, list_identifiers, get_oobi } from "./signify";
+import { SignifyClient } from "signify-ts";
 
 async function async_oobi(client: SignifyClient, td: HTMLTableCellElement, name: string) {
     try {
-        // let oobi = await client.oobis().get(name, "agent");
         let oobi = await get_oobi(client, name, "agent");
         // console.log(JSON.stringify(oobi));
         let input = document.createElement("input") as HTMLInputElement;

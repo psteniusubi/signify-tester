@@ -142,7 +142,6 @@ export async function create_single_identifier(client: SignifyClient, alias: str
 export async function create_group_identifier(client: SignifyClient, alias: string, name: string, contacts: string[]): Promise<void> {
     let sith = new Array(1 + contacts.length);
     sith = sith.fill(`1/${sith.length}`);
-    // let name_id = await client.identifiers().get(name);
     let name_id = await get_identifier(client, name);
     console.log(json2string(name_id));
     let contact_ids = await get_contacts(client, contacts);
@@ -182,7 +181,6 @@ export async function create_group_identifier(client: SignifyClient, alias: stri
 export async function accept_group_identifier(client: SignifyClient, alias: string, name: string, id: string): Promise<void> {
     let exn = (await client.groups().getRequest(id)).pop().exn;
     console.log(json2string(exn));
-    // let name_id = await client.identifiers().get(name);
     let name_id = await get_identifier(client, name);
     let icp = exn.e.icp;
     let states = await get_keyStates(client, exn.a.smids);

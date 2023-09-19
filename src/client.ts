@@ -1,4 +1,4 @@
-import { ready, SignifyClient, Tier, Salter } from 'signify-ts';
+import { ready, SignifyClient, Tier } from 'signify-ts';
 import Base64 from "urlsafe-base64"
 import { Buffer } from 'buffer';
 import { KERIA_ADMIN, KERIA_BOOT, get_passcodes, remove_passcode, save_passcode } from './config';
