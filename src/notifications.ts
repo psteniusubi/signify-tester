@@ -83,6 +83,7 @@ async function show_notification(client: SignifyClient | null, notifications: No
             form.addEventListener("submit", async e => {
                 e.preventDefault();
                 await accept_group_identifier(client, "group1", "name1", n.a.d);
+                await client.notifications().mark(n.i);
                 document.querySelector("#identifiers form")?.dispatchEvent(new CustomEvent(REFRESH_EVENT));
             });
 
