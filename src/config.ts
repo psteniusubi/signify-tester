@@ -44,7 +44,7 @@ export async function get_passcodes(): Promise<Array<string>> {
     try {
         let result = JSON.parse(value);
         if (result instanceof Array) {
-            return Array.from(new Set(result));
+            return Array.from(new Set(result)).sort();
         }
     } catch {
         return [value];

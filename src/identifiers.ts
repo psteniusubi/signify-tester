@@ -1,4 +1,5 @@
 import { signify } from "./client";
+import { REFRESH_EVENT } from "./helper";
 import { create_single_identifier, list_identifiers, get_oobi } from "./signify";
 import { SignifyClient } from "signify-ts";
 
@@ -41,14 +42,25 @@ export async function load_identifiers() {
         if (signify === null) return;
         try {
             await create_single_identifier(signify, name.value, salt.value !== "" ? salt.value : undefined);
-            refresh.dispatchEvent(new Event("click"));
+            form.dispatchEvent(new CustomEvent(REFRESH_EVENT));
         } catch {
             name.classList.add("error");
         }
     });
 
-    refresh.addEventListener("click", async (e: Event) => {
+    form.addEventListener("reset", async (e: Event) => {
         e.preventDefault();
+        // reset
+        form.reset();
+        //  remove error status
+        name.classList.remove("error");
+        // erase table
+        while (table.rows.length > 1) {
+            table.deleteRow(1);
+        }
+    });
+
+    form.addEventListener(REFRESH_EVENT, async (e: Event) => {
         // reset
         form.dispatchEvent(new Event("reset"));
         // signify client
@@ -70,15 +82,8 @@ export async function load_identifiers() {
         name.value = `name${count}`;
     });
 
-    form.addEventListener("reset", async (e: Event) => {
+    refresh.addEventListener("click", async (e: Event) => {
         e.preventDefault();
-        // reset
-        form.reset();
-        //  remove error status
-        name.classList.remove("error");
-        // erase table
-        while (table.rows.length > 1) {
-            table.deleteRow(1);
-        }
+        form.dispatchEvent(new CustomEvent("x-refresh"));
     });
 }

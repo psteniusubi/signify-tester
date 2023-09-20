@@ -2,7 +2,7 @@ import { ready, SignifyClient, Tier } from 'signify-ts';
 import Base64 from "urlsafe-base64"
 import { Buffer } from 'buffer';
 import { KERIA_ADMIN, KERIA_BOOT, get_passcodes, remove_passcode, save_passcode } from './config';
-import { sleep } from './helper';
+import { dispatch_form_event, REFRESH_EVENT, sleep } from './helper';
 
 export let signify: SignifyClient | null = null;
 
@@ -19,7 +19,7 @@ async function load_history() {
     let option = document.createElement("option");
     option.defaultSelected = true;
     history.appendChild(option);
-    for (let i of (await get_passcodes()).sort()) {
+    for (let i of await get_passcodes()) {
         option = document.createElement("option");
         option.innerText = i;
         history.appendChild(option);
@@ -47,7 +47,7 @@ export async function load_client() {
         agent.value = "";
         controller.value = "";
         status.classList.remove("success", "error");
-        Array.from(document.forms).filter(i => i !== form).forEach(i => i.dispatchEvent(new Event("reset")));
+        dispatch_form_event(new Event("reset"), form);
         try {
             await ready();
             let bran = passcode.value as string;
@@ -58,11 +58,7 @@ export async function load_client() {
             agent.value = _signify.agent!.pre;
             controller.value = _signify.controller.pre;
             signify = _signify;
-            Array.from(document.forms)
-                .filter(i => i !== form)
-                .map(i => i.elements.namedItem("refresh") as HTMLButtonElement)
-                .filter(i => i !== null)
-                .forEach(i => (i.dispatchEvent(new Event("click"))));
+            dispatch_form_event(new CustomEvent(REFRESH_EVENT), form);
             await save_passcode(bran);
             await load_history();
         } catch (e) {
@@ -81,7 +77,7 @@ export async function load_client() {
         agent.value = "";
         controller.value = "";
         status.classList.remove("success", "error");
-        Array.from(document.forms).filter(i => i !== form).forEach(i => i.dispatchEvent(new Event("reset")));
+        dispatch_form_event(new Event("reset"), form);
         try {
             await ready();
             let bran = passcode.value as string;
@@ -98,10 +94,12 @@ export async function load_client() {
     form.addEventListener("reset", async (e: Event) => {
         status.classList.remove("success", "error");
         signify = null;
-        Array.from(document.forms).filter(i => i !== form).forEach(i => i.dispatchEvent(new Event("reset")));
+        dispatch_form_event(new Event("reset"), form);
         await sleep(0);
         passcode.value = random_seed();
         await load_history();
+    });
+    form.addEventListener(REFRESH_EVENT, async (e: Event) => {
     });
     history.addEventListener("change", e => {
         passcode.value = history.value;

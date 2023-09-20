@@ -1,4 +1,5 @@
 import { signify } from "./client";
+import { REFRESH_EVENT } from "./helper";
 import { resolve_oobi, list_contacts } from "./signify";
 
 export async function load_contacts() {
@@ -16,14 +17,26 @@ export async function load_contacts() {
         try {
             await resolve_oobi(signify, name.value, oobi.value);
             oobi.value = "";
-            refresh.dispatchEvent(new Event("click"));
+            form.dispatchEvent(new CustomEvent(REFRESH_EVENT));
         } catch {
             name.classList.add("error");
         }
     });
 
-    refresh.addEventListener("click", async (e: Event) => {
+    form.addEventListener("reset", async (e: Event) => {
         e.preventDefault();
+        // reset
+        form.reset();
+        oobi.value = "";
+        // remove error status
+        name.classList.remove("error");
+        // erase table
+        while (table.rows.length > 1) {
+            table.deleteRow(1);
+        }
+    });
+
+    form.addEventListener(REFRESH_EVENT, async (e: Event) => {
         // reset
         form.dispatchEvent(new Event("reset"));
         // signify client
@@ -59,23 +72,15 @@ export async function load_contacts() {
         name.value = `contact${count}`;
     });
 
+    refresh.addEventListener("click", async (e: Event) => {
+        e.preventDefault();
+        form.dispatchEvent(new CustomEvent(REFRESH_EVENT));
+    });
+
     paste.addEventListener("click", async (e: Event) => {
         e.preventDefault();
         oobi.value = await navigator.clipboard.readText();
         oobi.focus();
         oobi.select();
-    });
-
-    form.addEventListener("reset", async (e: Event) => {
-        e.preventDefault();
-        // reset
-        form.reset();
-        oobi.value = "";
-        // remove error status
-        name.classList.remove("error");
-        // erase table
-        while (table.rows.length > 1) {
-            table.deleteRow(1);
-        }
     });
 }

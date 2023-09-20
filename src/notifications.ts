@@ -1,4 +1,4 @@
-import { sleep } from "./helper";
+import { REFRESH_EVENT, sleep } from "./helper";
 import { signify } from "./client";
 import { SignifyClient, Algos, CreateIdentiferArgs } from "signify-ts";
 import { json2string } from "./helper";
@@ -83,11 +83,13 @@ async function show_notification(client: SignifyClient | null, notifications: No
             form.addEventListener("submit", async e => {
                 e.preventDefault();
                 await accept_group_identifier(client, "group1", "name1", n.a.d);
+                document.querySelector("#identifiers form")?.dispatchEvent(new CustomEvent(REFRESH_EVENT));
             });
 
             form.addEventListener("reset", async e => {
                 e.preventDefault();
                 (e.currentTarget as HTMLFormElement).remove();
+                document.querySelector("#notifications div.code")!.innerHTML = "";
             });
         }
     }
