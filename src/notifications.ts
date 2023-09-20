@@ -2,25 +2,35 @@ import { REFRESH_EVENT, sleep } from "./helper";
 import { signify } from "./client";
 import { SignifyClient, Algos, CreateIdentiferArgs } from "signify-ts";
 import { json2string } from "./helper";
-import { get_keyStates, accept_group_identifier, list_notifications, NotificationType } from "./signify";
+import { get_keyStates, accept_group_identifier, list_notifications, NotificationType, list_operations, OperationType, wait_operation, remove_operation } from "./signify";
 
 export async function load_notifications(): Promise<void> {
     const div = document.querySelector("#notifications div.code") as HTMLDivElement;
     while (true) {
         // loop forever polling for notifications
         if (signify !== null) {
+            let text = "";
             try {
                 let list = await list_notifications(signify);
-                div.innerText = json2string(list);
-                // display list of notifications
+                text += json2string(list) + "\r\n";
                 await show_notification(signify, list.notes);
-            } catch {
-                div.innerText = "";
+            } catch (e) {
+                console.error(e);
                 show_notification(signify, []);
             }
+            try {
+                let list = await list_operations(signify, "group");
+                text += json2string(list) + "\r\n";
+                await show_group_operation(signify, list);
+            } catch (e) {
+                console.error(e);
+                show_group_operation(signify, []);
+            }
+            div.innerText = text;
         } else {
             div.innerText = "";
             show_notification(null, []);
+            show_group_operation(null, []);
         }
         await sleep(2500);
     }
@@ -98,4 +108,19 @@ async function show_notification(client: SignifyClient | null, notifications: No
         if (found.has(i.id)) return;
         i.remove();
     });
+}
+
+async function authorize_endpoint(client: SignifyClient, op: OperationType): Promise<void> {
+    let t = await client.identifiers().addEndRole("group1", "agent", client.agent?.pre);
+    await wait_operation(client, t);
+    await remove_operation(client, op);
+}
+
+async function show_group_operation(client: SignifyClient | null, operations: OperationType[]): Promise<void> {
+    if (client === null) return;
+    // for (let op of operations) {
+    //     if (op.done) {
+    //         authorize_endpoint(client, op);
+    //     }
+    // }
 }

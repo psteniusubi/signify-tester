@@ -43,7 +43,8 @@ export async function load_identifiers() {
         try {
             await create_single_identifier(signify, name.value, salt.value !== "" ? salt.value : undefined);
             form.dispatchEvent(new CustomEvent(REFRESH_EVENT));
-        } catch {
+        } catch (e) {
+            console.error(e);
             name.classList.add("error");
         }
     });

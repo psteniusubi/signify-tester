@@ -11,14 +11,31 @@ export interface OperationType {
     response?: any
 }
 
-export async function wait_operation(client: SignifyClient, op: OperationType): Promise<any> {
+export async function wait_operation(client: SignifyClient, op: OperationType): Promise<OperationType> {
     let ms = 500;
+    let retries = 10;
     while (!op.done) {
         await sleep(ms);
         op = await client.operations().get(op.name);
         ms *= 1.2;
+        if(--retries < 1) throw new Error("wait_operation failes");
     }
+    await remove_operation(client, op);
     return op;
+}
+
+export async function list_operations(client: SignifyClient, type: string | undefined = undefined): Promise<OperationType[]> {
+    let params = new URLSearchParams();
+    if (type !== undefined) {
+        params.append("type", type);
+    }
+    let res = await client.fetch(`/operations?${params}`, "GET", null);
+    return await res.json();
+}
+
+export async function remove_operation(client: SignifyClient, op: OperationType): Promise<void> {
+    let path = `/operations/${op.name}`;
+    await client.fetch(path, "DELETE", null);
 }
 
 export interface RangeType {
@@ -176,6 +193,9 @@ export async function create_group_identifier(client: SignifyClient, alias: stri
     let recp = states.map((state) => state.i);
     await client.exchanges().send(name, alias, name_id, "/multisig/icp",
         { 'gid': serder.pre, smids: smids, rmids: rmids }, embeds, recp)
+
+    // op = await client.identifiers().addEndRole(alias, "agent", client.agent?.pre);
+    // await wait_operation(client, op);
 }
 
 export async function accept_group_identifier(client: SignifyClient, alias: string, name: string, id: string): Promise<void> {
@@ -214,4 +234,7 @@ export async function accept_group_identifier(client: SignifyClient, alias: stri
     let recp = states.map((state) => state.i);
     await client.exchanges().send(name, alias, name_id, "/multisig/icp",
         { 'gid': serder.pre, smids: smids, rmids: rmids }, embeds, recp)
+
+    // op = await client.identifiers().addEndRole(alias, "agent", client.agent?.pre);
+    // await wait_operation(client, op);
 }
