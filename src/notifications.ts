@@ -2,7 +2,7 @@ import { REFRESH_EVENT, sleep } from "./helper";
 import { signify } from "./client";
 import { SignifyClient, Algos, CreateIdentiferArgs } from "signify-ts";
 import { json2string } from "./helper";
-import { get_keyStates, accept_group_identifier, list_notifications, NotificationType, list_operations, OperationType, wait_operation, remove_operation } from "./signify";
+import { get_keyStates, accept_group_identifier, list_notifications, NotificationType, list_operations, OperationType, wait_operation, remove_operation, get_group_request, GroupExchangeType } from "./signify";
 
 export async function load_notifications(): Promise<void> {
     const div = document.querySelector("#notifications div.code") as HTMLDivElement;
@@ -12,19 +12,25 @@ export async function load_notifications(): Promise<void> {
             let text = "";
             try {
                 let list = await list_notifications(signify);
-                text += json2string(list) + "\r\n";
+                text += "list_notifications:\r\n" + json2string(list) + "\r\n";
                 await show_notification(signify, list.notes);
             } catch (e) {
                 console.error(e);
                 show_notification(signify, []);
             }
             try {
-                let list = await list_operations(signify, "group");
-                text += json2string(list) + "\r\n";
+                let list = await list_operations(signify);
+                text += "list_operations:\r\n" + json2string(list) + "\r\n";
                 await show_group_operation(signify, list);
             } catch (e) {
                 console.error(e);
                 show_group_operation(signify, []);
+            }
+            try {
+                let list = await signify.escrows().listReply();
+                text += "escrows.listReply:\r\n" + json2string(list) + "\r\n";
+            } catch (e) {
+                console.error(e);
             }
             div.innerText = text;
         } else {
@@ -67,14 +73,21 @@ async function show_notification(client: SignifyClient | null, notifications: No
             div.appendChild(input);
 
             if (n.a.r === "/multisig/icp") {
-                let exn = (await client.groups().getRequest(n.a.d)).pop().exn;
-                console.log(json2string(exn));
-                input = document.createElement("input");
-                input.type = "text";
-                input.name = "exn.i";
-                input.value = exn.i;
-                input.title = "exn.i";
-                div.appendChild(input);
+                let exn: GroupExchangeType | null = null;
+                for (let r of await get_group_request(client, n.a.d)) {
+                    if (r !== null) {
+                        console.log(json2string(r.exn));
+                        exn ??= r.exn;
+                    }
+                }
+                if (exn !== null) {
+                    input = document.createElement("input");
+                    input.type = "text";
+                    input.name = "exn.i";
+                    input.value = exn.i;
+                    input.title = "exn.i";
+                    div.appendChild(input);
+                }
             }
 
             form.appendChild(div);

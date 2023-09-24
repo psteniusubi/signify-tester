@@ -18,7 +18,7 @@ export async function wait_operation(client: SignifyClient, op: OperationType): 
         await sleep(ms);
         op = await client.operations().get(op.name);
         ms *= 1.2;
-        if(--retries < 1) throw new Error("wait_operation failes");
+        if (--retries < 1) throw new Error(`wait_operation failed: ${op.name}`);
     }
     await remove_operation(client, op);
     return op;
@@ -199,7 +199,7 @@ export async function create_group_identifier(client: SignifyClient, alias: stri
 }
 
 export async function accept_group_identifier(client: SignifyClient, alias: string, name: string, id: string): Promise<void> {
-    let exn = (await client.groups().getRequest(id)).pop().exn;
+    let exn = (await get_group_request(client, id)).pop()!.exn;
     console.log(json2string(exn));
     let name_id = await get_identifier(client, name);
     let icp = exn.e.icp;
@@ -237,4 +237,37 @@ export async function accept_group_identifier(client: SignifyClient, alias: stri
 
     // op = await client.identifiers().addEndRole(alias, "agent", client.agent?.pre);
     // await wait_operation(client, op);
+}
+
+export interface GroupRequestType {
+    exn: GroupExchangeType;
+    paths: {
+        icp: string
+    }
+}
+
+export interface GroupExchangeType {
+    t: string;
+    i: string;
+    r: string;
+    a: {
+        gid: string;
+        smids: string[],
+        rmids: string[]
+    }
+    e: {
+        icp: {
+            kt: string | number | string[],
+            nt: string | number | string[],
+            bt: string,
+            b: string[]
+        }
+        d: string;
+    }
+    // [property: string]: any;
+}
+
+export async function get_group_request(client: SignifyClient, id: string): Promise<GroupRequestType[]> {
+    let res: GroupRequestType[] = await client.groups().getRequest(id);
+    return res;
 }
