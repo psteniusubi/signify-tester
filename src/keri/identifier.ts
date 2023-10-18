@@ -1,5 +1,5 @@
-import { SignifyClient } from 'signify-ts';
-import { ContactType, KeyStateType, RangeType, get_contact, get_keyState, wait_operation } from './signify';
+import { EventResult, SignifyClient } from 'signify-ts';
+import { ContactType, KeyStateType, OperationType, RangeType, get_contact, get_keyState, wait_operation } from './signify';
 
 export interface IdentifierType {
     name: string,
@@ -35,7 +35,8 @@ export async function get_endRoles(client: SignifyClient, alias: string): Promis
 }
 
 export async function add_endRole(client: SignifyClient, alias: string, role: string, eid?: string, stamp: string | undefined = undefined): Promise<void> {
-    let op = await client.identifiers().addEndRole(alias, role, eid, stamp);
+    let res: EventResult = await client.identifiers().addEndRole(alias, role, eid, stamp);
+    let op: OperationType = await res.op();
     await wait_operation(client, op);
 }
 

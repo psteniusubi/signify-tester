@@ -7,6 +7,8 @@ import { KeyStateType, get_keyState, get_keyStates } from './keystate';
 import { get_group_request } from './group';
 import { add_endRole, get_identifier } from './identifier';
 import { IdentifierOrContact, Identifier, Contact } from './identifier';
+import { CreateIdentifierRequest, CreateIdentifierResponse, create_identifier } from './CreateIdentifier';
+import { ExchangeRequest, MULTISIG_ICP, MultisigIcpEmbeds, MultisigIcpPayload, send_exchange } from './Exchange';
 
 export * from "./operation";
 export * from "./contacts";
@@ -15,39 +17,37 @@ export * from "./oobi";
 export * from "./notification";
 export * from "./group";
 export * from "./identifier";
-
-export interface RangeType {
-    start: number,
-    end: number,
-    total: number,
-}
+export * from "./RangeType";
+export * from "./CreateIdentifier";
+export * from "./Exchange";
 
 export async function create_single_identifier(client: SignifyClient, config: Configuration, alias: string, salt?: string): Promise<void> {
-    let args: CreateIdentiferArgs = {
+    let request: CreateIdentifierRequest = {
         toad: config.toad,
         wits: config.wits,
         bran: salt ?? undefined
     };
-    let res = await client.identifiers().create(alias, args);
-    let op: OperationType = await res.op();
-    await wait_operation(client, op);
+    let response = await create_identifier(client, alias, request);
+    await wait_operation(client, response.op);
     await add_endRole(client, alias, "agent", client.agent?.pre);
 }
 
 export class GroupBuilder {
-    static async create(client: SignifyClient, lead: string, members: string[]): Promise<GroupBuilder> {
+    static async create(client: SignifyClient, alias: string, lead: string, members: string[]): Promise<GroupBuilder> {
         let tasks = members.map(alias => Contact.create(client, alias));
-        let builder = new GroupBuilder(client, await Identifier.create(client, lead));
+        let builder = new GroupBuilder(client, alias, await Identifier.create(client, lead));
         for (let task of tasks) {
             builder.addMember(await task);
         }
         return builder;
     }
     client: SignifyClient;
+    alias: string;
     lead: Identifier;
     members: Contact[];
-    constructor(client: SignifyClient, lead: Identifier) {
+    constructor(client: SignifyClient, alias: string, lead: Identifier) {
         this.client = client;
+        this.alias = alias;
         this.lead = lead;
         this.members = new Array<Contact>(0);
     }
@@ -68,10 +68,10 @@ export class GroupBuilder {
         sith = sith.fill(`1/${sith.length}`);
         return sith;
     }
-    async getArgs(config: Configuration): Promise<CreateIdentiferArgs> {
+    async buildCreateIdentifierRequest(config: Configuration): Promise<CreateIdentifierRequest> {
         let sith = this.getSith();
         let states = await this.getKeyStates();
-        let kargs: CreateIdentiferArgs = {
+        let request: CreateIdentifierRequest = {
             algo: Algos.group,
             mhab: this.lead.getIdentifier(),
             isith: sith,
@@ -81,7 +81,31 @@ export class GroupBuilder {
             states: states,
             rstates: states
         };
-        return kargs;
+        return request;
+    }
+    async buildExchangeRequest(identifierRequest: CreateIdentifierRequest, identifierResponse: CreateIdentifierResponse): Promise<ExchangeRequest> {
+        let payload: MultisigIcpPayload = {
+            gid: identifierResponse.serder.pre,
+            smids: identifierRequest.states?.map(i => i.i),
+            rmids: identifierRequest.rstates?.map(i => i.i),
+        };
+        let sigers = identifierResponse.sigs.map(i => new Siger({ qb64: i }));
+        let ims = d(messagize(identifierResponse.serder, sigers));
+        let atc = ims.substring(identifierResponse.serder.size);
+        let embeds: MultisigIcpEmbeds = {
+            icp: [identifierResponse.serder, atc]
+        };
+        let recipients: string[] = this.getIds().map(i => i.getId());
+        let request: ExchangeRequest = {
+            sender: this.lead.alias,
+            topic: this.alias,
+            sender_id: this.lead.getIdentifier(),
+            route: MULTISIG_ICP,
+            payload: payload,
+            embeds: embeds,
+            recipients: recipients
+        };
+        return request;
     }
 }
 
@@ -89,11 +113,11 @@ export async function create_group_identifier(client: SignifyClient, config: Con
     let sith = new Array<string>(1 + members.length);
     sith = sith.fill(`1/${sith.length}`);
     let lead_id = await get_identifier(client, lead);
-    console.log(json2string(lead_id));
+    // console.log(json2string(lead_id));
     let contact_ids = await get_contacts(client, members);
     let states = await get_keyStates(client, [lead_id.prefix].concat(contact_ids.map(contact => contact.id)));
     let rstates = states;
-    let kargs: CreateIdentiferArgs = {
+    let request: CreateIdentifierRequest = {
         algo: Algos.group,
         mhab: lead_id,
         isith: sith,
@@ -103,14 +127,13 @@ export async function create_group_identifier(client: SignifyClient, config: Con
         states: states,
         rstates: rstates
     };
-    console.log(json2string(kargs));
+    console.log(json2string(request));
 
-    let res = await client.identifiers().create(alias, kargs);
-    let op: OperationType = await res.op();
-    console.log(json2string(op));
+    let response = await create_identifier(client, alias, request);
+    // console.log(json2string(response.op));
 
-    let serder = res.serder
-    let sigs = res.sigs
+    let serder = response.serder
+    let sigs = response.sigs
     let sigers = sigs.map((sig) => new Siger({ qb64: sig }));
     let ims = d(messagize(serder, sigers));
     let atc = ims.substring(serder.size);
@@ -120,8 +143,19 @@ export async function create_group_identifier(client: SignifyClient, config: Con
     let smids = states.map((state) => state.i);
     let rmids = smids;
     let recp = states.map((state) => state.i);
-    await client.exchanges().send(lead, alias, lead_id, "/multisig/icp",
-        { 'gid': serder.pre, smids: smids, rmids: rmids }, embeds, recp)
+    // await client.exchanges().send(lead, alias, lead_id, "/multisig/icp",
+    //     { 'gid': serder.pre, smids: smids, rmids: rmids }, embeds, recp)
+    let exn: ExchangeRequest = {
+        sender: lead,
+        topic: alias,
+        sender_id: lead_id,
+        route: MULTISIG_ICP,
+        payload: { 'gid': serder.pre, smids: smids, rmids: rmids },
+        embeds: embeds,
+        recipients: recp
+    }
+    console.log(json2string(exn));
+    await send_exchange(client, exn);
 
     // op = await client.identifiers().addEndRole(alias, "agent", client.agent?.pre);
     // await wait_operation(client, op);
@@ -134,7 +168,7 @@ export async function accept_group_identifier(client: SignifyClient, alias: stri
     let icp = exn.e.icp;
     let states = await get_keyStates(client, exn.a.smids);
     let rstates = await get_keyStates(client, exn.a.rmids);
-    let kargs: CreateIdentiferArgs = {
+    let request: CreateIdentifierRequest = {
         algo: Algos.group,
         mhab: member_id,
         isith: icp.kt,
@@ -144,14 +178,13 @@ export async function accept_group_identifier(client: SignifyClient, alias: stri
         states: states,
         rstates: rstates
     };
-    console.log(json2string(kargs));
+    console.log(json2string(request));
 
-    let res = await client.identifiers().create(alias, kargs);
-    let op: OperationType = await res.op();
-    console.log(json2string(op));
+    let response = await create_identifier(client, alias, request);
+    console.log(json2string(response.op));
 
-    let serder = res.serder
-    let sigs = res.sigs
+    let serder = response.serder
+    let sigs = response.sigs
     let sigers = sigs.map((sig) => new Siger({ qb64: sig }));
     let ims = d(messagize(serder, sigers));
     let atc = ims.substring(serder.size);

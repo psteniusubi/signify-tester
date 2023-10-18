@@ -1,8 +1,9 @@
 import { describe, expect, test } from '@jest/globals';
 import { Agent, Authenticater, Controller, KeyManager, SignifyClient } from 'signify-ts';
-import { Contact, GroupBuilder, Identifier, OperationType, add_endRole, create_single_identifier, get_contact, get_endRoles, get_identifier, get_oobi, has_endRole, resolve_oobi } from "../src/keri/signify";
+import { Contact, GroupBuilder, Identifier, OperationType, add_endRole, create_group_identifier, create_identifier, create_single_identifier, get_contact, get_endRoles, get_identifier, get_oobi, has_endRole, resolve_oobi } from "../src/keri/signify";
 import { connect_or_boot, getLocalConfig } from "../src/keri/config";
 import { json2string } from '../src/util/helper';
+import { send_exchange } from '../src/keri/Exchange';
 
 const config = getLocalConfig();
 const CLIENT1 = "client1";
@@ -73,11 +74,13 @@ describe("SignifyClient", () => {
         }
     });
     test("group1", async () => {
-        let builder = await GroupBuilder.create(client1, NAME1, [CONTACT1]);
-        let kargs = await builder.getArgs(config);
-        console.debug(json2string(kargs));
-        let res = await client1.identifiers().create(GROUP1, kargs);
-        let op: OperationType = await res.op();
-        console.debug(json2string(op));
+        let builder = await GroupBuilder.create(client1, GROUP1, NAME1, [CONTACT1]);
+        let request = await builder.buildCreateIdentifierRequest(config);
+        console.debug(json2string(request));
+        let response = await create_identifier(client1, builder.alias, request);
+        console.debug(json2string(response.op));
+        let exn = await builder.buildExchangeRequest(request, response);
+        console.debug(json2string(exn));
+        await send_exchange(client1, exn);
     });
 });
