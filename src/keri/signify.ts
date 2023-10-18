@@ -1,42 +1,19 @@
 import { SignifyClient, CreateIdentiferArgs, Algos, Siger, d, messagize } from 'signify-ts';
-import { sleep } from '../util/helper';
-import { WITS } from "../config";
+import { Configuration } from "../config";
 import { json2string } from "../util/helper";
+import { OperationType, wait_operation } from './operation';
+import { get_contacts } from './contacts';
+import { get_keyStates } from './keystate';
+import { get_group_request } from './group';
+import { add_endRole, get_identifier } from './identifier';
 
-export interface OperationType {
-    name: string,
-    metadata: any,
-    done: boolean,
-    error?: any,
-    response?: any
-}
-
-export async function wait_operation(client: SignifyClient, op: OperationType): Promise<OperationType> {
-    let ms = 500;
-    let retries = 10;
-    while (!op.done) {
-        await sleep(ms);
-        op = await client.operations().get(op.name);
-        ms *= 1.2;
-        if (--retries < 1) throw new Error(`wait_operation failed: ${op.name}`);
-    }
-    await remove_operation(client, op);
-    return op;
-}
-
-export async function list_operations(client: SignifyClient, type: string | undefined = undefined): Promise<OperationType[]> {
-    let params = new URLSearchParams();
-    if (type !== undefined) {
-        params.append("type", type);
-    }
-    let res = await client.fetch(`/operations?${params}`, "GET", null);
-    return await res.json();
-}
-
-export async function remove_operation(client: SignifyClient, op: OperationType): Promise<void> {
-    let path = `/operations/${op.name}`;
-    await client.fetch(path, "DELETE", null);
-}
+export * from "./operation";
+export * from "./contacts";
+export * from "./keystate";
+export * from "./oobi";
+export * from "./notification";
+export * from "./group";
+export * from "./identifier";
 
 export interface RangeType {
     start: number,
@@ -44,133 +21,33 @@ export interface RangeType {
     total: number,
 }
 
-export interface IdentifierType {
-    name: string,
-    prefix: string,
-    [property: string]: any
-}
-
-export interface IdentifierRangeType extends RangeType {
-    aids: IdentifierType[]
-}
-
-export async function list_identifiers(client: SignifyClient): Promise<IdentifierRangeType> {
-    let res: IdentifierRangeType = await client.identifiers().list();
-    return res;
-}
-
-export async function get_identifier(client: SignifyClient, alias: string): Promise<IdentifierType> {
-    let res = await client.identifiers().get(alias);
-    return res;
-}
-
-export interface ContactType {
-    id: string,
-    alias: string,
-    oobi: string,
-    challenges?: any[],
-    wellKnowns?: any[]
-}
-
-export async function list_contacts(client: SignifyClient): Promise<ContactType[]> {
-    let res: ContactType[] = await client.contacts().list();
-    return res;
-}
-
-export async function get_contact(client: SignifyClient, alias: string): Promise<ContactType> {
-    let res: ContactType[] = await client.contacts().list(undefined, "alias", `^${alias}$`);
-    if (res.length < 1) throw Error(`get_contact: ${alias}`);
-    return res.pop()!;
-}
-
-export async function get_contacts(client: SignifyClient, aliases: string[]): Promise<ContactType[]> {
-    let tasks: Promise<ContactType>[] = [];
-    for (let alias of aliases) {
-        tasks.push(get_contact(client, alias));
-    }
-    return await Promise.all(tasks);
-}
-
-export interface KeyStateType {
-    i: string,
-    [property: string]: any,
-}
-
-export async function get_keyState(client: SignifyClient, id: string): Promise<KeyStateType> {
-    let res = await client.keyStates().get(id);
-    return res.pop();
-}
-
-export async function get_keyStates(client: SignifyClient, ids: string[]): Promise<KeyStateType[]> {
-    let tasks: Promise<KeyStateType>[] = [];
-    for (let id of ids) {
-        tasks.push(get_keyState(client, id));
-    }
-    return await Promise.all(tasks);
-}
-
-export interface OobiType {
-    role: string,
-    oobis: string[]
-}
-
-export async function get_oobi(client: SignifyClient, alias: string, role: string = "agent"): Promise<OobiType> {
-    let res = await client.oobis().get(alias, role);
-    return res;
-}
-
-export async function resolve_oobi(client: SignifyClient, alias: string, value: string): Promise<void> {
-    let op: OperationType = await client.oobis().resolve(value, alias);
-    await wait_operation(client, op);
-}
-
-export interface NotificationType {
-    i: string,
-    dt: string,
-    r: boolean,
-    a: {
-        r: string,
-        d: string
-    }
-}
-
-export interface NotificationRangeType extends RangeType {
-    notes: NotificationType[]
-}
-
-export async function list_notifications(client: SignifyClient): Promise<NotificationRangeType> {
-    let res: NotificationRangeType = await client.notifications().list();
-    return res;
-}
-
-export async function create_single_identifier(client: SignifyClient, alias: string, salt: string | undefined): Promise<void> {
+export async function create_single_identifier(client: SignifyClient, config: Configuration, alias: string, salt?: string): Promise<void> {
     let args: CreateIdentiferArgs = {
-        toad: WITS.length,
-        wits: WITS,
+        toad: config.toad,
+        wits: config.wits,
         bran: salt ?? undefined
     };
     let res = await client.identifiers().create(alias, args);
     let op: OperationType = await res.op();
     await wait_operation(client, op);
-    op = await client.identifiers().addEndRole(alias, "agent", client.agent?.pre);
-    await wait_operation(client, op);
+    await add_endRole(client, alias, "agent", client.agent?.pre);
 }
 
-export async function create_group_identifier(client: SignifyClient, alias: string, name: string, contacts: string[]): Promise<void> {
-    let sith = new Array(1 + contacts.length);
+export async function create_group_identifier(client: SignifyClient, config: Configuration, alias: string, lead: string, members: string[]): Promise<void> {
+    let sith = new Array<string>(1 + members.length);
     sith = sith.fill(`1/${sith.length}`);
-    let name_id = await get_identifier(client, name);
-    console.log(json2string(name_id));
-    let contact_ids = await get_contacts(client, contacts);
-    let states = await get_keyStates(client, [name_id.prefix].concat(contact_ids.map(contact => contact.id)));
+    let lead_id = await get_identifier(client, lead);
+    console.log(json2string(lead_id));
+    let contact_ids = await get_contacts(client, members);
+    let states = await get_keyStates(client, [lead_id.prefix].concat(contact_ids.map(contact => contact.id)));
     let rstates = states;
     let kargs: CreateIdentiferArgs = {
         algo: Algos.group,
-        mhab: name_id,
+        mhab: lead_id,
         isith: sith,
         nsith: sith,
-        toad: WITS.length,
-        wits: WITS,
+        toad: config.toad,
+        wits: config.wits,
         states: states,
         rstates: rstates
     };
@@ -191,23 +68,23 @@ export async function create_group_identifier(client: SignifyClient, alias: stri
     let smids = states.map((state) => state.i);
     let rmids = smids;
     let recp = states.map((state) => state.i);
-    await client.exchanges().send(name, alias, name_id, "/multisig/icp",
+    await client.exchanges().send(lead, alias, lead_id, "/multisig/icp",
         { 'gid': serder.pre, smids: smids, rmids: rmids }, embeds, recp)
 
     // op = await client.identifiers().addEndRole(alias, "agent", client.agent?.pre);
     // await wait_operation(client, op);
 }
 
-export async function accept_group_identifier(client: SignifyClient, alias: string, name: string, id: string): Promise<void> {
+export async function accept_group_identifier(client: SignifyClient, alias: string, member: string, id: string): Promise<void> {
     let exn = (await get_group_request(client, id)).pop()!.exn;
     console.log(json2string(exn));
-    let name_id = await get_identifier(client, name);
+    let member_id = await get_identifier(client, member);
     let icp = exn.e.icp;
     let states = await get_keyStates(client, exn.a.smids);
     let rstates = await get_keyStates(client, exn.a.rmids);
     let kargs: CreateIdentiferArgs = {
         algo: Algos.group,
-        mhab: name_id,
+        mhab: member_id,
         isith: icp.kt,
         nsith: icp.nt,
         toad: parseInt(icp.bt),
@@ -232,42 +109,10 @@ export async function accept_group_identifier(client: SignifyClient, alias: stri
     let smids = states.map((state) => state.i);
     let rmids = rstates.map((state) => state.i);
     let recp = states.map((state) => state.i);
-    await client.exchanges().send(name, alias, name_id, "/multisig/icp",
+    await client.exchanges().send(member, alias, member_id, "/multisig/icp",
         { 'gid': serder.pre, smids: smids, rmids: rmids }, embeds, recp)
 
     // op = await client.identifiers().addEndRole(alias, "agent", client.agent?.pre);
     // await wait_operation(client, op);
 }
 
-export interface GroupRequestType {
-    exn: GroupExchangeType;
-    paths: {
-        icp: string
-    }
-}
-
-export interface GroupExchangeType {
-    t: string;
-    i: string;
-    r: string;
-    a: {
-        gid: string;
-        smids: string[],
-        rmids: string[]
-    }
-    e: {
-        icp: {
-            kt: string | number | string[],
-            nt: string | number | string[],
-            bt: string,
-            b: string[]
-        }
-        d: string;
-    }
-    // [property: string]: any;
-}
-
-export async function get_group_request(client: SignifyClient, id: string): Promise<GroupRequestType[]> {
-    let res: GroupRequestType[] = await client.groups().getRequest(id);
-    return res;
-}

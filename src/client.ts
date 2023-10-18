@@ -1,10 +1,12 @@
-import { ready, SignifyClient, Tier } from 'signify-ts';
+import { SignifyClient } from 'signify-ts';
 import Base64 from "urlsafe-base64"
 import { Buffer } from 'buffer';
-import { KERIA_ADMIN, KERIA_BOOT, get_passcodes, remove_passcode, save_passcode } from './config';
+import { getDefaultConfig, get_passcodes, remove_passcode, save_passcode } from './config';
 import { dispatch_form_event, REFRESH_EVENT, sleep } from './util/helper';
+import { create_client } from './keri/config';
 
 export let signify: SignifyClient | null = null;
+export const config = getDefaultConfig();
 
 function random_seed() {
     let buf = Buffer.alloc(20);
@@ -30,7 +32,7 @@ export async function load_client() {
     const form = document.querySelector("#client form") as HTMLFormElement;
     const status = form.elements.namedItem("status") as HTMLInputElement;
     const hostname = form.elements.namedItem("hostname") as HTMLInputElement;
-    hostname.defaultValue = KERIA_ADMIN;
+    hostname.defaultValue = config.admin;
     const agent = form.elements.namedItem("agent") as HTMLInputElement;
     const controller = form.elements.namedItem("controller") as HTMLInputElement;
     const passcode = form.elements.namedItem("passcode") as HTMLInputElement;
@@ -49,9 +51,8 @@ export async function load_client() {
         status.classList.remove("success", "error");
         dispatch_form_event(new Event("reset"), form);
         try {
-            await ready();
             let bran = passcode.value as string;
-            let _signify = new SignifyClient(KERIA_ADMIN, bran.padEnd(21, "_"), Tier.low, KERIA_BOOT);
+            let _signify = await create_client(config, bran);
             await _signify.connect();
             status.classList.add("success");
             status.value = "connected";
@@ -79,9 +80,8 @@ export async function load_client() {
         status.classList.remove("success", "error");
         dispatch_form_event(new Event("reset"), form);
         try {
-            await ready();
             let bran = passcode.value as string;
-            let _signify = new SignifyClient(KERIA_ADMIN, bran.padEnd(21, "_"), Tier.low, KERIA_BOOT);
+            let _signify = await create_client(config, bran);
             let res = await _signify.boot();
             if (!res.ok) throw new Error(await res.text());
             form.dispatchEvent(new SubmitEvent("submit"));

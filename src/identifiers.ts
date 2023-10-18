@@ -1,4 +1,4 @@
-import { signify } from "./client";
+import { signify, config } from "./client";
 import { REFRESH_EVENT } from "./util/helper";
 import { create_single_identifier, list_identifiers, get_oobi } from "./keri/signify";
 import { SignifyClient } from "signify-ts";
@@ -41,7 +41,7 @@ export async function load_identifiers() {
         name.classList.remove("error");
         if (signify === null) return;
         try {
-            await create_single_identifier(signify, name.value, salt.value !== "" ? salt.value : undefined);
+            await create_single_identifier(signify, config, name.value, salt.value !== "" ? salt.value : undefined);
             form.dispatchEvent(new CustomEvent(REFRESH_EVENT));
         } catch (e) {
             console.error(e);
