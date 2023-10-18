@@ -2,7 +2,7 @@ import { ready, SignifyClient, Tier } from 'signify-ts';
 import Base64 from "urlsafe-base64"
 import { Buffer } from 'buffer';
 import { KERIA_ADMIN, KERIA_BOOT, get_passcodes, remove_passcode, save_passcode } from './config';
-import { dispatch_form_event, REFRESH_EVENT, sleep } from './helper';
+import { dispatch_form_event, REFRESH_EVENT, sleep } from './util/helper';
 
 export let signify: SignifyClient | null = null;
 

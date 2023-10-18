@@ -1,7 +1,7 @@
 import { SignifyClient } from "signify-ts";
 import { signify } from "./client";
-import { create_group_identifier } from "./signify";
-import { REFRESH_EVENT, dispatch_form_event } from "./helper";
+import { create_group_identifier } from "./keri/signify";
+import { REFRESH_EVENT, dispatch_form_event } from "./util/helper";
 
 export async function load_multisig(): Promise<void> {
     const form = document.querySelector("#multisig form") as HTMLFormElement;

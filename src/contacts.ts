@@ -1,6 +1,6 @@
 import { signify } from "./client";
-import { REFRESH_EVENT } from "./helper";
-import { resolve_oobi, list_contacts } from "./signify";
+import { REFRESH_EVENT } from "./util/helper";
+import { resolve_oobi, list_contacts } from "./keri/signify";
 
 export async function load_contacts() {
     const table = document.querySelector("#contacts table") as HTMLTableElement;

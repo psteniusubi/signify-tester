@@ -1,6 +1,6 @@
 import { signify } from "./client";
-import { REFRESH_EVENT } from "./helper";
-import { create_single_identifier, list_identifiers, get_oobi } from "./signify";
+import { REFRESH_EVENT } from "./util/helper";
+import { create_single_identifier, list_identifiers, get_oobi } from "./keri/signify";
 import { SignifyClient } from "signify-ts";
 
 async function async_oobi(client: SignifyClient, td: HTMLTableCellElement, name: string) {

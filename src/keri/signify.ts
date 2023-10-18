@@ -1,7 +1,7 @@
 import { SignifyClient, CreateIdentiferArgs, Algos, Siger, d, messagize } from 'signify-ts';
-import { sleep } from './helper';
-import { WITS } from "./config";
-import { json2string } from "./helper";
+import { sleep } from '../util/helper';
+import { WITS } from "../config";
+import { json2string } from "../util/helper";
 
 export interface OperationType {
     name: string,
@@ -149,7 +149,7 @@ export async function create_single_identifier(client: SignifyClient, alias: str
         wits: WITS,
         bran: salt ?? undefined
     };
-    let res = client.identifiers().create(alias, args);
+    let res = await client.identifiers().create(alias, args);
     let op: OperationType = await res.op();
     await wait_operation(client, op);
     op = await client.identifiers().addEndRole(alias, "agent", client.agent?.pre);
@@ -217,7 +217,7 @@ export async function accept_group_identifier(client: SignifyClient, alias: stri
     };
     console.log(json2string(kargs));
 
-    let res = client.identifiers().create(alias, kargs);
+    let res = await client.identifiers().create(alias, kargs);
     let op: OperationType = await res.op();
     console.log(json2string(op));
 

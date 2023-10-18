@@ -1,8 +1,8 @@
-import { REFRESH_EVENT, sleep } from "./helper";
+import { REFRESH_EVENT, sleep } from "./util/helper";
 import { signify } from "./client";
 import { SignifyClient, Algos, CreateIdentiferArgs } from "signify-ts";
-import { json2string } from "./helper";
-import { get_keyStates, accept_group_identifier, list_notifications, NotificationType, list_operations, OperationType, wait_operation, remove_operation, get_group_request, GroupExchangeType } from "./signify";
+import { json2string } from "./util/helper";
+import { get_keyStates, accept_group_identifier, list_notifications, NotificationType, list_operations, OperationType, wait_operation, remove_operation, get_group_request, GroupExchangeType } from "./keri/signify";
 
 export async function load_notifications(): Promise<void> {
     const div = document.querySelector("#notifications div.code") as HTMLDivElement;
@@ -27,7 +27,7 @@ export async function load_notifications(): Promise<void> {
                 show_group_operation(signify, []);
             }
             try {
-                let list = await signify.escrows().listReply();
+                let list = await signify.escrows().listReply("/end/role");
                 text += "escrows.listReply:\r\n" + json2string(list) + "\r\n";
             } catch (e) {
                 console.error(e);
