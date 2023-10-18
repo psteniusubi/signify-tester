@@ -3,9 +3,10 @@ import { Configuration } from "../config";
 import { json2string } from "../util/helper";
 import { OperationType, wait_operation } from './operation';
 import { get_contacts } from './contacts';
-import { get_keyStates } from './keystate';
+import { KeyStateType, get_keyState, get_keyStates } from './keystate';
 import { get_group_request } from './group';
 import { add_endRole, get_identifier } from './identifier';
+import { IdentifierOrContact, Identifier, Contact } from './identifier';
 
 export * from "./operation";
 export * from "./contacts";
@@ -31,6 +32,57 @@ export async function create_single_identifier(client: SignifyClient, config: Co
     let op: OperationType = await res.op();
     await wait_operation(client, op);
     await add_endRole(client, alias, "agent", client.agent?.pre);
+}
+
+export class GroupBuilder {
+    static async create(client: SignifyClient, lead: string, members: string[]): Promise<GroupBuilder> {
+        let tasks = members.map(alias => Contact.create(client, alias));
+        let builder = new GroupBuilder(client, await Identifier.create(client, lead));
+        for (let task of tasks) {
+            builder.addMember(await task);
+        }
+        return builder;
+    }
+    client: SignifyClient;
+    lead: Identifier;
+    members: Contact[];
+    constructor(client: SignifyClient, lead: Identifier) {
+        this.client = client;
+        this.lead = lead;
+        this.members = new Array<Contact>(0);
+    }
+    addMember(member: Contact) {
+        this.members.push(member);
+    }
+    getIds(): IdentifierOrContact[] {
+        let list = new Array<IdentifierOrContact>(this.lead, ...this.members);
+        list = list.sort((a, b) => a.compare(b));
+        return list;
+    }
+    async getKeyStates(): Promise<KeyStateType[]> {
+        let tasks = this.getIds().map(id => id.getKeyState());
+        return await Promise.all(tasks);
+    }
+    getSith(): string[] {
+        let sith = new Array<string>(1 + this.members.length);
+        sith = sith.fill(`1/${sith.length}`);
+        return sith;
+    }
+    async getArgs(config: Configuration): Promise<CreateIdentiferArgs> {
+        let sith = this.getSith();
+        let states = await this.getKeyStates();
+        let kargs: CreateIdentiferArgs = {
+            algo: Algos.group,
+            mhab: this.lead.getIdentifier(),
+            isith: sith,
+            nsith: sith,
+            toad: config.toad,
+            wits: config.wits,
+            states: states,
+            rstates: states
+        };
+        return kargs;
+    }
 }
 
 export async function create_group_identifier(client: SignifyClient, config: Configuration, alias: string, lead: string, members: string[]): Promise<void> {

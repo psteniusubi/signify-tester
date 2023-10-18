@@ -1,6 +1,6 @@
 import { describe, expect, test } from '@jest/globals';
 import { Agent, Authenticater, Controller, KeyManager, SignifyClient } from 'signify-ts';
-import { add_endRole, create_single_identifier, get_contact, get_endRoles, get_identifier, get_oobi, has_endRole, resolve_oobi } from "../src/keri/signify";
+import { Contact, GroupBuilder, Identifier, OperationType, add_endRole, create_single_identifier, get_contact, get_endRoles, get_identifier, get_oobi, has_endRole, resolve_oobi } from "../src/keri/signify";
 import { connect_or_boot, getLocalConfig } from "../src/keri/config";
 import { json2string } from '../src/util/helper';
 
@@ -8,7 +8,7 @@ const config = getLocalConfig();
 const CLIENT1 = "client1";
 const CLIENT2 = "client2";
 const NAME1 = "name1";
-const MEMBER1 = "member1";
+const CONTACT1 = "contact1";
 const GROUP1 = "group1";
 
 describe("SignifyClient", () => {
@@ -53,23 +53,31 @@ describe("SignifyClient", () => {
     test("oobi1", async () => {
         let oobi = await get_oobi(client1, NAME1, "agent");
         try {
-            let r = await get_contact(client2, MEMBER1);
+            let r = await get_contact(client2, CONTACT1);
             if (r.oobi !== oobi.oobis[0]) {
-                await resolve_oobi(client2, MEMBER1, oobi.oobis[0]);
+                await resolve_oobi(client2, CONTACT1, oobi.oobis[0]);
             }
         } catch {
-            await resolve_oobi(client2, MEMBER1, oobi.oobis[0]);
+            await resolve_oobi(client2, CONTACT1, oobi.oobis[0]);
         }
     });
     test("oobi2", async () => {
         let oobi = await get_oobi(client2, NAME1, "agent");
         try {
-            let r = await get_contact(client1, MEMBER1);
+            let r = await get_contact(client1, CONTACT1);
             if (r.oobi !== oobi.oobis[0]) {
-                await resolve_oobi(client2, MEMBER1, oobi.oobis[0]);
+                await resolve_oobi(client2, CONTACT1, oobi.oobis[0]);
             }
         } catch {
-            await resolve_oobi(client1, MEMBER1, oobi.oobis[0]);
+            await resolve_oobi(client1, CONTACT1, oobi.oobis[0]);
         }
+    });
+    test("group1", async () => {
+        let builder = await GroupBuilder.create(client1, NAME1, [CONTACT1]);
+        let kargs = await builder.getArgs(config);
+        console.debug(json2string(kargs));
+        let res = await client1.identifiers().create(GROUP1, kargs);
+        let op: OperationType = await res.op();
+        console.debug(json2string(op));
     });
 });

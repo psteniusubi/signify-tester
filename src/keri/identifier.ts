@@ -57,7 +57,10 @@ export abstract class IdentifierOrContact {
         this.client = client;
         this.alias = alias;
     }
-    abstract getId(): Promise<string>;
+    compare(other: IdentifierOrContact): number {
+        return this.getId().localeCompare(other.getId());
+    }
+    abstract getId(): string;
     async getKeyState(): Promise<KeyStateType> {
         let id = await this.getId();
         return this._keyState ??= await get_keyState(this.client, id);
@@ -65,29 +68,37 @@ export abstract class IdentifierOrContact {
 }
 
 export class Identifier extends IdentifierOrContact {
-    _identifier?: IdentifierType;
-    constructor(client: SignifyClient, alias: string) {
+    static async create(client: SignifyClient, alias: string): Promise<Identifier> {
+        let identifier = await get_identifier(client, alias);
+        return new Identifier(client, alias, identifier);
+    }
+    identifier: IdentifierType;
+    constructor(client: SignifyClient, alias: string, identifier: IdentifierType) {
         super(client, alias);
+        this.identifier = identifier;
     }
-    async getIdentifier(): Promise<IdentifierType> {
-        return this._identifier ??= await get_identifier(this.client, this.alias);
+    getIdentifier(): IdentifierType {
+        return this.identifier;
     }
-    async getId(): Promise<string> {
-        let identifier = await this.getIdentifier();
-        return identifier.prefix;
+    getId(): string {
+        return this.identifier.prefix;
     }
 }
 
 export class Contact extends IdentifierOrContact {
-    _contact?: ContactType;
-    constructor(client: SignifyClient, alias: string) {
+    static async create(client: SignifyClient, alias: string): Promise<Contact> {
+        let contact = await get_contact(client, alias);
+        return new Contact(client, alias, contact);
+    }
+    contact: ContactType;
+    constructor(client: SignifyClient, alias: string, contact: ContactType) {
         super(client, alias);
+        this.contact = contact;
     }
-    async getContact(): Promise<ContactType> {
-        return this._contact ??= await get_contact(this.client, this.alias);
+    getContact(): ContactType {
+        return this.contact;
     }
-    async getId(): Promise<string> {
-        let contact = await this.getContact();
-        return contact.id;
+    getId(): string {
+        return this.contact.id;
     }
 }
