@@ -1,5 +1,5 @@
-import { SignifyClient } from 'signify-ts';
-import { sleep } from '../util/helper';
+import { SignifyClient, openManager } from 'signify-ts';
+import { sleep, wait_async_operation } from '../util/helper';
 
 export interface OperationType {
     name: string,
@@ -9,7 +9,7 @@ export interface OperationType {
     response?: any
 }
 
-export async function wait_operation(client: SignifyClient, op: OperationType): Promise<OperationType> {
+export async function XXwait_operation(client: SignifyClient, op: OperationType): Promise<OperationType> {
     let ms = 500;
     let retries = 10;
     while (!op.done) {
@@ -20,6 +20,15 @@ export async function wait_operation(client: SignifyClient, op: OperationType): 
     }
     await remove_operation(client, op);
     return op;
+}
+
+export async function wait_operation(client: SignifyClient, op: OperationType): Promise<OperationType> {
+    return await wait_async_operation(async () => {
+        op = await client.operations().get(op.name);
+        if (!op.done) return undefined;
+        await remove_operation(client, op);
+        return op;
+    });
 }
 
 export async function list_operations(client: SignifyClient, type: string | undefined = undefined): Promise<OperationType[]> {

@@ -52,9 +52,9 @@ export async function has_endRole(client: SignifyClient, alias: string, role: st
 
 export abstract class IdentifierOrContact {
     client: SignifyClient;
-    alias: string;
+    alias?: string;
     _keyState?: KeyStateType;
-    constructor(client: SignifyClient, alias: string) {
+    constructor(client: SignifyClient, alias: string | undefined) {
         this.client = client;
         this.alias = alias;
     }
@@ -73,8 +73,11 @@ export class Identifier extends IdentifierOrContact {
         let identifier = await get_identifier(client, alias);
         return new Identifier(client, alias, identifier);
     }
+    static async createFromIdentifier(client: SignifyClient, identifier: IdentifierType): Promise<Identifier> {
+        return new Identifier(client, undefined, identifier);
+    }
     identifier: IdentifierType;
-    constructor(client: SignifyClient, alias: string, identifier: IdentifierType) {
+    constructor(client: SignifyClient, alias: string | undefined, identifier: IdentifierType) {
         super(client, alias);
         this.identifier = identifier;
     }
