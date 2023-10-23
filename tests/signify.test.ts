@@ -1,8 +1,8 @@
 import { describe, expect, test } from '@jest/globals';
 import { Agent, Authenticater, Controller, KeyManager, SignifyClient } from 'signify-ts';
-import { Contact, GroupBuilder, Identifier, OperationType, add_endRole, create_group_identifier, create_identifier, create_single_identifier, get_contact, get_endRoles, get_group_request, get_identifier, get_oobi, has_endRole, list_notifications, resolve_oobi } from "../src/keri/signify";
+import { GroupBuilder, add_endRole, create_identifier, create_single_identifier, get_contact, get_identifier, get_oobi, has_endRole, list_notifications, resolve_oobi } from "../src/keri/signify";
 import { connect_or_boot, getLocalConfig } from "../src/keri/config";
-import { json2string, wait_async_operation } from '../src/util/helper';
+import { debug_json, wait_async_operation } from '../src/util/helper';
 import { send_exchange } from '../src/keri/Exchange';
 
 const config = getLocalConfig();
@@ -76,11 +76,11 @@ describe("SignifyClient", () => {
     test("group1", async () => {
         let builder = await GroupBuilder.create(client1, GROUP1, NAME1, [CONTACT1]);
         let request = await builder.buildCreateIdentifierRequest(config);
-        console.debug(json2string(request));
+        debug_json("CreateIdentifierRequest", request);
         let response = await create_identifier(client1, builder.alias, request);
-        console.debug(json2string(response.op));
+        debug_json("create_identifier", response.op);
         let exn = await builder.buildExchangeRequest(request, response);
-        console.debug(json2string(exn));
+        debug_json("ExchangeRequest", exn);
         await send_exchange(client1, exn);
     });
     test("group2", async () => {
@@ -90,14 +90,15 @@ describe("SignifyClient", () => {
             return n;
         });
         expect(n).not.toBeNull();
-        console.debug(json2string(n));
+        debug_json("NotificationType", n);
         let builder = await GroupBuilder.create(client2, GROUP1, NAME1, []);
         let request = await builder.acceptCreateIdentifierRequest(n!);
-        console.debug(json2string(request));
+        debug_json("CreateIdentifierRequest", request);
         let response = await create_identifier(client2, builder.alias, request);
-        console.debug(json2string(response.op));
+        debug_json("create_identifier", response.op);
+        await client2.notifications().mark(n.i);
         let exn = await builder.buildExchangeRequest(request, response);
-        console.debug(json2string(exn));
+        debug_json("ExchangeRequest", exn);
         await send_exchange(client2, exn);
     });
 });

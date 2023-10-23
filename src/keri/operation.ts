@@ -1,4 +1,4 @@
-import { SignifyClient, openManager } from 'signify-ts';
+import { SignifyClient } from 'signify-ts';
 import { sleep, wait_async_operation } from '../util/helper';
 
 export interface OperationType {

@@ -1,8 +1,8 @@
-import { REFRESH_EVENT, sleep } from "./util/helper";
+import { REFRESH_EVENT, dispatch_form_event, sleep } from "./util/helper";
 import { signify } from "./client";
-import { SignifyClient, Algos, CreateIdentiferArgs } from "signify-ts";
+import { SignifyClient } from "signify-ts";
 import { json2string } from "./util/helper";
-import { get_keyStates, accept_group_identifier, list_notifications, NotificationType, list_operations, OperationType, wait_operation, remove_operation, get_group_request, GroupExchangeType } from "./keri/signify";
+import { list_notifications, NotificationType, list_operations, OperationType, wait_operation, remove_operation, get_group_request, GroupExchangeType, GroupBuilder, create_identifier, send_exchange } from "./keri/signify";
 
 export async function load_notifications(): Promise<void> {
     const div = document.querySelector("#notifications div.code") as HTMLDivElement;
@@ -105,9 +105,13 @@ async function show_notification(client: SignifyClient | null, notifications: No
 
             form.addEventListener("submit", async e => {
                 e.preventDefault();
-                await accept_group_identifier(client, "group1", "name1", n.a.d);
+                let builder = await GroupBuilder.create(client, "group1", "name1", []);
+                let request = await builder.acceptCreateIdentifierRequest(n);
+                let response = await create_identifier(client, builder.alias, request);
                 await client.notifications().mark(n.i);
-                document.querySelector("#identifiers form")?.dispatchEvent(new CustomEvent(REFRESH_EVENT));
+                let exn = await builder.buildExchangeRequest(request, response);
+                await send_exchange(client, exn);
+                dispatch_form_event(new CustomEvent(REFRESH_EVENT));
             });
 
             form.addEventListener("reset", async e => {

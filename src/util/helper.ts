@@ -8,7 +8,11 @@ export function json2string(value: any) {
     return JSON.stringify(value, undefined, 2);
 }
 
-export function dispatch_form_event(event: Event, from: HTMLFormElement | undefined) {
+export function debug_json(title: string, value: object) {
+    console.debug(`## ${title} ##:\r\n${json2string(value)}`);
+}
+
+export function dispatch_form_event(event: Event, from?: HTMLFormElement | undefined) {
     Array.from(document.forms).filter(i => i !== from).forEach(i => i.dispatchEvent(event));
 }
 

@@ -1,6 +1,5 @@
-import { SignifyClient } from "signify-ts";
 import { signify, config } from "./client";
-import { create_group_identifier } from "./keri/signify";
+import { GroupBuilder, create_identifier, send_exchange } from "./keri/signify";
 import { REFRESH_EVENT, dispatch_form_event } from "./util/helper";
 
 export async function load_multisig(): Promise<void> {
@@ -9,7 +8,11 @@ export async function load_multisig(): Promise<void> {
     create.addEventListener("click", async e => {
         e.preventDefault();
         if (signify === null) return;
-        await create_group_identifier(signify, config, "group1", "name1", ["contact1"]);
-        document.querySelector("#identifiers form")?.dispatchEvent(new CustomEvent(REFRESH_EVENT));
+        let builder = await GroupBuilder.create(signify, "group1", "name1", ["contact1"]);
+        let request = await builder.buildCreateIdentifierRequest(config);
+        let response = await create_identifier(signify, builder.alias, request);
+        let exn = await builder.buildExchangeRequest(request, response);
+        await send_exchange(signify, exn);
+        dispatch_form_event(new CustomEvent(REFRESH_EVENT));
     });
 }
