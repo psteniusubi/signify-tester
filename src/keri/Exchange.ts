@@ -2,6 +2,7 @@ import { Serder, SignifyClient } from "signify-ts";
 import { IdentifierType } from "./identifier";
 
 export const MULTISIG_ICP = "/multisig/icp";
+export const MULTISIG_RPY = "/multisig/rpy";
 
 export interface MultisigIcpPayload {
     gid?: string;
@@ -10,7 +11,15 @@ export interface MultisigIcpPayload {
 }
 
 export interface MultisigIcpEmbeds {
-    icp?: (string | Serder)[]
+    icp?: (string | Serder)[];
+}
+
+export interface MultisigRpyPayload {
+    gid?: string;
+}
+
+export interface MultisigRpyEmbeds {
+    rpy?: (string | Serder)[];
 }
 
 export interface ExchangeRequest {
@@ -18,8 +27,8 @@ export interface ExchangeRequest {
     topic?: string;
     sender_id?: IdentifierType;
     route?: string;
-    payload?: MultisigIcpPayload | object;
-    embeds?: MultisigIcpEmbeds | object;
+    payload?: MultisigIcpPayload | MultisigRpyPayload | object;
+    embeds?: MultisigIcpEmbeds | MultisigRpyEmbeds | object;
     recipients?: string[];
 }
 

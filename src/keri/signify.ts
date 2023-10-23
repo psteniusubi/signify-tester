@@ -26,9 +26,10 @@ export async function create_single_identifier(client: SignifyClient, config: Co
         wits: config.wits,
         bran: salt ?? undefined
     };
-    let response = await create_identifier(client, alias, request);
-    await wait_operation(client, response.op);
-    await add_endRole(client, alias, "agent", client.agent?.pre);
+    let res1 = await create_identifier(client, alias, request);
+    await wait_operation(client, res1.op);
+    let res2 = await add_endRole(client, alias, "agent", client.agent?.pre);
+    await wait_operation(client, res2.op);
 }
 
 export class GroupBuilder {

@@ -1,10 +1,20 @@
-import { EventResult, SignifyClient } from 'signify-ts';
+import { EventResult, Serder, SignifyClient } from 'signify-ts';
 import { ContactType, KeyStateType, OperationType, RangeType, get_contact, get_keyState, wait_operation } from './signify';
+import { debug_json } from '../util/helper';
 
 export interface IdentifierType {
-    name: string,
-    prefix: string,
-    [property: string]: any
+    name: string;
+    prefix: string;
+    state: {
+        ee: {
+            s: string;
+            d: string;
+            br: any[];
+            ba: any[];
+        };
+        [property: string]: any;
+    },
+    [property: string]: any;
 }
 
 export interface IdentifierRangeType extends RangeType {
@@ -17,7 +27,8 @@ export async function list_identifiers(client: SignifyClient): Promise<Identifie
 }
 
 export async function get_identifier(client: SignifyClient, alias: string): Promise<IdentifierType> {
-    let res = await client.identifiers().get(alias);
+    let res: IdentifierType = await client.identifiers().get(alias);
+    debug_json(`get_identifier(${alias})`, res);
     return res;
 }
 
@@ -34,10 +45,19 @@ export async function get_endRoles(client: SignifyClient, alias: string): Promis
     return await res.json();
 }
 
-export async function add_endRole(client: SignifyClient, alias: string, role: string, eid?: string, stamp: string | undefined = undefined): Promise<void> {
+export interface AddEndRoleResponse {
+    serder: Serder;
+    sigs: string[];
+    op: OperationType;
+}
+
+export async function add_endRole(client: SignifyClient, alias: string, role: string, eid?: string, stamp: string | undefined = undefined): Promise<AddEndRoleResponse> {
     let res: EventResult = await client.identifiers().addEndRole(alias, role, eid, stamp);
-    let op: OperationType = await res.op();
-    await wait_operation(client, op);
+    return {
+        serder: res.serder,
+        sigs: res.sigs,
+        op: await res.op()
+    };
 }
 
 export async function has_endRole(client: SignifyClient, alias: string, role: string, eid?: string): Promise<boolean> {

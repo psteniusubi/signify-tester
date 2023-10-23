@@ -32,3 +32,31 @@ export async function get_group_request(client: SignifyClient, id: string): Prom
     let res: GroupRequestType[] = await client.groups().getRequest(id);
     return res;
 }
+
+export interface SchemesType {
+    http?: string;
+    tcp?: string;
+}
+
+export interface EndsType {
+    [id: string]: SchemesType;
+}
+
+export interface RolesType {
+    [role: string]: EndsType;
+}
+
+export interface MemberType {
+    aid: string;
+    ends: RolesType;
+}
+
+export interface MembersType {
+    signing: MemberType[];
+    rotation: MemberType[];
+}
+
+export async function get_members(client: SignifyClient, alias: string): Promise<MembersType> {
+    let res: MembersType = await client.identifiers().members(alias);
+    return res;
+}

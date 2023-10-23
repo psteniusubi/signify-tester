@@ -8,7 +8,7 @@ export function json2string(value: any) {
     return JSON.stringify(value, undefined, 2);
 }
 
-export function debug_json(title: string, value: object) {
+export function debug_json(title: string, value: object | string | number | boolean) {
     console.debug(`## ${title} ##:\r\n${json2string(value)}`);
 }
 
