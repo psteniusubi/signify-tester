@@ -5,16 +5,12 @@ import { debug_json } from '../util/helper';
 export interface IdentifierType {
     name: string;
     prefix: string;
-    state: {
-        ee: {
-            s: string;
-            d: string;
-            br: any[];
-            ba: any[];
-        };
-        [property: string]: any;
-    },
-    [property: string]: any;
+    salty: any;
+    group: any;
+    transferable: boolean;
+    state: KeyStateType;
+    windexes: any[];
+    // [property: string]: any;
 }
 
 export interface IdentifierRangeType extends RangeType {
@@ -52,12 +48,13 @@ export interface AddEndRoleResponse {
 }
 
 export async function add_endRole(client: SignifyClient, alias: string, role: string, eid?: string, stamp: string | undefined = undefined): Promise<AddEndRoleResponse> {
-    let res: EventResult = await client.identifiers().addEndRole(alias, role, eid, stamp);
-    return {
-        serder: res.serder,
-        sigs: res.sigs,
-        op: await res.op()
+    let result: EventResult = await client.identifiers().addEndRole(alias, role, eid, stamp);
+    let response: AddEndRoleResponse = {
+        serder: result.serder,
+        sigs: result.sigs,
+        op: await result.op()
     };
+    return response;
 }
 
 export async function has_endRole(client: SignifyClient, alias: string, role: string, eid?: string): Promise<boolean> {

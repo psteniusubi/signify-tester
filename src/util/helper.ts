@@ -9,7 +9,7 @@ export function json2string(value: any) {
 }
 
 export function debug_json(title: string, value: object | string | number | boolean) {
-    console.debug(`## ${title} ##:\r\n${json2string(value)}`);
+    console.log(`## ${title} ##:\r\n${json2string(value)}`);
 }
 
 export function dispatch_form_event(event: Event, from?: HTMLFormElement | undefined) {

@@ -1,4 +1,4 @@
-import { json2string } from "../src/util/helper";
+import { debug_json, json2string } from "../src/util/helper";
 
 interface RequestType {
     name?: string;
@@ -20,14 +20,33 @@ class RequestArgsImpl implements RequestArgs {
     }
 }
 
+interface Generic {
+    a: any | undefined;
+    b: any | undefined;
+}
+
+interface Specific extends Generic {
+    a: string;
+    b: string;
+}
+
 describe("JavaScript", () => {
     test("test1", () => {
         let request: RequestType = {
             name: "name",
             prop1: "prop1"
         }
-        console.log(json2string(request));
+        debug_json("RequestType", request);
         let args = new RequestArgsImpl(request);
-        console.log(json2string(args));
+        debug_json("RequestArgsImpl", args);
     })
+    test("test2", () => {
+        let g: Generic = {
+            "a": "aa",
+            "b": "bb"
+        }
+        let ga = g.a;
+        let s: Specific = g;
+        let sa = s.a;
+    });
 });

@@ -1,13 +1,23 @@
 import { SignifyClient } from 'signify-ts';
+import { debug_json } from '../util/helper';
 
 export interface KeyStateType {
-    i: string,
+    i: string;
+    ee: {
+        s: string;
+        d: string;
+        br: any[];
+        ba: any[];
+    }
     [property: string]: any,
 }
 
 export async function get_keyState(client: SignifyClient, id: string): Promise<KeyStateType> {
-    let res = await client.keyStates().get(id);
-    return res.pop();
+    let res: KeyStateType[] = await client.keyStates().get(id);
+    debug_json(`get_keyState(${id})`, res);
+    if (res.length < 1) throw new Error(`get_keyState(${id}): not found`);
+    let r: KeyStateType = res.pop()!;
+    return r;
 }
 
 export async function get_keyStates(client: SignifyClient, ids: string[]): Promise<KeyStateType[]> {

@@ -1,9 +1,9 @@
 import { describe, expect, test } from '@jest/globals';
-import { Agent, Authenticater, Controller, KeyManager, Siger, SignifyClient, d, messagize } from 'signify-ts';
-import { CreateIdentifierRequest, GroupBuilder, Identifier, add_endRole, create_identifier, create_single_identifier, get_contact, get_identifier, get_members, get_oobi, has_endRole, list_notifications, resolve_oobi, wait_operation } from "../src/keri/signify";
+import { Agent, Authenticater, Controller, KeyManager, LargeVrzDex, Siger, SignifyClient, d, messagize } from 'signify-ts';
+import { GroupBuilder, Identifier, add_endRole, create_identifier, create_single_identifier, get_contact, get_identifier, get_keyState, get_members, get_oobi, get_rpy_request, has_endRole, resolve_oobi, wait_notification, wait_operation } from "../src/keri/signify";
 import { connect_or_boot, getLocalConfig } from "../src/keri/config";
-import { debug_json, wait_async_operation } from '../src/util/helper';
-import { ExchangeRequest, MULTISIG_RPY, MultisigRpyEmbeds, MultisigRpyPayload, send_exchange } from '../src/keri/Exchange';
+import { debug_json } from '../src/util/helper';
+import { MULTISIG_ICP, MULTISIG_RPY, MultisigRpyRequest, MultisigRpyRequestEmbeds, MultisigRpyRequestPayload, send_exchange } from '../src/keri/Exchange';
 
 const config = getLocalConfig();
 const CLIENT1 = "client1";
@@ -80,24 +80,18 @@ describe("SignifyClient", () => {
         let request = await builder.buildCreateIdentifierRequest(config);
         debug_json("CreateIdentifierRequest", request);
         let response = await create_identifier(client1, builder.alias, request);
-        debug_json("create_identifier", response.op);
         let exn = await builder.buildExchangeRequest(request, response);
         debug_json("ExchangeRequest", exn);
         await send_exchange(client1, exn);
     });
     test("group2", async () => {
-        let n = await wait_async_operation(async () => {
-            let res = await list_notifications(client2);
-            let n = res.notes.filter(note => note.a.r === "/multisig/icp" && note.r === false).pop();
-            return n;
-        });
+        let n = await wait_notification(client2, MULTISIG_ICP);
         expect(n).not.toBeNull();
         debug_json("NotificationType", n);
         let builder = await GroupBuilder.create(client2, GROUP1, NAME1, []);
         let request = await builder.acceptCreateIdentifierRequest(n!);
         debug_json("CreateIdentifierRequest", request);
         let response = await create_identifier(client2, builder.alias, request);
-        debug_json("create_identifier", response.op);
         await client2.notifications().mark(n.i);
         let exn = await builder.buildExchangeRequest(request, response);
         debug_json("ExchangeRequest", exn);
@@ -105,7 +99,6 @@ describe("SignifyClient", () => {
     });
     test("members", async () => {
         let members = await get_members(client1, GROUP1);
-        debug_json("members", members);
         debug_json("members.signing", members.signing);
         debug_json("members.signing[0].aid", members.signing[0].aid);
         debug_json("members.signing[0].ends", members.signing[0].ends);
@@ -121,13 +114,13 @@ describe("SignifyClient", () => {
         expect(eid1).not.toBeNull();
         let stamp = new Date().toISOString().replace("Z", "000+00:00");
         let res1 = await add_endRole(client1, GROUP1, "agent", eid1, stamp);
-        let payload: MultisigRpyPayload = {
+        let payload: MultisigRpyRequestPayload = {
             gid: group.getId()
         };
         let seal = [
             "SealEvent",
             {
-                i: group.getIdentifier().prefix,
+                i: group.getId(),
                 s: group.getIdentifier().state.ee.s,
                 d: group.getIdentifier().state.ee.d,
             }
@@ -135,11 +128,11 @@ describe("SignifyClient", () => {
         let sigers = res1.sigs.map(i => new Siger({ qb64: i }));
         let ims = d(messagize(res1.serder, sigers, seal));
         let atc = ims.substring(res1.serder.size);;
-        let embeds: MultisigRpyEmbeds = {
+        let embeds: MultisigRpyRequestEmbeds = {
             rpy: [res1.serder, atc]
         };
         let recipients = members.signing.map(i => i.aid);
-        let request: ExchangeRequest = {
+        let request: MultisigRpyRequest = {
             sender: lead.alias,
             topic: group.alias,
             sender_id: await lead.getIdentifier(),
@@ -149,5 +142,44 @@ describe("SignifyClient", () => {
             recipients: recipients
         };
         let response = await send_exchange(client1, request);
+        debug_json("ExchangeResponse", response);
+    });
+    test("endrole2", async () => {
+        let n = await wait_notification(client2, MULTISIG_RPY);
+        expect(n).not.toBeNull();
+        let lead = await Identifier.create(client2, NAME1);
+        let members = await get_members(client1, GROUP1);
+        let req1 = (await get_rpy_request(client2, n)).pop()!;
+        let res1 = await add_endRole(client2, GROUP1, req1.exn.e.rpy.a.role, req1.exn.e.rpy.a.eid, req1.exn.e.rpy.dt);
+        let keyState = await get_keyState(client2, req1.exn.a.gid);
+        let payload: MultisigRpyRequestPayload = {
+            gid: req1.exn.a.gid
+        }
+        let seal = [
+            "SealEvent",
+            {
+                i: keyState.i,
+                s: keyState.ee.s,
+                d: keyState.ee.d,
+            }
+        ];
+        let sigers = res1.sigs.map(i => new Siger({ qb64: i }));
+        let ims = d(messagize(res1.serder, sigers, seal));
+        let atc = ims.substring(res1.serder.size);;
+        let embeds: MultisigRpyRequestEmbeds = {
+            rpy: [res1.serder, atc]
+        };
+        let recipients = members.signing.map(i => i.aid);
+        let request: MultisigRpyRequest = {
+            sender: lead.alias,
+            topic: GROUP1,
+            sender_id: await lead.getIdentifier(),
+            route: MULTISIG_RPY,
+            payload: payload,
+            embeds: embeds,
+            recipients: recipients
+        }
+        let response = await send_exchange(client2, request);
+        debug_json("ExchangeResponse", response);
     });
 });

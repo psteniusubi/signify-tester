@@ -1,5 +1,6 @@
 import { SignifyClient } from 'signify-ts';
 import { RangeType } from './signify';
+import { wait_async_operation } from '../util/helper';
 
 export interface NotificationType {
     i: string,
@@ -20,3 +21,11 @@ export async function list_notifications(client: SignifyClient): Promise<Notific
     return res;
 }
 
+export async function wait_notification(client: SignifyClient, route: string): Promise<NotificationType> {
+    let notification: NotificationType = await wait_async_operation(async () => {
+        let res = await list_notifications(client);
+        let n = res.notes.filter(note => note.a.r === route && note.r === false).pop();
+        return n;
+    });
+    return notification;
+}

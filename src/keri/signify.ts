@@ -2,11 +2,11 @@ import { SignifyClient, Algos, Siger, d, messagize } from 'signify-ts';
 import { Configuration } from "../config";
 import { wait_operation } from './operation';
 import { KeyStateType, get_keyState } from './keystate';
-import { get_group_request } from './group';
+import { get_icp_request } from './group';
 import { add_endRole } from './identifier';
 import { IdentifierOrContact, Identifier, Contact } from './identifier';
 import { CreateIdentifierRequest, CreateIdentifierResponse, create_identifier } from './CreateIdentifier';
-import { ExchangeRequest, MULTISIG_ICP, MultisigIcpEmbeds, MultisigIcpPayload } from './Exchange';
+import { MULTISIG_ICP, MultisigIcpRequest, MultisigIcpRequestEmbeds, MultisigIcpRequestPayload } from './Exchange';
 import { NotificationType } from './notification';
 
 export * from "./operation";
@@ -90,7 +90,7 @@ export class GroupBuilder {
         return request;
     }
     async acceptCreateIdentifierRequest(notification: NotificationType): Promise<CreateIdentifierRequest> {
-        let exn = (await get_group_request(this.client, notification.a.d)).pop()!.exn;
+        let exn = (await get_icp_request(this.client, notification)).pop()!.exn;
         let isith = exn.e.icp.kt;
         let nsith = exn.e.icp.nt;
         let states = await Promise.all(exn.a.smids.map(i => get_keyState(this.client, i)));
@@ -107,8 +107,8 @@ export class GroupBuilder {
         };
         return request;
     }
-    async buildExchangeRequest(identifierRequest: CreateIdentifierRequest, identifierResponse: CreateIdentifierResponse): Promise<ExchangeRequest> {
-        let payload: MultisigIcpPayload = {
+    async buildExchangeRequest(identifierRequest: CreateIdentifierRequest, identifierResponse: CreateIdentifierResponse): Promise<MultisigIcpRequest> {
+        let payload: MultisigIcpRequestPayload = {
             gid: identifierResponse.serder.pre,
             smids: identifierRequest.states?.map(i => i.i),
             rmids: identifierRequest.rstates?.map(i => i.i),
@@ -116,11 +116,11 @@ export class GroupBuilder {
         let sigers = identifierResponse.sigs.map(i => new Siger({ qb64: i }));
         let ims = d(messagize(identifierResponse.serder, sigers));
         let atc = ims.substring(identifierResponse.serder.size);
-        let embeds: MultisigIcpEmbeds = {
+        let embeds: MultisigIcpRequestEmbeds = {
             icp: [identifierResponse.serder, atc]
         };
         let recipients: string[] = identifierRequest.states!.map(i => i.i);
-        let request: ExchangeRequest = {
+        let request: MultisigIcpRequest = {
             sender: this.lead.alias,
             topic: this.alias,
             sender_id: identifierRequest.mhab,

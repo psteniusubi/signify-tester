@@ -1,4 +1,4 @@
-import { SignifyClient, CreateIdentiferArgs, } from 'signify-ts';
+import { SignifyClient, CreateIdentiferArgs, EventResult, } from 'signify-ts';
 import { Algos, Serder, Tier } from "signify-ts";
 import { KeyStateType } from "./keystate";
 import { IdentifierType } from "./identifier";
@@ -39,10 +39,11 @@ export interface CreateIdentifierResponse {
 
 export async function create_identifier(client: SignifyClient, alias: string, request: CreateIdentifierRequest): Promise<CreateIdentifierResponse> {
     let args: CreateIdentiferArgs = request;
-    let res = await client.identifiers().create(alias, args);
-    return {
-        serder: res.serder,
-        sigs: res.sigs,
-        op: await res.op()
+    let result: EventResult = await client.identifiers().create(alias, args);
+    let response: CreateIdentifierResponse = {
+        serder: result.serder,
+        sigs: result.sigs,
+        op: await result.op()
     };
+    return response;
 }

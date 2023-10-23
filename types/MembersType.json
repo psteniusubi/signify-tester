@@ -1,0 +1,102 @@
+{
+    "signing": [
+        {
+            "aid": "ECuiE3Tj_BUxLxgtD1Y9bFYtkPXTgSfnwZTL1VUrdgGK",
+            "ends": {
+                "agent": {
+                    "ENxjWXVynCprIbVhQ54qldhrLzBwvBss44iBFBFWKsPC": {
+                        "http": "http://localhost:3902/"
+                    }
+                },
+                "witness": {
+                    "BBilc4-L3tFUnfM_wJr4S4OJanAv_VmF_dJNN6vkf2Ha": {
+                        "http": "http://localhost:5642/",
+                        "tcp": "tcp://localhost:5632/"
+                    },
+                    "BLskRTInXnMxWaGqcpSyMgo0nYbalW99cGZESrz3zapM": {
+                        "http": "http://localhost:5643/",
+                        "tcp": "tcp://localhost:5633/"
+                    },
+                    "BIKKuvBwpmDVA4Ds-EpL5bt9OqPzWPja2LigFYZN2YfX": {
+                        "http": "http://localhost:5644/",
+                        "tcp": "tcp://localhost:5634/"
+                    }
+                }
+            }
+        },
+        {
+            "aid": "EFEFKtTpJtjL-e6S8eXLrau5V3KSddo2Kos5u16qmaGN",
+            "ends": {
+                "agent": {
+                    "EL8RYqTGGvLl-knwcA6gVDj2CA-t9ARJ94UQsN0u7f68": {
+                        "http": "http://localhost:3902/"
+                    }
+                },
+                "witness": {
+                    "BBilc4-L3tFUnfM_wJr4S4OJanAv_VmF_dJNN6vkf2Ha": {
+                        "http": "http://localhost:5642/",
+                        "tcp": "tcp://localhost:5632/"
+                    },
+                    "BLskRTInXnMxWaGqcpSyMgo0nYbalW99cGZESrz3zapM": {
+                        "http": "http://localhost:5643/",
+                        "tcp": "tcp://localhost:5633/"
+                    },
+                    "BIKKuvBwpmDVA4Ds-EpL5bt9OqPzWPja2LigFYZN2YfX": {
+                        "http": "http://localhost:5644/",
+                        "tcp": "tcp://localhost:5634/"
+                    }
+                }
+            }
+        }
+    ],
+    "rotation": [
+        {
+            "aid": "ECuiE3Tj_BUxLxgtD1Y9bFYtkPXTgSfnwZTL1VUrdgGK",
+            "ends": {
+                "agent": {
+                    "ENxjWXVynCprIbVhQ54qldhrLzBwvBss44iBFBFWKsPC": {
+                        "http": "http://localhost:3902/"
+                    }
+                },
+                "witness": {
+                    "BBilc4-L3tFUnfM_wJr4S4OJanAv_VmF_dJNN6vkf2Ha": {
+                        "http": "http://localhost:5642/",
+                        "tcp": "tcp://localhost:5632/"
+                    },
+                    "BLskRTInXnMxWaGqcpSyMgo0nYbalW99cGZESrz3zapM": {
+                        "http": "http://localhost:5643/",
+                        "tcp": "tcp://localhost:5633/"
+                    },
+                    "BIKKuvBwpmDVA4Ds-EpL5bt9OqPzWPja2LigFYZN2YfX": {
+                        "http": "http://localhost:5644/",
+                        "tcp": "tcp://localhost:5634/"
+                    }
+                }
+            }
+        },
+        {
+            "aid": "EFEFKtTpJtjL-e6S8eXLrau5V3KSddo2Kos5u16qmaGN",
+            "ends": {
+                "agent": {
+                    "EL8RYqTGGvLl-knwcA6gVDj2CA-t9ARJ94UQsN0u7f68": {
+                        "http": "http://localhost:3902/"
+                    }
+                },
+                "witness": {
+                    "BBilc4-L3tFUnfM_wJr4S4OJanAv_VmF_dJNN6vkf2Ha": {
+                        "http": "http://localhost:5642/",
+                        "tcp": "tcp://localhost:5632/"
+                    },
+                    "BLskRTInXnMxWaGqcpSyMgo0nYbalW99cGZESrz3zapM": {
+                        "http": "http://localhost:5643/",
+                        "tcp": "tcp://localhost:5633/"
+                    },
+                    "BIKKuvBwpmDVA4Ds-EpL5bt9OqPzWPja2LigFYZN2YfX": {
+                        "http": "http://localhost:5644/",
+                        "tcp": "tcp://localhost:5634/"
+                    }
+                }
+            }
+        }
+    ]
+}

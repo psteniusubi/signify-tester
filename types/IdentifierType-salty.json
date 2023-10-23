@@ -1,0 +1,60 @@
+{
+    "name": "name1",
+    "prefix": "EFEFKtTpJtjL-e6S8eXLrau5V3KSddo2Kos5u16qmaGN",
+    "salty": {
+        "sxlt": "1AAHT1ClbQ6M80a2USE-oIWZhG6aH0Gt9Tsh8cgE5EU-2XLS4yJSWlIVzesZfYmAqjI2uliFIJTneZur5LzT8hGNAJOyYE3-CXxe",
+        "pidx": 0,
+        "kidx": 0,
+        "stem": "signify:aid",
+        "tier": "low",
+        "dcode": "E",
+        "icodes": [
+            "A"
+        ],
+        "ncodes": [
+            "A"
+        ],
+        "transferable": true
+    },
+    "transferable": true,
+    "state": {
+        "vn": [
+            1,
+            0
+        ],
+        "i": "EFEFKtTpJtjL-e6S8eXLrau5V3KSddo2Kos5u16qmaGN",
+        "s": "0",
+        "p": "",
+        "d": "EFEFKtTpJtjL-e6S8eXLrau5V3KSddo2Kos5u16qmaGN",
+        "f": "0",
+        "dt": "2023-10-23T06:42:17.170444+00:00",
+        "et": "icp",
+        "kt": "1",
+        "k": [
+            "DH2ILkGznV12JPmJ7ajN9hvtUvNpfdAyHbM05o3A4E9j"
+        ],
+        "nt": "1",
+        "n": [
+            "EJyPc_H2g7bvf5VSTyBUkTS7KnR51Y4sCvRoIT7jo68A"
+        ],
+        "bt": "3",
+        "b": [
+            "BBilc4-L3tFUnfM_wJr4S4OJanAv_VmF_dJNN6vkf2Ha",
+            "BLskRTInXnMxWaGqcpSyMgo0nYbalW99cGZESrz3zapM",
+            "BIKKuvBwpmDVA4Ds-EpL5bt9OqPzWPja2LigFYZN2YfX"
+        ],
+        "c": [],
+        "ee": {
+            "s": "0",
+            "d": "EFEFKtTpJtjL-e6S8eXLrau5V3KSddo2Kos5u16qmaGN",
+            "br": [],
+            "ba": []
+        },
+        "di": ""
+    },
+    "windexes": [
+        0,
+        1,
+        2
+    ]
+}

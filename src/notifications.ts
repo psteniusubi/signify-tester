@@ -2,7 +2,7 @@ import { REFRESH_EVENT, dispatch_form_event, sleep } from "./util/helper";
 import { signify } from "./client";
 import { SignifyClient } from "signify-ts";
 import { json2string } from "./util/helper";
-import { list_notifications, NotificationType, list_operations, OperationType, wait_operation, remove_operation, get_group_request, GroupExchangeType, GroupBuilder, create_identifier, send_exchange } from "./keri/signify";
+import { list_notifications, NotificationType, list_operations, OperationType, wait_operation, remove_operation, GroupBuilder, create_identifier, send_exchange, get_icp_request, GroupIcpRequestExn } from "./keri/signify";
 
 export async function load_notifications(): Promise<void> {
     const div = document.querySelector("#notifications div.code") as HTMLDivElement;
@@ -73,10 +73,9 @@ async function show_notification(client: SignifyClient | null, notifications: No
             div.appendChild(input);
 
             if (n.a.r === "/multisig/icp") {
-                let exn: GroupExchangeType | null = null;
-                for (let r of await get_group_request(client, n.a.d)) {
+                let exn: GroupIcpRequestExn | null = null;
+                for (let r of await get_icp_request(client, n)) {
                     if (r !== null) {
-                        console.log(json2string(r.exn));
                         exn ??= r.exn;
                     }
                 }
