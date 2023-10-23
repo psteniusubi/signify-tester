@@ -1,5 +1,9 @@
 export const REFRESH_EVENT = "x-refresh";
 
+export function date2string(value: Date): string {
+    return value.toISOString().replace('Z', '000+00:00');
+}
+
 export function sleep(ms: number): Promise<void> {
     return new Promise(resolve => setTimeout(resolve, ms));
 }

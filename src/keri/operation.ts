@@ -3,8 +3,8 @@ import { sleep, wait_async_operation } from '../util/helper';
 
 export interface OperationType {
     name: string,
-    metadata: any,
-    done: boolean,
+    metadata?: any,
+    done?: boolean,
     error?: any,
     response?: any
 }
@@ -12,7 +12,7 @@ export interface OperationType {
 export async function XXwait_operation(client: SignifyClient, op: OperationType): Promise<OperationType> {
     let ms = 500;
     let retries = 10;
-    while (!op.done) {
+    while (op.done !== true) {
         await sleep(ms);
         op = await client.operations().get(op.name);
         ms *= 1.2;
@@ -25,7 +25,7 @@ export async function XXwait_operation(client: SignifyClient, op: OperationType)
 export async function wait_operation(client: SignifyClient, op: OperationType): Promise<OperationType> {
     return await wait_async_operation(async () => {
         op = await client.operations().get(op.name);
-        if (!op.done) return undefined;
+        if (op.done !== true) return undefined;
         await remove_operation(client, op);
         return op;
     });

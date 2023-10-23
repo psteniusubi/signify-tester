@@ -1,8 +1,8 @@
 import { describe, expect, test } from '@jest/globals';
-import { Agent, Authenticater, Controller, KeyManager, LargeVrzDex, Siger, SignifyClient, d, messagize } from 'signify-ts';
+import { Agent, Authenticater, Controller, KeyManager, Siger, SignifyClient, d, messagize } from 'signify-ts';
 import { GroupBuilder, Identifier, add_endRole, create_identifier, create_single_identifier, get_contact, get_identifier, get_keyState, get_members, get_oobi, get_rpy_request, has_endRole, resolve_oobi, wait_notification, wait_operation } from "../src/keri/signify";
 import { connect_or_boot, getLocalConfig } from "../src/keri/config";
-import { debug_json } from '../src/util/helper';
+import { date2string, debug_json } from '../src/util/helper';
 import { MULTISIG_ICP, MULTISIG_RPY, MultisigRpyRequest, MultisigRpyRequestEmbeds, MultisigRpyRequestPayload, send_exchange } from '../src/keri/Exchange';
 
 const config = getLocalConfig();
@@ -97,22 +97,30 @@ describe("SignifyClient", () => {
         debug_json("ExchangeRequest", exn);
         await send_exchange(client2, exn);
     });
-    test("members", async () => {
-        let members = await get_members(client1, GROUP1);
-        debug_json("members.signing", members.signing);
-        debug_json("members.signing[0].aid", members.signing[0].aid);
-        debug_json("members.signing[0].ends", members.signing[0].ends);
-        debug_json("members.signing[0].ends.agent", members.signing[0].ends.agent);
-        debug_json("members.signing[0].ends.witness", members.signing[0].ends.witness);
-        debug_json("members.rotation", members.rotation);
-    });
+    test("group3", async () => {
+        let group = await Identifier.create(client1, GROUP1);
+        await wait_operation(client1, { name: `group.${group.getId()}` });
+    })
+    test("group4", async () => {
+        let group = await Identifier.create(client2, GROUP1);
+        await wait_operation(client2, { name: `group.${group.getId()}` });
+    })
+    // test("members", async () => {
+    //     let members = await get_members(client1, GROUP1);
+    //     debug_json("members.signing", members.signing);
+    //     debug_json("members.signing[0].aid", members.signing[0].aid);
+    //     debug_json("members.signing[0].ends", members.signing[0].ends);
+    //     debug_json("members.signing[0].ends.agent", members.signing[0].ends.agent);
+    //     debug_json("members.signing[0].ends.witness", members.signing[0].ends.witness);
+    //     debug_json("members.rotation", members.rotation);
+    // });
     test("endrole1", async () => {
         let lead = await Identifier.create(client1, NAME1);
         let group = await Identifier.create(client1, GROUP1);
         let members = await get_members(client1, GROUP1);
         let eid1 = Object.keys(members.signing[0].ends.agent).pop()!;
         expect(eid1).not.toBeNull();
-        let stamp = new Date().toISOString().replace("Z", "000+00:00");
+        let stamp = date2string(new Date());
         let res1 = await add_endRole(client1, GROUP1, "agent", eid1, stamp);
         let payload: MultisigRpyRequestPayload = {
             gid: group.getId()
@@ -151,6 +159,7 @@ describe("SignifyClient", () => {
         let members = await get_members(client1, GROUP1);
         let req1 = (await get_rpy_request(client2, n)).pop()!;
         let res1 = await add_endRole(client2, GROUP1, req1.exn.e.rpy.a.role, req1.exn.e.rpy.a.eid, req1.exn.e.rpy.dt);
+        await client2.notifications().mark(n.i);
         let keyState = await get_keyState(client2, req1.exn.a.gid);
         let payload: MultisigRpyRequestPayload = {
             gid: req1.exn.a.gid
@@ -181,5 +190,17 @@ describe("SignifyClient", () => {
         }
         let response = await send_exchange(client2, request);
         debug_json("ExchangeResponse", response);
+    });
+    test("endrole3", async () => {
+        let group = await Identifier.create(client1, GROUP1);
+        let members = await get_members(client1, GROUP1);
+        let eid1 = Object.keys(members.signing[0].ends.agent).pop()!;
+        await wait_operation(client1, { name: `endrole.${group.getId()}.agent.${eid1}` });
+    });
+    test("endrole4", async () => {
+        let group = await Identifier.create(client2, GROUP1);
+        let members = await get_members(client2, GROUP1);
+        let eid1 = Object.keys(members.signing[0].ends.agent).pop()!;
+        await wait_operation(client2, { name: `endrole.${group.getId()}.agent.${eid1}` });
     });
 });
