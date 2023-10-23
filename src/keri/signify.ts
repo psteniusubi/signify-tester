@@ -45,11 +45,6 @@ export class GroupBuilder {
         builder.sortMembers();
         return builder;
     }
-    static async accept(client: SignifyClient, alias: string, lead: string): Promise<GroupBuilder> {
-        let lead_id = await await Identifier.create(client, lead);
-        let builder = new GroupBuilder(client, alias, lead_id);
-        return builder;
-    }
     client: SignifyClient;
     alias: string;
     lead: Identifier;

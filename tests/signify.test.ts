@@ -91,7 +91,7 @@ describe("SignifyClient", () => {
         });
         expect(n).not.toBeNull();
         console.debug(json2string(n));
-        let builder = await GroupBuilder.accept(client2, GROUP1, NAME1);
+        let builder = await GroupBuilder.create(client2, GROUP1, NAME1, []);
         let request = await builder.acceptCreateIdentifierRequest(n!);
         console.debug(json2string(request));
         let response = await create_identifier(client2, builder.alias, request);
