@@ -1,5 +1,5 @@
 import { Serder, SignifyClient } from "signify-ts";
-import { IdentifierType } from "./identifier";
+import { IdentifierType } from "./signify";
 import { debug_json } from "../util/helper";
 
 export const MULTISIG_ICP = "/multisig/icp";

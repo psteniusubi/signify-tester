@@ -1,8 +1,9 @@
 import { SignifyClient, CreateIdentiferArgs, EventResult, } from 'signify-ts';
 import { Serder } from "signify-ts";
-import { KeyStateType } from "./keystate";
-import { IdentifierType } from "./identifier";
-import { OperationType } from "./operation";
+import { KeyStateType } from "./signify";
+import { AGENT, AddEndRoleRequest, IdentifierType, add_endRole } from "./signify";
+import { OperationType, wait_operation } from "./signify";
+import { Configuration } from './config';
 
 /**
  * Extends CreateIdentiferArgs
@@ -29,3 +30,21 @@ export async function create_identifier(client: SignifyClient, alias: string, re
     };
     return response;
 }
+
+export async function create_single_identifier(client: SignifyClient, config: Configuration, alias: string, salt?: string): Promise<void> {
+    let req1: CreateIdentifierRequest = {
+        toad: config.toad,
+        wits: config.wits,
+        bran: salt ?? undefined
+    };
+    let res1 = await create_identifier(client, alias, req1);
+    await wait_operation(client, res1.op);
+    let req2: AddEndRoleRequest = {
+        alias: alias,
+        role: AGENT,
+        eid: client.agent?.pre
+    }
+    let res2 = await add_endRole(client, req2);
+    await wait_operation(client, res2.op);
+}
+

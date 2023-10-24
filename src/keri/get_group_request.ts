@@ -1,5 +1,5 @@
 import { SignifyClient } from 'signify-ts';
-import { NotificationType } from './notification';
+import { NotificationType } from './signify';
 import { debug_json } from '../util/helper';
 
 // GroupRequest
@@ -92,31 +92,3 @@ export async function get_rpy_request(client: SignifyClient, note: NotificationT
     return await get_group_request(client, note);
 }
 
-export interface SchemesType {
-    http?: string;
-    tcp?: string;
-}
-
-export interface EndsType {
-    [id: string]: SchemesType;
-}
-
-export interface RolesType {
-    [role: string]: EndsType;
-}
-
-export interface MemberType {
-    aid: string;
-    ends: RolesType;
-}
-
-export interface MembersType {
-    signing: MemberType[];
-    rotation: MemberType[];
-}
-
-export async function get_members(client: SignifyClient, alias: string): Promise<MembersType> {
-    let res: MembersType = await client.identifiers().members(alias);
-    debug_json(`get_members(${alias})`, res);
-    return res;
-}

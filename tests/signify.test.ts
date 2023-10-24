@@ -1,9 +1,9 @@
 import { describe, expect, test } from '@jest/globals';
 import { Agent, Authenticater, Controller, KeyManager, Siger, SignifyClient, d, messagize } from 'signify-ts';
-import { AddEndRoleRequest, GroupBuilder, Identifier, add_endRole, create_identifier, create_single_identifier, get_contact, get_identifier, get_keyState, get_members, get_oobi, get_rpy_request, has_endRole, mark_notification, resolve_oobi, wait_notification, wait_operation } from "../src/keri/signify";
+import { AGENT, AddEndRoleRequest, GroupBuilder, Identifier, add_endRole, create_identifier, create_single_identifier, get_contact, get_identifier, get_keyState, get_members, get_oobi, get_rpy_request, has_endRole, mark_notification, resolve_oobi, wait_notification, wait_operation } from "../src/keri/signify";
 import { Configuration, connect_or_boot, getLocalConfig } from "../src/keri/config";
 import { date2string, debug_json } from '../src/util/helper';
-import { MULTISIG_ICP, MULTISIG_RPY, MultisigRpyRequest, MultisigRpyRequestEmbeds, MultisigRpyRequestPayload, send_exchange } from '../src/keri/Exchange';
+import { MULTISIG_ICP, MULTISIG_RPY, MultisigRpyRequest, MultisigRpyRequestEmbeds, MultisigRpyRequestPayload, send_exchange } from '../src/keri/signify';
 
 const CLIENT1 = "client1";
 const CLIENT2 = "client2";
@@ -33,10 +33,10 @@ describe("SignifyClient", () => {
     test("name1", async () => {
         try {
             await get_identifier(client1, NAME1);
-            if (!has_endRole(client1, NAME1, "agent", client1.agent?.pre)) {
+            if (!has_endRole(client1, NAME1, AGENT, client1.agent?.pre)) {
                 let req: AddEndRoleRequest = {
                     alias: NAME1,
-                    role: "agent",
+                    role: AGENT,
                     eid: client1.agent?.pre
                 };
                 let r = await add_endRole(client1, req);
@@ -50,10 +50,10 @@ describe("SignifyClient", () => {
     test("name2", async () => {
         try {
             await get_identifier(client2, NAME1);
-            if (!has_endRole(client2, NAME1, "agent", client2.agent?.pre)) {
+            if (!has_endRole(client2, NAME1, AGENT, client2.agent?.pre)) {
                 let req: AddEndRoleRequest = {
                     alias: NAME1,
-                    role: "agent",
+                    role: AGENT,
                     eid: client2.agent?.pre
                 };
                 let r = await add_endRole(client2, req);
@@ -65,7 +65,7 @@ describe("SignifyClient", () => {
         }
     });
     test("oobi1", async () => {
-        let oobi = await get_oobi(client1, NAME1, "agent");
+        let oobi = await get_oobi(client1, NAME1, AGENT);
         try {
             let r = await get_contact(client2, CONTACT1);
             if (r.oobi !== oobi.oobis[0]) {
@@ -76,7 +76,7 @@ describe("SignifyClient", () => {
         }
     });
     test("oobi2", async () => {
-        let oobi = await get_oobi(client2, NAME1, "agent");
+        let oobi = await get_oobi(client2, NAME1, AGENT);
         try {
             let r = await get_contact(client1, CONTACT1);
             if (r.oobi !== oobi.oobis[0]) {
@@ -97,7 +97,7 @@ describe("SignifyClient", () => {
         let n = await wait_notification(client2, MULTISIG_ICP);
         expect(n).not.toBeNull();
         let builder = await GroupBuilder.create(client2, GROUP1, NAME1, []);
-        let request = await builder.acceptCreateIdentifierRequest(n!);
+        let request = await builder.acceptCreateIdentifierRequest(n);
         let response = await create_identifier(client2, builder.alias, request);
         await mark_notification(client2, n);
         let exn = await builder.buildExchangeRequest(request, response);
@@ -129,7 +129,7 @@ describe("SignifyClient", () => {
         let stamp = date2string(new Date());
         let req1: AddEndRoleRequest = {
             alias: GROUP1,
-            role: "agent",
+            role: AGENT,
             eid: eid1,
             stamp: stamp
         };
