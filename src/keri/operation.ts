@@ -1,5 +1,5 @@
 import { SignifyClient } from 'signify-ts';
-import { sleep, wait_async_operation } from '../util/helper';
+import { debug_json, sleep, wait_async_operation } from '../util/helper';
 
 export interface OperationType {
     name: string,
@@ -37,13 +37,15 @@ export async function list_operations(client: SignifyClient, type: string | unde
         params.append("type", type);
     }
     let path = `/operations?${params}`;
-    let res = await client.fetch(path, "GET", null);
-    if (!res.ok) throw new Error(await res.text());
-    return await res.json();
+    let response: Response = await client.fetch(path, "GET", null);
+    if (!response.ok) throw new Error(await response.text());
+    let res: OperationType[] = await response.json();
+    debug_json("list_operations", res);
+    return res;
 }
 
 export async function remove_operation(client: SignifyClient, op: OperationType): Promise<void> {
     let path = `/operations/${op.name}`;
-    let res = await client.fetch(path, "DELETE", null);
-    if (!res.ok) throw new Error(await res.text());
+    let response: Response = await client.fetch(path, "DELETE", null);
+    if (!response.ok) throw new Error(await response.text());
 }

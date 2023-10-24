@@ -36,9 +36,11 @@ export interface EndRoleType {
 
 export async function get_endRoles(client: SignifyClient, alias: string): Promise<EndRoleType[]> {
     let path = `/identifiers/${alias}/endroles`;
-    let res = await client.fetch(path, "GET", null);
-    if (!res.ok) throw new Error(await res.text());
-    return await res.json();
+    let response: Response = await client.fetch(path, "GET", null);
+    if (!response.ok) throw new Error(await response.text());
+    let res: EndRoleType[] = await response.json();
+    debug_json(`get_endRoles(${alias})`, res);
+    return res;
 }
 
 export interface AddEndRoleResponse {

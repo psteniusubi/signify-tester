@@ -1,5 +1,5 @@
 import { SignifyClient, CreateIdentiferArgs, EventResult, } from 'signify-ts';
-import { Algos, Serder, Tier } from "signify-ts";
+import { Serder } from "signify-ts";
 import { KeyStateType } from "./keystate";
 import { IdentifierType } from "./identifier";
 import { OperationType } from "./operation";

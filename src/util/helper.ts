@@ -20,11 +20,11 @@ export function dispatch_form_event(event: Event, from?: HTMLFormElement | undef
     Array.from(document.forms).filter(i => i !== from).forEach(i => i.dispatchEvent(event));
 }
 
-export async function wait_async_operation<T>(op: () => Promise<T | undefined>): Promise<T> {
+export async function wait_async_operation<T>(async_operation: () => Promise<T | undefined>): Promise<T> {
     let ms = 500;
     let retries = 10;
     while (true) {
-        let res = await op();
+        let res = await async_operation();
         if (res !== undefined) {
             return res;
         }
