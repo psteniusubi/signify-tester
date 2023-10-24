@@ -3,7 +3,7 @@ import { Configuration } from "../config";
 import { wait_operation } from './operation';
 import { KeyStateType, get_keyState } from './keystate';
 import { get_icp_request } from './group';
-import { add_endRole } from './identifier';
+import { AddEndRoleRequest, add_endRole } from './identifier';
 import { IdentifierOrContact, Identifier, Contact } from './identifier';
 import { CreateIdentifierRequest, CreateIdentifierResponse, create_identifier } from './CreateIdentifier';
 import { MULTISIG_ICP, MultisigIcpRequest, MultisigIcpRequestEmbeds, MultisigIcpRequestPayload } from './Exchange';
@@ -21,14 +21,19 @@ export * from "./CreateIdentifier";
 export * from "./Exchange";
 
 export async function create_single_identifier(client: SignifyClient, config: Configuration, alias: string, salt?: string): Promise<void> {
-    let request: CreateIdentifierRequest = {
+    let req1: CreateIdentifierRequest = {
         toad: config.toad,
         wits: config.wits,
         bran: salt ?? undefined
     };
-    let res1 = await create_identifier(client, alias, request);
+    let res1 = await create_identifier(client, alias, req1);
     await wait_operation(client, res1.op);
-    let res2 = await add_endRole(client, alias, "agent", client.agent?.pre);
+    let req2: AddEndRoleRequest = {
+        alias: alias,
+        role: "agent",
+        eid: client.agent?.pre
+    }
+    let res2 = await add_endRole(client, req2);
     await wait_operation(client, res2.op);
 }
 

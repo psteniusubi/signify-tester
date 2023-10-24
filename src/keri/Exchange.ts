@@ -5,6 +5,8 @@ import { debug_json } from "../util/helper";
 export const MULTISIG_ICP = "/multisig/icp";
 export const MULTISIG_RPY = "/multisig/rpy";
 
+// ExchangeRequest
+
 export interface ExchangeRequest {
     sender?: string;
     topic?: string;
@@ -14,6 +16,8 @@ export interface ExchangeRequest {
     embeds?: any;
     recipients?: string[];
 }
+
+// /multisig/icp
 
 export interface MultisigIcpRequestPayload {
     gid?: string;
@@ -30,6 +34,8 @@ export interface MultisigIcpRequest extends ExchangeRequest {
     embeds?: MultisigIcpRequestEmbeds;
 }
 
+// /multisig/rpy
+
 export interface MultisigRpyRequestPayload {
     gid?: string;
 }
@@ -42,6 +48,8 @@ export interface MultisigRpyRequest extends ExchangeRequest {
     payload?: MultisigRpyRequestPayload;
     embeds?: MultisigRpyRequestEmbeds;
 }
+
+// ExchangeResponse
 
 export interface ExchangeResponse {
 }

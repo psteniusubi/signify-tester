@@ -4,6 +4,10 @@ import { KeyStateType } from "./keystate";
 import { IdentifierType } from "./identifier";
 import { OperationType } from "./operation";
 
+/**
+ * Extends CreateIdentiferArgs
+ * <p>Overrides types for states, rstates and mhab
+ */
 export interface CreateIdentifierRequest extends CreateIdentiferArgs {
     states?: KeyStateType[];
     rstates?: KeyStateType[];

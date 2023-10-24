@@ -2,6 +2,8 @@ import { SignifyClient } from 'signify-ts';
 import { NotificationType } from './notification';
 import { debug_json } from '../util/helper';
 
+// GroupRequest
+
 export interface GroupRequestExn {
     t: string;
     i: string;
@@ -15,6 +17,14 @@ export interface GroupRequest {
     exn: GroupRequestExn;
     paths: any
 }
+
+export async function get_group_request(client: SignifyClient, note: NotificationType): Promise<GroupRequest[]> {
+    let res: GroupRequest[] = await client.groups().getRequest(note.a.d);
+    debug_json(`get_group_request(${note.a.d})`, res);
+    return res;
+}
+
+// /multisig/icp
 
 export interface GroupIcpRequestA {
     gid: string;
@@ -40,6 +50,12 @@ export interface GroupIcpRequest extends GroupRequest {
     exn: GroupIcpRequestExn;
     paths: GroupIcpRequestP;
 }
+
+export async function get_icp_request(client: SignifyClient, note: NotificationType): Promise<GroupIcpRequest[]> {
+    return await get_group_request(client, note);
+}
+
+// /multisig/rpy
 
 export interface GroupRpyRequestA {
     gid: string;
@@ -70,16 +86,6 @@ export interface GroupRpyRequestP {
 export interface GroupRpyRequest extends GroupRequest {
     exn: GroupRpyRequestExn;
     paths: GroupRpyRequestP;
-}
-
-export async function get_group_request(client: SignifyClient, note: NotificationType): Promise<GroupRequest[]> {
-    let res: GroupRequest[] = await client.groups().getRequest(note.a.d);
-    debug_json(`get_group_request(${note.a.d})`, res);
-    return res;
-}
-
-export async function get_icp_request(client: SignifyClient, note: NotificationType): Promise<GroupIcpRequest[]> {
-    return await get_group_request(client, note);
 }
 
 export async function get_rpy_request(client: SignifyClient, note: NotificationType): Promise<GroupRpyRequest[]> {

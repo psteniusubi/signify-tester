@@ -1,6 +1,6 @@
 import { describe, expect, test } from '@jest/globals';
 import { Agent, Authenticater, Controller, KeyManager, Siger, SignifyClient, d, messagize } from 'signify-ts';
-import { GroupBuilder, Identifier, add_endRole, create_identifier, create_single_identifier, get_contact, get_identifier, get_keyState, get_members, get_oobi, get_rpy_request, has_endRole, mark_notification, resolve_oobi, wait_notification, wait_operation } from "../src/keri/signify";
+import { AddEndRoleRequest, GroupBuilder, Identifier, add_endRole, create_identifier, create_single_identifier, get_contact, get_identifier, get_keyState, get_members, get_oobi, get_rpy_request, has_endRole, mark_notification, resolve_oobi, wait_notification, wait_operation } from "../src/keri/signify";
 import { Configuration, connect_or_boot, getLocalConfig } from "../src/keri/config";
 import { date2string, debug_json } from '../src/util/helper';
 import { MULTISIG_ICP, MULTISIG_RPY, MultisigRpyRequest, MultisigRpyRequestEmbeds, MultisigRpyRequestPayload, send_exchange } from '../src/keri/Exchange';
@@ -34,7 +34,12 @@ describe("SignifyClient", () => {
         try {
             await get_identifier(client1, NAME1);
             if (!has_endRole(client1, NAME1, "agent", client1.agent?.pre)) {
-                let r = await add_endRole(client1, NAME1, "agent", client1.agent?.pre);
+                let req: AddEndRoleRequest = {
+                    alias: NAME1,
+                    role: "agent",
+                    eid: client1.agent?.pre
+                };
+                let r = await add_endRole(client1, req);
                 await wait_operation(client1, r.op);
             }
         } catch {
@@ -46,7 +51,12 @@ describe("SignifyClient", () => {
         try {
             await get_identifier(client2, NAME1);
             if (!has_endRole(client2, NAME1, "agent", client2.agent?.pre)) {
-                let r = await add_endRole(client2, NAME1, "agent", client2.agent?.pre);
+                let req: AddEndRoleRequest = {
+                    alias: NAME1,
+                    role: "agent",
+                    eid: client2.agent?.pre
+                };
+                let r = await add_endRole(client2, req);
                 await wait_operation(client2, r.op);
             }
         } catch {
@@ -117,7 +127,13 @@ describe("SignifyClient", () => {
         let eid1 = Object.keys(members.signing[0].ends.agent)[0];
         expect(eid1).not.toBeNull();
         let stamp = date2string(new Date());
-        let res1 = await add_endRole(client1, GROUP1, "agent", eid1, stamp);
+        let req1: AddEndRoleRequest = {
+            alias: GROUP1,
+            role: "agent",
+            eid: eid1,
+            stamp: stamp
+        };
+        let res1 = await add_endRole(client1, req1);
         let payload: MultisigRpyRequestPayload = {
             gid: group.getId()
         };
@@ -152,12 +168,18 @@ describe("SignifyClient", () => {
         expect(n).not.toBeNull();
         let lead = await Identifier.create(client2, NAME1);
         let members = await get_members(client1, GROUP1);
-        let req1 = (await get_rpy_request(client2, n))[0];
-        let res1 = await add_endRole(client2, GROUP1, req1.exn.e.rpy.a.role, req1.exn.e.rpy.a.eid, req1.exn.e.rpy.dt);
+        let rpy1 = (await get_rpy_request(client2, n))[0];
+        let req1: AddEndRoleRequest = {
+            alias: GROUP1,
+            role: rpy1.exn.e.rpy.a.role,
+            eid: rpy1.exn.e.rpy.a.eid,
+            stamp: rpy1.exn.e.rpy.dt
+        }
+        let res1 = await add_endRole(client2, req1);
         await mark_notification(client2, n);
-        let keyState = await get_keyState(client2, req1.exn.a.gid);
+        let keyState = await get_keyState(client2, rpy1.exn.a.gid);
         let payload: MultisigRpyRequestPayload = {
-            gid: req1.exn.a.gid
+            gid: rpy1.exn.a.gid
         }
         let seal = [
             "SealEvent",

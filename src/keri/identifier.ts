@@ -43,18 +43,33 @@ export async function get_endRoles(client: SignifyClient, alias: string): Promis
     return res;
 }
 
+export interface AddEndRoleRequest {
+    alias?: string;
+    role?: string;
+    eid?: string;
+    stamp?: string;
+}
+
+/**
+ * @see CreateIdentifierResponse
+ */
 export interface AddEndRoleResponse {
     serder: Serder;
     sigs: string[];
     op: OperationType;
 }
 
-export async function add_endRole(client: SignifyClient, alias: string, role: string, eid?: string, stamp: string | undefined = undefined): Promise<AddEndRoleResponse> {
-    let result: EventResult = await client.identifiers().addEndRole(alias, role, eid, stamp);
+export async function add_endRole(client: SignifyClient, request: AddEndRoleRequest): Promise<AddEndRoleResponse> {
+    let res: EventResult = await client.identifiers().addEndRole(
+        request.alias ?? "",
+        request.role ?? "",
+        request.eid,
+        request.stamp
+    );
     let response: AddEndRoleResponse = {
-        serder: result.serder,
-        sigs: result.sigs,
-        op: await result.op()
+        serder: res.serder,
+        sigs: res.sigs,
+        op: await res.op()
     };
     return response;
 }
