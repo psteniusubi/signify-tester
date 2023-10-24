@@ -1,11 +1,10 @@
 import { describe, expect, test } from '@jest/globals';
 import { Agent, Authenticater, Controller, KeyManager, Siger, SignifyClient, d, messagize } from 'signify-ts';
-import { GroupBuilder, Identifier, add_endRole, create_identifier, create_single_identifier, get_contact, get_identifier, get_keyState, get_members, get_oobi, get_rpy_request, has_endRole, resolve_oobi, wait_notification, wait_operation } from "../src/keri/signify";
-import { connect_or_boot, getLocalConfig } from "../src/keri/config";
+import { GroupBuilder, Identifier, add_endRole, create_identifier, create_single_identifier, get_contact, get_identifier, get_keyState, get_members, get_oobi, get_rpy_request, has_endRole, mark_notification, resolve_oobi, wait_notification, wait_operation } from "../src/keri/signify";
+import { Configuration, connect_or_boot, getLocalConfig } from "../src/keri/config";
 import { date2string, debug_json } from '../src/util/helper';
 import { MULTISIG_ICP, MULTISIG_RPY, MultisigRpyRequest, MultisigRpyRequestEmbeds, MultisigRpyRequestPayload, send_exchange } from '../src/keri/Exchange';
 
-const config = getLocalConfig();
 const CLIENT1 = "client1";
 const CLIENT2 = "client2";
 const NAME1 = "name1";
@@ -13,9 +12,11 @@ const CONTACT1 = "contact1";
 const GROUP1 = "group1";
 
 describe("SignifyClient", () => {
+    let config: Configuration;
     let client1: SignifyClient;
     let client2: SignifyClient;
     beforeAll(async () => {
+        config = await getLocalConfig();
         let tasks = [
             connect_or_boot(config, CLIENT1),
             connect_or_boot(config, CLIENT2)
@@ -78,23 +79,18 @@ describe("SignifyClient", () => {
     test("group1", async () => {
         let builder = await GroupBuilder.create(client1, GROUP1, NAME1, [CONTACT1]);
         let request = await builder.buildCreateIdentifierRequest(config);
-        debug_json("CreateIdentifierRequest", request);
         let response = await create_identifier(client1, builder.alias, request);
         let exn = await builder.buildExchangeRequest(request, response);
-        debug_json("ExchangeRequest", exn);
         await send_exchange(client1, exn);
     });
     test("group2", async () => {
         let n = await wait_notification(client2, MULTISIG_ICP);
         expect(n).not.toBeNull();
-        debug_json("NotificationType", n);
         let builder = await GroupBuilder.create(client2, GROUP1, NAME1, []);
         let request = await builder.acceptCreateIdentifierRequest(n!);
-        debug_json("CreateIdentifierRequest", request);
         let response = await create_identifier(client2, builder.alias, request);
-        await client2.notifications().mark(n.i);
+        await mark_notification(client2, n);
         let exn = await builder.buildExchangeRequest(request, response);
-        debug_json("ExchangeRequest", exn);
         await send_exchange(client2, exn);
     });
     test("group3", async () => {
@@ -118,7 +114,7 @@ describe("SignifyClient", () => {
         let lead = await Identifier.create(client1, NAME1);
         let group = await Identifier.create(client1, GROUP1);
         let members = await get_members(client1, GROUP1);
-        let eid1 = Object.keys(members.signing[0].ends.agent).pop()!;
+        let eid1 = Object.keys(members.signing[0].ends.agent)[0];
         expect(eid1).not.toBeNull();
         let stamp = date2string(new Date());
         let res1 = await add_endRole(client1, GROUP1, "agent", eid1, stamp);
@@ -150,16 +146,15 @@ describe("SignifyClient", () => {
             recipients: recipients
         };
         let response = await send_exchange(client1, request);
-        debug_json("ExchangeResponse", response);
     });
     test("endrole2", async () => {
         let n = await wait_notification(client2, MULTISIG_RPY);
         expect(n).not.toBeNull();
         let lead = await Identifier.create(client2, NAME1);
         let members = await get_members(client1, GROUP1);
-        let req1 = (await get_rpy_request(client2, n)).pop()!;
+        let req1 = (await get_rpy_request(client2, n))[0];
         let res1 = await add_endRole(client2, GROUP1, req1.exn.e.rpy.a.role, req1.exn.e.rpy.a.eid, req1.exn.e.rpy.dt);
-        await client2.notifications().mark(n.i);
+        await mark_notification(client2, n);
         let keyState = await get_keyState(client2, req1.exn.a.gid);
         let payload: MultisigRpyRequestPayload = {
             gid: req1.exn.a.gid
@@ -189,18 +184,17 @@ describe("SignifyClient", () => {
             recipients: recipients
         }
         let response = await send_exchange(client2, request);
-        debug_json("ExchangeResponse", response);
     });
     test("endrole3", async () => {
         let group = await Identifier.create(client1, GROUP1);
         let members = await get_members(client1, GROUP1);
-        let eid1 = Object.keys(members.signing[0].ends.agent).pop()!;
+        let eid1 = Object.keys(members.signing[0].ends.agent)[0];
         await wait_operation(client1, { name: `endrole.${group.getId()}.agent.${eid1}` });
     });
     test("endrole4", async () => {
         let group = await Identifier.create(client2, GROUP1);
         let members = await get_members(client2, GROUP1);
-        let eid1 = Object.keys(members.signing[0].ends.agent).pop()!;
+        let eid1 = Object.keys(members.signing[0].ends.agent)[0];
         await wait_operation(client2, { name: `endrole.${group.getId()}.agent.${eid1}` });
     });
 });

@@ -41,7 +41,7 @@ export class GroupBuilder {
         for (let task of tasks) {
             builder.addMember(await task);
         }
-        builder.sortMembers();
+        // builder.sortMembers();
         return builder;
     }
     client: SignifyClient;
@@ -90,7 +90,7 @@ export class GroupBuilder {
         return request;
     }
     async acceptCreateIdentifierRequest(notification: NotificationType): Promise<CreateIdentifierRequest> {
-        let exn = (await get_icp_request(this.client, notification)).pop()!.exn;
+        let exn = (await get_icp_request(this.client, notification))[0].exn;
         let isith = exn.e.icp.kt;
         let nsith = exn.e.icp.nt;
         let states = await Promise.all(exn.a.smids.map(i => get_keyState(this.client, i)));

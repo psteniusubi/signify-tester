@@ -55,6 +55,6 @@ export async function send_exchange(client: SignifyClient, request: ExchangeRequ
         request.payload ?? {},
         request.embeds ?? {},
         request.recipients ?? []);
-    debug_json("send_exchange", res);
+    debug_json(`send_exchange(${request.sender})`, res);
     return res;
 }

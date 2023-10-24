@@ -6,7 +6,7 @@ import { dispatch_form_event, REFRESH_EVENT, sleep } from './util/helper';
 import { create_client } from './keri/config';
 
 export let signify: SignifyClient | null = null;
-export const config = getDefaultConfig();
+export const config = await getDefaultConfig();
 
 function random_seed() {
     let buf = Buffer.alloc(20);

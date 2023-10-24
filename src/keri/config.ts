@@ -35,9 +35,9 @@ const LOCAL: Configuration = {
     wits: WITS_LOCAL
 }
 
-export function getLocalConfig(): Configuration { return LOCAL; }
+export async function getLocalConfig(): Promise<Configuration> { return LOCAL; }
 
-export function getPublicConfig(): Configuration { return PUBLIC; }
+export async function getPublicConfig(): Promise<Configuration> { return PUBLIC; }
 
 export async function create_client(config: Configuration, bran: string): Promise<SignifyClient> {
     await ready();

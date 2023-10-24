@@ -1,13 +1,13 @@
 import { Configuration, getLocalConfig, getPublicConfig } from "./keri/config";
 export type { Configuration } from "./keri/config";
 
-export function getDefaultConfig(): Configuration {
+export async function getDefaultConfig(): Promise<Configuration> {
     let url = new URL(import.meta.url);
     switch (url.hostname) {
         case "localhost":
-            return getLocalConfig();
+            return await getLocalConfig();
         default:
-            return getPublicConfig();
+            return await getPublicConfig();
     }
 }
 

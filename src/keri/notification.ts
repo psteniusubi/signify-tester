@@ -29,3 +29,7 @@ export async function wait_notification(client: SignifyClient, route: string): P
     });
     return notification;
 }
+
+export async function mark_notification(client: SignifyClient, notification: NotificationType): Promise<void> {
+    await client.notifications().mark(notification.i);
+}

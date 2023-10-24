@@ -45,3 +45,17 @@ Navigate to https://psteniusubi.github.io/signify-tester/ with your browser
 ```
 git diff master github-pages  -- . ':!docs'
 ```
+
+# Unit tests
+
+```
+npx jest
+```
+
+```
+npx jest ./tests/signify.test.ts
+```
+
+```
+npx jest ./tests/signify.test.ts -t client1
+```

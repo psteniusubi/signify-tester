@@ -16,9 +16,9 @@ export async function list_contacts(client: SignifyClient): Promise<ContactType[
 
 export async function get_contact(client: SignifyClient, alias: string): Promise<ContactType> {
     let res: ContactType[] = await client.contacts().list(undefined, "alias", `^${alias}$`);
-    debug_json(`get_contact(${alias})`, res);
     if (res.length < 1) throw Error(`get_contact(${alias}): not found`);
-    return res.pop()!;
+    debug_json(`get_contact(${alias})`, res[0]);
+    return res[0];
 }
 
 export async function get_contacts(client: SignifyClient, aliases: string[]): Promise<ContactType[]> {

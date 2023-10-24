@@ -16,8 +16,7 @@ export async function get_keyState(client: SignifyClient, id: string): Promise<K
     let res: KeyStateType[] = await client.keyStates().get(id);
     debug_json(`get_keyState(${id})`, res);
     if (res.length < 1) throw new Error(`get_keyState(${id}): not found`);
-    let r: KeyStateType = res.pop()!;
-    return r;
+    return res[0];
 }
 
 export async function get_keyStates(client: SignifyClient, ids: string[]): Promise<KeyStateType[]> {
