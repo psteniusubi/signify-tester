@@ -26,15 +26,17 @@ export class AddEndRoleBuilder {
         this._lead = Identifier.create(client, lead);
         this._members = get_members(client, group);
     }
-    static *getEids(members: MembersType) {
+    async *getEids(): AsyncGenerator<string> {
+        let members = await this._members;
         for (let s of members.signing) {
-            yield* Object.keys(s.ends.agent);
+            for (let eid of Object.keys(s.ends.agent)) {
+                yield eid;
+            }
         }
     }
     async *buildAddEndRoleRequest(): AsyncGenerator<AddEndRoleRequest> {
-        let members = await this._members;
         let stamp = date2string(new Date());
-        for (let eid of AddEndRoleBuilder.getEids(members)) {
+        for await (let eid of this.getEids()) {
             let request: AddEndRoleRequest = {
                 alias: this.group,
                 role: AGENT,

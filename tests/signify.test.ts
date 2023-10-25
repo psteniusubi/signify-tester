@@ -141,16 +141,14 @@ describe("SignifyClient", () => {
     test("endrole3", async () => {
         let builder = await AddEndRoleBuilder.create(client1, GROUP1, NAME1);
         let group = await builder._group;
-        let members = await builder._members;
-        for (let eid of AddEndRoleBuilder.getEids(members)) {
+        for await (let eid of builder.getEids()) {
             await wait_operation(client1, { name: `endrole.${group.getId()}.agent.${eid}` });
         }
     });
     test("endrole4", async () => {
         let builder = await AddEndRoleBuilder.create(client2, GROUP1, NAME1);
         let group = await builder._group;
-        let members = await builder._members;
-        for (let eid of AddEndRoleBuilder.getEids(members)) {
+        for await (let eid of builder.getEids()) {
             await wait_operation(client2, { name: `endrole.${group.getId()}.agent.${eid}` });
         }
     });
