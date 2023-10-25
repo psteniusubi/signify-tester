@@ -20,7 +20,7 @@ let sequence = 0;
 
 function log_file(json: string, type: string) {
     import("fs/promises").then(fs => {
-        let path = `/home/uroot/signify-tester/types/${begin.toISOString()}-${type}-${sequence++}.json`;
+        let path = `/home/uroot/signify-tester/logs/${begin.toISOString()}-${type}-${sequence++}.json`;
         fs.open(path, "w").then(f => {
             f.writeFile(json);
             f.close();
