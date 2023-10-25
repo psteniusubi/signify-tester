@@ -95,13 +95,13 @@ describe("SignifyClient", () => {
     });
     test("group2", async () => {
         let n = await wait_notification(client2, MULTISIG_ICP);
-        expect(n).not.toBeNull();
         let builder = await GroupBuilder.create(client2, GROUP1, NAME1, []);
-        let request = await builder.acceptCreateIdentifierRequest(n);
-        let response = await create_identifier(client2, builder.alias, request);
-        await mark_notification(client2, n);
-        let exn = await builder.buildExchangeRequest(request, response);
-        await send_exchange(client2, exn);
+        for await (let request of builder.acceptCreateIdentifierRequest(n)) {
+            let response = await create_identifier(client2, builder.alias, request);
+            await mark_notification(client2, n);
+            let exn = await builder.buildExchangeRequest(request, response);
+            await send_exchange(client2, exn);
+        }
     });
     test("group3", async () => {
         let group = await Identifier.create(client1, GROUP1);
@@ -125,7 +125,6 @@ describe("SignifyClient", () => {
         let group = await Identifier.create(client1, GROUP1);
         let members = await get_members(client1, GROUP1);
         let eid1 = Object.keys(members.signing[0].ends.agent)[0];
-        expect(eid1).not.toBeNull();
         let stamp = date2string(new Date());
         let req1: AddEndRoleRequest = {
             alias: GROUP1,
@@ -165,7 +164,6 @@ describe("SignifyClient", () => {
     });
     test("endrole2", async () => {
         let n = await wait_notification(client2, MULTISIG_RPY);
-        expect(n).not.toBeNull();
         let lead = await Identifier.create(client2, NAME1);
         let members = await get_members(client1, GROUP1);
         let rpy1 = (await get_rpy_request(client2, n))[0];

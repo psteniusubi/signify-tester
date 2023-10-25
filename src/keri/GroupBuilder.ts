@@ -65,23 +65,25 @@ export class GroupBuilder {
         };
         return request;
     }
-    async acceptCreateIdentifierRequest(notification: NotificationType): Promise<CreateIdentifierRequest> {
-        let exn = (await get_icp_request(this.client, notification))[0].exn;
-        let isith = exn.e.icp.kt;
-        let nsith = exn.e.icp.nt;
-        let states = await Promise.all(exn.a.smids.map(i => get_keyState(this.client, i)));
-        let rstates = await Promise.all(exn.a.rmids.map(i => get_keyState(this.client, i)));
-        let request: CreateIdentifierRequest = {
-            algo: Algos.group,
-            mhab: this.lead.getIdentifier(),
-            isith: isith,
-            nsith: nsith,
-            toad: parseInt(exn.e.icp.bt),
-            wits: exn.e.icp.b,
-            states: states,
-            rstates: rstates
-        };
-        return request;
+    async *acceptCreateIdentifierRequest(notification: NotificationType): AsyncGenerator<CreateIdentifierRequest> {
+        for (let icp of await get_icp_request(this.client, notification)) {
+            let exn = icp.exn;
+            let isith = exn.e.icp.kt;
+            let nsith = exn.e.icp.nt;
+            let states = await Promise.all(exn.a.smids.map(i => get_keyState(this.client, i)));
+            let rstates = await Promise.all(exn.a.rmids.map(i => get_keyState(this.client, i)));
+            let request: CreateIdentifierRequest = {
+                algo: Algos.group,
+                mhab: this.lead.getIdentifier(),
+                isith: isith,
+                nsith: nsith,
+                toad: parseInt(exn.e.icp.bt),
+                wits: exn.e.icp.b,
+                states: states,
+                rstates: rstates
+            };
+            yield request;
+        }
     }
     async buildExchangeRequest(identifierRequest: CreateIdentifierRequest, identifierResponse: CreateIdentifierResponse): Promise<MultisigIcpRequest> {
         let payload: MultisigIcpRequestPayload = {

@@ -52,7 +52,8 @@ export interface GroupIcpRequest extends GroupRequest {
 }
 
 export async function get_icp_request(client: SignifyClient, note: NotificationType): Promise<GroupIcpRequest[]> {
-    return await get_group_request(client, note);
+    let r: GroupIcpRequest[] = await get_group_request(client, note);
+    return r;
 }
 
 // /multisig/rpy
@@ -89,6 +90,6 @@ export interface GroupRpyRequest extends GroupRequest {
 }
 
 export async function get_rpy_request(client: SignifyClient, note: NotificationType): Promise<GroupRpyRequest[]> {
-    return await get_group_request(client, note);
+    let r: GroupRpyRequest[] = await get_group_request(client, note);
+    return r;
 }
-
