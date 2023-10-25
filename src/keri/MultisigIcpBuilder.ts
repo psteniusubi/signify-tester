@@ -8,11 +8,16 @@ import { NotificationType } from "./signify";
 import { get_icp_request } from "./signify";
 import { MULTISIG_ICP, MultisigIcpRequest, MultisigIcpRequestEmbeds, MultisigIcpRequestPayload } from "./signify";
 
-export class GroupBuilder {
-    static async create(client: SignifyClient, alias: string, lead: string, members: string[]): Promise<GroupBuilder> {
-        let tasks = members.map(alias => Contact.create(client, alias));
+export class MultisigIcpBuilder {
+    /**
+     * @param alias Name of new group
+     * @param lead Name of local member (local identifier)
+     * @param members Names of remote members (contact)
+     */
+    static async create(client: SignifyClient, alias: string, lead: string, members: string[]): Promise<MultisigIcpBuilder> {
+        let tasks = members.map(member => Contact.create(client, member));
         let lead_id = await Identifier.create(client, lead);
-        let builder = new GroupBuilder(client, alias, lead_id);
+        let builder = new MultisigIcpBuilder(client, alias, lead_id);
         builder.addMember(lead_id);
         for (let task of tasks) {
             builder.addMember(await task);
@@ -85,7 +90,7 @@ export class GroupBuilder {
             yield request;
         }
     }
-    async buildExchangeRequest(identifierRequest: CreateIdentifierRequest, identifierResponse: CreateIdentifierResponse): Promise<MultisigIcpRequest> {
+    async buildMultisigIcpRequest(identifierRequest: CreateIdentifierRequest, identifierResponse: CreateIdentifierResponse): Promise<MultisigIcpRequest> {
         let payload: MultisigIcpRequestPayload = {
             gid: identifierResponse.serder.pre,
             smids: identifierRequest.states?.map(i => i.i),

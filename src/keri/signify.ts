@@ -9,6 +9,7 @@ export * from "./get_identifier";
 export * from "./RangeType";
 export * from "./create_identifier";
 export * from "./send_exchange";
-export * from "./GroupBuilder";
+export * from "./MultisigIcpBuilder";
+export * from "./AddEndRoleBuilder";
 export * from "./endRole";
 export * from "./Identifier";
