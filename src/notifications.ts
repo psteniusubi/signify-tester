@@ -2,7 +2,7 @@ import { REFRESH_EVENT, dispatch_form_event, sleep } from "./util/helper";
 import { signify } from "./client";
 import { SignifyClient } from "signify-ts";
 import { json2string } from "./util/helper";
-import { list_notifications, NotificationType, list_operations, OperationType, wait_operation, remove_operation, create_identifier, send_exchange, get_icp_request, GroupIcpRequestExn, MultisigIcpBuilder, mark_notification, get_names_by_identifiers, AddEndRoleBuilder, add_endRole } from "./keri/signify";
+import { list_notifications, NotificationType, list_operations, OperationType, wait_operation, remove_operation, create_identifier, send_exchange, get_icp_request, GroupIcpRequestExn, MultisigIcpBuilder, mark_notification, get_names_by_identifiers, AddEndRoleBuilder, add_endRole, MULTISIG_ICP } from "./keri/signify";
 import { GROUP1, NAME1 } from "./keri/config";
 
 export async function load_notifications(): Promise<void> {
@@ -63,7 +63,7 @@ async function create_notification_form(client: SignifyClient, notification: Not
     input.title = "a.d";
     div.appendChild(input);
 
-    if (notification.a.r === "/multisig/icp") {
+    if (notification.a.r === MULTISIG_ICP) {
         let exn: GroupIcpRequestExn | null = null;
         for (let r of await get_icp_request(client, notification)) {
             if (r !== null) {
@@ -131,20 +131,22 @@ async function show_notification(client: SignifyClient | null, notifications: No
     });
 }
 
-async function add_end_roles(client: SignifyClient, id: string): Promise<boolean> {
+async function add_end_roles(client: SignifyClient, id: string): Promise<void> {
     let name;
     for await (let i of get_names_by_identifiers(client, [id])) {
         name = i.name;
         break;
     }
-    if (name === undefined) return false;
+    if (name === undefined) return;
     let builder = await AddEndRoleBuilder.create(client, name);
+    let isLead = await builder.isLead();
+    if (!isLead) return;
     for await (let addEndRoleRequest of builder.buildAddEndRoleRequest()) {
         let addEndRoleResponse = await add_endRole(client, addEndRoleRequest);
         let rpyRequest = await builder.buildMultisigRpyRequest(addEndRoleRequest, addEndRoleResponse);
         let rpyResponse = await send_exchange(client, rpyRequest);
     }
-    return true;
+    return;
 }
 
 async function process_operations(client: SignifyClient, operations: OperationType[]): Promise<void> {
@@ -153,9 +155,8 @@ async function process_operations(client: SignifyClient, operations: OperationTy
         let [type, id, role, eid] = op.name.split(".");
         switch (type) {
             case "group":
-                if (await add_end_roles(client, id)) {
-                    await remove_operation(client, op);
-                }
+                await add_end_roles(client, id);
+                await remove_operation(client, op);
                 break;
         }
     }

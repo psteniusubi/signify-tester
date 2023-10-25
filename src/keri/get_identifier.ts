@@ -5,8 +5,8 @@ import { debug_json } from '../util/helper';
 export interface ListIdentifierType {
     name: string;
     prefix: string;
-    salty: any;
-    group: {
+    salty?: any;
+    group?: {
         mhab: IdentifierType;
         keys: string[];
         ndigs: string[]
@@ -18,9 +18,9 @@ export interface IdentifierType extends ListIdentifierType {
     // prefix: string;
     // salty: any;
     // group: any;
-    transferable: boolean;
-    state: KeyStateType;
-    windexes: number[];
+    transferable?: boolean;
+    state?: KeyStateType;
+    windexes?: number[];
     // [property: string]: any;
 }
 

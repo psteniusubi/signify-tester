@@ -1,9 +1,8 @@
 import { describe, test } from '@jest/globals';
 import { SignifyClient } from 'signify-ts';
-import { AGENT, AddEndRoleBuilder, AddEndRoleRequest, MultisigIcpBuilder, Identifier, add_endRole, create_identifier, create_single_identifier, get_contact, get_identifier, get_oobi, has_endRole, mark_notification, resolve_oobi, wait_notification, wait_operation, CreateIdentifierRequest, MultisigIcpRequest } from "../src/keri/signify";
+import { AGENT, AddEndRoleBuilder, AddEndRoleRequest, MultisigIcpBuilder, add_endRole, create_identifier, create_single_identifier, get_contact, get_identifier, get_oobi, has_endRole, mark_notification, resolve_oobi, wait_notification, wait_operation, CreateIdentifierRequest, MultisigIcpRequest, Group, Identifier } from "../src/keri/signify";
 import { Configuration, connect_or_boot, getLocalConfig, NAME1, CONTACT1, GROUP1 } from "../src/keri/config";
 import { MULTISIG_ICP, MULTISIG_RPY, send_exchange } from '../src/keri/signify';
-import { debug_json } from '../src/util/helper';
 
 const CLIENT1 = "client1";
 const CLIENT2 = "client2";
@@ -98,12 +97,24 @@ describe("SignifyClient", () => {
         await mark_notification(client2, n);
     });
     test("group3", async () => {
-        let group = await Identifier.create(client1, GROUP1);
-        await wait_operation(client1, { name: `group.${group.getId()}` });
+        let identifier = await Identifier.create(client1, GROUP1);
+        await wait_operation(client1, { name: `group.${identifier.getId()}` });
+        let group = await Group.create(client1, GROUP1);
+        let members = group.members;
+        let ids = members.signing.map(i => i.aid);
+        let lead_id = group.getIdentifier().group?.mhab;
+        let n = ids.indexOf(lead_id!.prefix);
+        expect(n).toBe(0);
     })
     test("group4", async () => {
-        let group = await Identifier.create(client2, GROUP1);
-        await wait_operation(client2, { name: `group.${group.getId()}` });
+        let identifier = await Identifier.create(client2, GROUP1);
+        await wait_operation(client2, { name: `group.${identifier.getId()}` });
+        let group = await Group.create(client2, GROUP1);
+        let members = group.members;
+        let ids = members.signing.map(i => i.aid);
+        let lead_id = group.getIdentifier().group?.mhab;
+        let n = ids.indexOf(lead_id!.prefix);
+        expect(n).toBe(1);
     })
     test("endrole1", async () => {
         let builder = await AddEndRoleBuilder.create(client1, GROUP1);

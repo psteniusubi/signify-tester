@@ -1,6 +1,6 @@
 import { Siger, SignifyClient, d, messagize } from "signify-ts";
-import { AGENT, AddEndRoleRequest, AddEndRoleResponse, IdentifierType, MULTISIG_RPY, MultisigRpyRequestEmbeds, MultisigRpyRequestPayload, get_identifier, get_names_by_identifiers } from "./signify";
-import { Identifier, MembersType, MultisigRpyRequest, NotificationType, get_members, get_rpy_request } from "./signify";
+import { AGENT, AddEndRoleRequest, AddEndRoleResponse, Group, MULTISIG_RPY, MultisigRpyRequestEmbeds, MultisigRpyRequestPayload } from "./signify";
+import { MultisigRpyRequest, NotificationType, get_rpy_request } from "./signify";
 import { date2string } from "../util/helper";
 
 export class AddEndRoleBuilder {
@@ -13,17 +13,19 @@ export class AddEndRoleBuilder {
     }
     client: SignifyClient;
     group: string;
-    _group: Promise<Identifier>;
-    _members: Promise<MembersType>;
+    _group: Promise<Group>;
     constructor(client: SignifyClient, group: string) {
         this.client = client;
         this.group = group;
-        this._group = Identifier.create(client, group);
-        this._members = get_members(client, group);
+        this._group = Group.create(client, group);
+    }
+    async isLead(): Promise<boolean> {
+        let group = await this._group;
+        return group.isLead();
     }
     async *getEids(): AsyncGenerator<string> {
-        let members = await this._members;
-        for (let s of members.signing) {
+        let group = await this._group;
+        for (let s of group.members.signing) {
             for (let eid of Object.keys(s.ends.agent)) {
                 yield eid;
             }
@@ -61,8 +63,7 @@ export class AddEndRoleBuilder {
     // }
     async buildMultisigRpyRequest(addEndRoleRequest: AddEndRoleRequest, addEndRoleResponse: AddEndRoleResponse): Promise<MultisigRpyRequest> {
         let group = await this._group;
-        let members = await this._members;
-        let lead = group.getIdentifier().group.mhab;
+        let lead = group.getIdentifier().group!.mhab;
         let payload: MultisigRpyRequestPayload = {
             gid: group.getId()
         };
@@ -70,8 +71,8 @@ export class AddEndRoleBuilder {
             "SealEvent",
             {
                 i: group.getId(),
-                s: group.getIdentifier().state.ee.s,
-                d: group.getIdentifier().state.ee.d,
+                s: group.getIdentifier().state!.ee.s,
+                d: group.getIdentifier().state!.ee.d,
             }
         ];
         let sigers = addEndRoleResponse.sigs.map(i => new Siger({ qb64: i }));
@@ -80,7 +81,7 @@ export class AddEndRoleBuilder {
         let embeds: MultisigRpyRequestEmbeds = {
             rpy: [addEndRoleResponse.serder, atc]
         };
-        let recipients = members.signing.map(i => i.aid);
+        let recipients = group.members.signing.map(i => i.aid);
         let request: MultisigRpyRequest = {
             sender: lead?.name,
             topic: this.group,
