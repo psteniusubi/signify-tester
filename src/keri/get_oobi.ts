@@ -10,7 +10,7 @@ export interface OobiType {
 
 export async function get_oobi(client: SignifyClient, alias: string, role: string = AGENT): Promise<OobiType> {
     let res: OobiType = await client.oobis().get(alias, role);
-    debug_json(`get_oobi(${alias})`, res);
+    debug_json(`get_oobi(${alias})`, res, "OobiType");
     return res;
 }
 

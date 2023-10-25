@@ -1,3 +1,5 @@
+import fs from "fs/promises";
+
 export const REFRESH_EVENT = "x-refresh";
 
 export function date2string(value: Date): string {
@@ -12,8 +14,26 @@ export function json2string(value: any) {
     return JSON.stringify(value, undefined, 2);
 }
 
-export function debug_json(title: string, value: object | string | number | boolean) {
-    console.log(`## ${title} ##:\r\n${json2string(value)}`);
+const fs_log = false;
+const begin = new Date();
+let sequence = 0;
+
+function log_file(json: string, type: string) {
+    import("fs/promises").then(fs => {
+        let path = `/home/uroot/signify-tester/types/${begin.toISOString()}-${type}-${sequence++}.json`;
+        fs.open(path, "w").then(f => {
+            f.writeFile(json);
+            f.close();
+        });
+    }).catch(() => { });
+}
+
+export function debug_json(title: string, value: object | string | number | boolean, type?: string) {
+    let json = json2string(value);
+    console.log(`## ${title} ##:\r\n${json}`);
+    if (fs_log && type !== undefined) {
+        log_file(json, type);
+    }
 }
 
 export function dispatch_form_event(event: Event, from?: HTMLFormElement | undefined) {

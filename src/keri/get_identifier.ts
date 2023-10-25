@@ -6,7 +6,11 @@ export interface ListIdentifierType {
     name: string;
     prefix: string;
     salty: any;
-    group: any;
+    group: {
+        mhab: IdentifierType;
+        keys: string[];
+        ndigs: string[]
+    };
 }
 
 export interface IdentifierType extends ListIdentifierType {
@@ -16,7 +20,7 @@ export interface IdentifierType extends ListIdentifierType {
     // group: any;
     transferable: boolean;
     state: KeyStateType;
-    windexes: any[];
+    windexes: number[];
     // [property: string]: any;
 }
 
@@ -26,7 +30,7 @@ export interface IdentifierRangeType extends RangeType {
 
 export async function list_identifiers(client: SignifyClient, start?: number, end?: number): Promise<IdentifierRangeType> {
     let res: IdentifierRangeType = await client.identifiers().list(start, end);
-    debug_json(`list_identifiers(start=${start},end=${end})`, res);
+    // debug_json(`list_identifiers(start=${start},end=${end})`, res, "IdentifierRangeType");
     return res;
 }
 
@@ -48,7 +52,7 @@ export async function* get_identifiers(client: SignifyClient): AsyncGenerator<Li
 
 export async function get_identifier(client: SignifyClient, alias: string): Promise<IdentifierType> {
     let res: IdentifierType = await client.identifiers().get(alias);
-    debug_json(`get_identifier(${alias})`, res);
+    debug_json(`get_identifier(${alias})`, res, "IdentifierType");
     return res;
 }
 

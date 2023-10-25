@@ -18,7 +18,7 @@ export interface NotificationRangeType extends RangeType {
 
 export async function list_notifications(client: SignifyClient, start?: number, end?: number): Promise<NotificationRangeType> {
     let res: NotificationRangeType = await client.notifications().list(start, end);
-    debug_json(`list_notifications(start=${start},end=${end})`, res);
+    // debug_json(`list_notifications(start=${start},end=${end})`, res, "NotificationRangeType");
     return res;
 }
 

@@ -52,17 +52,17 @@ export class AddEndRoleBuilder {
             yield request;
         }
     }
-    async getLead(members: MembersType): Promise<IdentifierType | undefined> {
-        let ids = members.signing.map(i => i.aid);
-        for await (let i of get_names_by_identifiers(this.client, ids)) {
-            return await get_identifier(this.client, i.name);
-        }
-        return undefined;
-    }
+    // async getLead(members: MembersType): Promise<IdentifierType | undefined> {
+    //     let ids = members.signing.map(i => i.aid);
+    //     for await (let i of get_names_by_identifiers(this.client, ids)) {
+    //         return await get_identifier(this.client, i.name);
+    //     }
+    //     return undefined;
+    // }
     async buildMultisigRpyRequest(addEndRoleRequest: AddEndRoleRequest, addEndRoleResponse: AddEndRoleResponse): Promise<MultisigRpyRequest> {
         let group = await this._group;
         let members = await this._members;
-        let lead = await this.getLead(members);
+        let lead = group.getIdentifier().group.mhab;
         let payload: MultisigRpyRequestPayload = {
             gid: group.getId()
         };

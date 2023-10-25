@@ -15,7 +15,7 @@ export async function get_endRoles(client: SignifyClient, alias: string): Promis
     let response: Response = await client.fetch(path, "GET", null);
     if (!response.ok) throw new Error(await response.text());
     let res: EndRoleType[] = await response.json();
-    debug_json(`get_endRoles(${alias})`, res);
+    debug_json(`get_endRoles(${alias})`, res, "EndRoleType");
     return res;
 }
 

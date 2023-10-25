@@ -26,6 +26,6 @@ export interface MembersType {
 
 export async function get_members(client: SignifyClient, alias: string): Promise<MembersType> {
     let res: MembersType = await client.identifiers().members(alias);
-    debug_json(`get_members(${alias})`, res);
+    debug_json(`get_members(${alias})`, res, "MembersType");
     return res;
 }

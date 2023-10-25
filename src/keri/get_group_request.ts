@@ -20,7 +20,7 @@ export interface GroupRequest {
 
 export async function get_group_request(client: SignifyClient, note: NotificationType): Promise<GroupRequest[]> {
     let res: GroupRequest[] = await client.groups().getRequest(note.a.d);
-    debug_json(`get_group_request(${note.a.d})`, res);
+    debug_json(`get_group_request(${note.a.d})`, res, "GroupRequest");
     return res;
 }
 

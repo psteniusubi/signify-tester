@@ -40,7 +40,7 @@ export async function list_operations(client: SignifyClient, type: string | unde
     let response: Response = await client.fetch(path, "GET", null);
     if (!response.ok) throw new Error(await response.text());
     let res: OperationType[] = await response.json();
-    debug_json("list_operations", res);
+    // debug_json("list_operations", res, "OperationType");
     return res;
 }
 
