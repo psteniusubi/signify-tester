@@ -87,7 +87,7 @@ describe("SignifyClient", () => {
     test("group2", async () => {
         let n = await wait_notification(client2, MULTISIG_ICP);
         let builder = await MultisigIcpBuilder.create(client2, GROUP1);
-        for await (let createIdentifierRequest of builder.acceptCreateIdentifierRequest(n)) {
+        for await (let createIdentifierRequest of builder.acceptGroupIcpNotification(n)) {
             expect(createIdentifierRequest.mhab?.name).toStrictEqual(NAME1);
             let createIdentifierResponse = await create_identifier(client2, builder.alias, createIdentifierRequest);
             let icpRequest = await builder.buildMultisigIcpRequest(createIdentifierRequest, createIdentifierResponse);
@@ -128,7 +128,7 @@ describe("SignifyClient", () => {
     test("endrole2a", async () => {
         let builder = await AddEndRoleBuilder.create(client2, GROUP1);
         let n = await wait_notification(client2, MULTISIG_RPY);
-        for await (let addEndRoleRequest of builder.acceptAddEndRoleRequest(n)) {
+        for await (let addEndRoleRequest of builder.acceptGroupRpyNotification(n)) {
             let addEndRoleResponse = await add_endRole(client2, addEndRoleRequest);
             let rpyRequest = await builder.buildMultisigRpyRequest(addEndRoleRequest, addEndRoleResponse);
             expect(rpyRequest.sender).toStrictEqual(NAME1);
@@ -139,7 +139,7 @@ describe("SignifyClient", () => {
     test("endrole2b", async () => {
         let builder = await AddEndRoleBuilder.create(client2, GROUP1);
         let n = await wait_notification(client2, MULTISIG_RPY);
-        for await (let addEndRoleRequest of builder.acceptAddEndRoleRequest(n)) {
+        for await (let addEndRoleRequest of builder.acceptGroupRpyNotification(n)) {
             let addEndRoleResponse = await add_endRole(client2, addEndRoleRequest);
             let rpyRequest = await builder.buildMultisigRpyRequest(addEndRoleRequest, addEndRoleResponse);
             expect(rpyRequest.sender).toStrictEqual(NAME1);

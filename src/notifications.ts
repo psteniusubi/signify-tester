@@ -1,8 +1,8 @@
-import { REFRESH_EVENT, dispatch_form_event, sleep } from "./util/helper";
+import { REFRESH_EVENT, debug_json, dispatch_form_event, sleep } from "./util/helper";
 import { signify } from "./client";
 import { SignifyClient } from "signify-ts";
 import { json2string } from "./util/helper";
-import { list_notifications, NotificationType, list_operations, OperationType, wait_operation, remove_operation, create_identifier, send_exchange, get_icp_request, GroupIcpRequestExn, MultisigIcpBuilder, mark_notification, get_names_by_identifiers, AddEndRoleBuilder, add_endRole, MULTISIG_ICP } from "./keri/signify";
+import { list_notifications, NotificationType, list_operations, OperationType, wait_operation, remove_operation, create_identifier, send_exchange, get_icp_request, GroupIcpRequestExn, MultisigIcpBuilder, mark_notification, get_names_by_identifiers, AddEndRoleBuilder, add_endRole, MULTISIG_ICP, MULTISIG_RPY, get_rpy_request, delete_notification } from "./keri/signify";
 import { GROUP1, NAME1 } from "./keri/config";
 
 export async function load_notifications(): Promise<void> {
@@ -41,91 +41,129 @@ export async function load_notifications(): Promise<void> {
     }
 }
 
-async function create_notification_form(client: SignifyClient, notification: NotificationType): Promise<HTMLFormElement> {
-    let div, input;
+async function create_icp_form(client: SignifyClient, notification: NotificationType, section: HTMLElement): Promise<void> {
+    for (let icp of await get_icp_request(client, notification)) {
+        let form = document.createElement("form") as HTMLFormElement;
 
+        let div = document.createElement("div") as HTMLDivElement;
+
+        let input = document.createElement("input") as HTMLInputElement;
+        input.type = "text";
+        input.readOnly = true;
+        input.value = notification.a.r;
+        input.name = "a.r";
+        input.title = "a.r";
+        div.appendChild(input);
+
+        input = document.createElement("input") as HTMLInputElement;
+        input.type = "text";
+        input.readOnly = true;
+        input.value = GROUP1;
+        input.name = "name";
+        input.title = "name";
+        div.appendChild(input);
+
+        input = document.createElement("input") as HTMLInputElement;
+        input.type = "submit";
+        input.value = "Accept";
+        input.title = "Accept";
+        div.appendChild(input);
+
+        form.appendChild(div);
+
+        form.addEventListener("submit", async e => {
+            e.preventDefault();
+            let builder = await MultisigIcpBuilder.create(client, GROUP1);
+            let createIdentifierRequest = await builder.acceptGroupIcpRequest(icp);
+            let createIdentifierResponse = await create_identifier(client, builder.alias, createIdentifierRequest);
+            let icpRequest = await builder.buildMultisigIcpRequest(createIdentifierRequest, createIdentifierResponse);
+            let icpResponse = await send_exchange(client, icpRequest);
+            await delete_notification(client, notification);
+            dispatch_form_event(new CustomEvent(REFRESH_EVENT));
+        });
+
+        section.appendChild(form);
+    }
+}
+
+async function create_rpy_form(client: SignifyClient, notification: NotificationType, section: HTMLElement): Promise<void> {
+    for (let rpy of await get_rpy_request(client, notification)) {
+        let form = document.createElement("form") as HTMLFormElement;
+
+        let div = document.createElement("div") as HTMLDivElement;
+
+        let input = document.createElement("input") as HTMLInputElement;
+        input.type = "text";
+        input.readOnly = true;
+        input.value = notification.a.r;
+        input.name = "a.r";
+        input.title = "a.r";
+        div.appendChild(input);
+
+        input = document.createElement("input") as HTMLInputElement;
+        input.type = "submit";
+        input.value = "Accept";
+        input.title = "Accept";
+        div.appendChild(input);
+
+        form.appendChild(div);
+
+        form.addEventListener("submit", async e => {
+            e.preventDefault();
+            let builder = await AddEndRoleBuilder.create(client, GROUP1);
+            let addEndRoleRequest = await builder.acceptGroupRpyRequest(rpy);
+            let addEndRoleResponse = await add_endRole(client, addEndRoleRequest);
+            let rpyRequest = await builder.buildMultisigRpyRequest(addEndRoleRequest, addEndRoleResponse);
+            let rpyResponse = await send_exchange(client, rpyRequest);
+            await delete_notification(client, notification);
+            dispatch_form_event(new CustomEvent(REFRESH_EVENT));
+        });
+
+        section.appendChild(form);
+    }
+}
+
+async function create_form(client: SignifyClient, notification: NotificationType, section: HTMLElement): Promise<void> {
     let form = document.createElement("form") as HTMLFormElement;
-    form.id = notification.a.d;
-
-    div = document.createElement("div");
-
-    input = document.createElement("input");
+    let div = document.createElement("div") as HTMLDivElement;
+    let input = document.createElement("input") as HTMLInputElement;
     input.type = "text";
-    input.name = "a.r";
+    input.readOnly = true;
     input.value = notification.a.r;
+    input.name = "a.r";
     input.title = "a.r";
     div.appendChild(input);
-
-    input = document.createElement("input");
-    input.type = "text";
-    input.name = "a.d";
-    input.value = notification.a.d;
-    input.title = "a.d";
-    div.appendChild(input);
-
-    if (notification.a.r === MULTISIG_ICP) {
-        let exn: GroupIcpRequestExn | null = null;
-        for (let r of await get_icp_request(client, notification)) {
-            if (r !== null) {
-                exn ??= r.exn;
-            }
-        }
-        if (exn !== null) {
-            input = document.createElement("input");
-            input.type = "text";
-            input.name = "exn.i";
-            input.value = exn.i;
-            input.title = "exn.i";
-            div.appendChild(input);
-        }
-    }
-
     form.appendChild(div);
-
-    div = document.createElement("div");
-
-    let button = document.createElement("button");
-    button.type = "submit";
-    button.innerText = "Accept";
-    div.appendChild(button);
-
-    form.appendChild(div);
-
-    form.addEventListener("submit", async e => {
-        e.preventDefault();
-        let builder = await MultisigIcpBuilder.create(client, GROUP1);
-        for await (let request of builder.acceptCreateIdentifierRequest(notification)) {
-            let response = await create_identifier(client, builder.alias, request);
-            let exn = await builder.buildMultisigIcpRequest(request, response);
-            await send_exchange(client, exn);
-        }
-        await mark_notification(client, notification);
-        dispatch_form_event(new CustomEvent(REFRESH_EVENT));
-    });
-
-    form.addEventListener("reset", async e => {
-        e.preventDefault();
-        await mark_notification(client, notification);
-    });
-
-    return form;
+    section.appendChild(form);
 }
 
 async function show_notification(client: SignifyClient | null, notifications: NotificationType[]): Promise<void> {
     const section = document.querySelector("#reply") as HTMLElement;
     const found = new Set<string>();
-    // create new form for each notification with id=${n.a.d}
+    // create new section for each notification with id=${n.a.d}
     for (let notification of notifications) {
         if (client === null) continue;
         if (notification.r !== false) continue;
         found.add(notification.a.d);
-        let form = section.querySelector(`form#${notification.a.d}`);
-        if (form === null) {
-            form = await create_notification_form(client, notification);
-            section.appendChild(form);
+        let sub = section.querySelector(`section#${notification.a.d}`) as HTMLElement;
+        if (sub === null) {
+            sub = document.createElement("section");
+            sub.setAttribute("id", notification.a.d);
+            switch (notification.a.r) {
+                case MULTISIG_ICP:
+                    await create_icp_form(client, notification, sub);
+                    break;
+                case MULTISIG_RPY:
+                    await create_rpy_form(client, notification, sub);
+                    break;
+                default:
+                    await create_form(client, notification, sub);
+                    break;
+            }
+            section.appendChild(sub);
         }
     }
-    section.querySelectorAll("form").forEach(i => {
+    section.querySelectorAll("section").forEach(i => {
         if (found.has(i.id)) return;
         i.remove();
     });
@@ -157,6 +195,11 @@ async function process_operations(client: SignifyClient, operations: OperationTy
             case "group":
                 await add_end_roles(client, id);
                 await remove_operation(client, op);
+                dispatch_form_event(new CustomEvent(REFRESH_EVENT));
+                break;
+            case "endrole":
+                await remove_operation(client, op);
+                dispatch_form_event(new CustomEvent(REFRESH_EVENT));
                 break;
         }
     }

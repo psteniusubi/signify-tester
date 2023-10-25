@@ -51,3 +51,10 @@ export async function wait_notification(client: SignifyClient, route: string): P
 export async function mark_notification(client: SignifyClient, notification: NotificationType): Promise<void> {
     await client.notifications().mark(notification.i);
 }
+
+export async function delete_notification(client: SignifyClient, notification: NotificationType): Promise<void> {
+    await mark_notification(client, notification);
+    let path = `/notifications/${notification.i}`;
+    let response: Response = await client.fetch(path, "DELETE", null);
+    if (!response.ok) throw new Error(await response.text());
+}

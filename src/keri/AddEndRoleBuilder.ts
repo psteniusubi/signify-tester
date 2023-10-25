@@ -1,5 +1,5 @@
 import { Siger, SignifyClient, d, messagize } from "signify-ts";
-import { AGENT, AddEndRoleRequest, AddEndRoleResponse, Group, MULTISIG_RPY, MultisigRpyRequestEmbeds, MultisigRpyRequestPayload } from "./signify";
+import { AGENT, AddEndRoleRequest, AddEndRoleResponse, Group, GroupRpyRequest, MULTISIG_RPY, MultisigRpyRequestEmbeds, MultisigRpyRequestPayload } from "./signify";
 import { MultisigRpyRequest, NotificationType, get_rpy_request } from "./signify";
 import { date2string } from "../util/helper";
 
@@ -43,24 +43,20 @@ export class AddEndRoleBuilder {
             yield request;
         }
     }
-    async *acceptAddEndRoleRequest(notification: NotificationType): AsyncGenerator<AddEndRoleRequest> {
+    async *acceptGroupRpyNotification(notification: NotificationType): AsyncGenerator<AddEndRoleRequest> {
         for (let rpy of await get_rpy_request(this.client, notification)) {
-            let request: AddEndRoleRequest = {
-                alias: this.group,
-                role: rpy.exn.e.rpy.a.role,
-                eid: rpy.exn.e.rpy.a.eid,
-                stamp: rpy.exn.e.rpy.dt
-            };
-            yield request;
+            yield await this.acceptGroupRpyRequest(rpy);
         }
     }
-    // async getLead(members: MembersType): Promise<IdentifierType | undefined> {
-    //     let ids = members.signing.map(i => i.aid);
-    //     for await (let i of get_names_by_identifiers(this.client, ids)) {
-    //         return await get_identifier(this.client, i.name);
-    //     }
-    //     return undefined;
-    // }
+    async acceptGroupRpyRequest(rpy: GroupRpyRequest): Promise<AddEndRoleRequest> {
+        let request: AddEndRoleRequest = {
+            alias: this.group,
+            role: rpy.exn.e.rpy.a.role,
+            eid: rpy.exn.e.rpy.a.eid,
+            stamp: rpy.exn.e.rpy.dt
+        };
+        return request;
+    }
     async buildMultisigRpyRequest(addEndRoleRequest: AddEndRoleRequest, addEndRoleResponse: AddEndRoleResponse): Promise<MultisigRpyRequest> {
         let group = await this._group;
         let lead = group.getIdentifier().group!.mhab;

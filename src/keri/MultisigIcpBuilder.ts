@@ -79,27 +79,30 @@ export class MultisigIcpBuilder {
         }
         return undefined;
     }
-    async *acceptCreateIdentifierRequest(notification: NotificationType): AsyncGenerator<CreateIdentifierRequest> {
+    async *acceptGroupIcpNotification(notification: NotificationType): AsyncGenerator<CreateIdentifierRequest> {
         for (let icp of await get_icp_request(this.client, notification)) {
-            let lead_id = await this.getLead(icp);
-            let exn = icp.exn;
-            let isith = exn.e.icp.kt;
-            let nsith = exn.e.icp.nt;
-            let states = await Promise.all(exn.a.smids.map(i => get_keyState(this.client, i)));
-            let rstates = await Promise.all(exn.a.rmids.map(i => get_keyState(this.client, i)));
-            console.assert(lead_id !== undefined);
-            let request: CreateIdentifierRequest = {
-                algo: Algos.group,
-                mhab: lead_id,
-                isith: isith,
-                nsith: nsith,
-                toad: parseInt(exn.e.icp.bt),
-                wits: exn.e.icp.b,
-                states: states,
-                rstates: rstates
-            };
-            yield request;
+            yield await this.acceptGroupIcpRequest(icp);
         }
+    }
+    async acceptGroupIcpRequest(icp: GroupIcpRequest): Promise<CreateIdentifierRequest> {
+        let lead_id = await this.getLead(icp);
+        let exn = icp.exn;
+        let isith = exn.e.icp.kt;
+        let nsith = exn.e.icp.nt;
+        let states = await Promise.all(exn.a.smids.map(i => get_keyState(this.client, i)));
+        let rstates = await Promise.all(exn.a.rmids.map(i => get_keyState(this.client, i)));
+        console.assert(lead_id !== undefined);
+        let request: CreateIdentifierRequest = {
+            algo: Algos.group,
+            mhab: lead_id,
+            isith: isith,
+            nsith: nsith,
+            toad: parseInt(exn.e.icp.bt),
+            wits: exn.e.icp.b,
+            states: states,
+            rstates: rstates
+        };
+        return request;
     }
     async buildMultisigIcpRequest(identifierRequest: CreateIdentifierRequest, identifierResponse: CreateIdentifierResponse): Promise<MultisigIcpRequest> {
         let payload: MultisigIcpRequestPayload = {
