@@ -2,7 +2,8 @@ import { REFRESH_EVENT, dispatch_form_event, sleep } from "./util/helper";
 import { signify } from "./client";
 import { SignifyClient } from "signify-ts";
 import { json2string } from "./util/helper";
-import { list_notifications, NotificationType, list_operations, OperationType, wait_operation, remove_operation, create_identifier, send_exchange, get_icp_request, GroupIcpRequestExn, MultisigIcpBuilder } from "./keri/signify";
+import { list_notifications, NotificationType, list_operations, OperationType, wait_operation, remove_operation, create_identifier, send_exchange, get_icp_request, GroupIcpRequestExn, MultisigIcpBuilder, mark_notification } from "./keri/signify";
+import { GROUP1, NAME1 } from "./keri/config";
 
 export async function load_notifications(): Promise<void> {
     const div = document.querySelector("#notifications div.code") as HTMLDivElement;
@@ -21,10 +22,9 @@ export async function load_notifications(): Promise<void> {
             try {
                 let list = await list_operations(signify);
                 text += "list_operations:\r\n" + json2string(list) + "\r\n";
-                await show_group_operation(signify, list);
+                await process_operations(signify, list);
             } catch (e) {
                 console.error(e);
-                show_group_operation(signify, []);
             }
             try {
                 let list = await signify.escrows().listReply("/end/role");
@@ -36,89 +36,93 @@ export async function load_notifications(): Promise<void> {
         } else {
             div.innerText = "";
             show_notification(null, []);
-            show_group_operation(null, []);
         }
         await sleep(2500);
     }
+}
+
+async function create_notification_form(client: SignifyClient, notification: NotificationType): Promise<HTMLFormElement> {
+    let div, input;
+
+    let form = document.createElement("form") as HTMLFormElement;
+    form.id = notification.a.d;
+
+    div = document.createElement("div");
+
+    input = document.createElement("input");
+    input.type = "text";
+    input.name = "a.r";
+    input.value = notification.a.r;
+    input.title = "a.r";
+    div.appendChild(input);
+
+    input = document.createElement("input");
+    input.type = "text";
+    input.name = "a.d";
+    input.value = notification.a.d;
+    input.title = "a.d";
+    div.appendChild(input);
+
+    if (notification.a.r === "/multisig/icp") {
+        let exn: GroupIcpRequestExn | null = null;
+        for (let r of await get_icp_request(client, notification)) {
+            if (r !== null) {
+                exn ??= r.exn;
+            }
+        }
+        if (exn !== null) {
+            input = document.createElement("input");
+            input.type = "text";
+            input.name = "exn.i";
+            input.value = exn.i;
+            input.title = "exn.i";
+            div.appendChild(input);
+        }
+    }
+
+    form.appendChild(div);
+
+    div = document.createElement("div");
+
+    let button = document.createElement("button");
+    button.type = "submit";
+    button.innerText = "Accept";
+    div.appendChild(button);
+
+    form.appendChild(div);
+
+    form.addEventListener("submit", async e => {
+        e.preventDefault();
+        let builder = await MultisigIcpBuilder.create(client, GROUP1, NAME1, []);
+        for await (let request of builder.acceptCreateIdentifierRequest(notification)) {
+            let response = await create_identifier(client, builder.alias, request);
+            let exn = await builder.buildMultisigIcpRequest(request, response);
+            await send_exchange(client, exn);
+        }
+        await mark_notification(client, notification);
+        dispatch_form_event(new CustomEvent(REFRESH_EVENT));
+    });
+
+    form.addEventListener("reset", async e => {
+        e.preventDefault();
+        await mark_notification(client, notification);
+    });
+
+    return form;
 }
 
 async function show_notification(client: SignifyClient | null, notifications: NotificationType[]): Promise<void> {
     const section = document.querySelector("#reply") as HTMLElement;
     const found = new Set<string>();
     // create new form for each notification with id=${n.a.d}
-    for (let n of notifications) {
+    for (let notification of notifications) {
         if (client === null) continue;
-        found.add(n.a.d);
-        let form = section.querySelector(`form#${n.a.d}`);
+        if (notification.r !== false) continue;
+        found.add(notification.a.d);
+        let form = section.querySelector(`form#${notification.a.d}`);
         if (form === null) {
-            let div, input;
-
-            form = document.createElement("form");
-            form.id = n.a.d;
-
-            div = document.createElement("div");
-
-            input = document.createElement("input");
-            input.type = "text";
-            input.name = "a.r";
-            input.value = n.a.r;
-            input.title = "a.r";
-            div.appendChild(input);
-
-            input = document.createElement("input");
-            input.type = "text";
-            input.name = "a.d";
-            input.value = n.a.d;
-            input.title = "a.d";
-            div.appendChild(input);
-
-            if (n.a.r === "/multisig/icp") {
-                let exn: GroupIcpRequestExn | null = null;
-                for (let r of await get_icp_request(client, n)) {
-                    if (r !== null) {
-                        exn ??= r.exn;
-                    }
-                }
-                if (exn !== null) {
-                    input = document.createElement("input");
-                    input.type = "text";
-                    input.name = "exn.i";
-                    input.value = exn.i;
-                    input.title = "exn.i";
-                    div.appendChild(input);
-                }
-            }
-
-            form.appendChild(div);
-
-            div = document.createElement("div");
-
-            let button = document.createElement("button");
-            button.type = "submit";
-            button.innerText = "Accept";
-            div.appendChild(button);
-
-            form.appendChild(div);
-
+            form = await create_notification_form(client, notification);
             section.appendChild(form);
-
-            form.addEventListener("submit", async e => {
-                e.preventDefault();
-                let builder = await MultisigIcpBuilder.create(client, "group1", "name1", []);
-                for await (let request of builder.acceptCreateIdentifierRequest(n)) {
-                    let response = await create_identifier(client, builder.alias, request);
-                    await client.notifications().mark(n.i);
-                    let exn = await builder.buildMultisigIcpRequest(request, response);
-                    await send_exchange(client, exn);
-                }
-                dispatch_form_event(new CustomEvent(REFRESH_EVENT));
-            });
-
-            form.addEventListener("reset", async e => {
-                e.preventDefault();
-                (e.currentTarget as HTMLFormElement).remove();
-                document.querySelector("#notifications div.code")!.innerHTML = "";
-            });
         }
     }
     section.querySelectorAll("form").forEach(i => {
@@ -127,17 +131,13 @@ async function show_notification(client: SignifyClient | null, notifications: No
     });
 }
 
-async function authorize_endpoint(client: SignifyClient, op: OperationType): Promise<void> {
-    let t = await client.identifiers().addEndRole("group1", "agent", client.agent?.pre);
-    await wait_operation(client, t);
-    await remove_operation(client, op);
-}
-
-async function show_group_operation(client: SignifyClient | null, operations: OperationType[]): Promise<void> {
-    if (client === null) return;
-    // for (let op of operations) {
-    //     if (op.done) {
-    //         authorize_endpoint(client, op);
-    //     }
-    // }
+async function process_operations(client: SignifyClient, operations: OperationType[]): Promise<void> {
+    for (let op of operations) {
+        if (op.done !== true) continue;
+        let [type, id, role, eid] = op.name.split(".");
+        switch (type) {
+            case "group":
+                break;
+        }
+    }
 }

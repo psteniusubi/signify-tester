@@ -1,5 +1,5 @@
 import { Siger, SignifyClient, d, messagize } from "signify-ts";
-import { Contact, Identifier, IdentifierOrContact } from "./signify";
+import { Contact, GroupIcpRequest, Identifier, IdentifierOrContact, IdentifierType, get_identifier, get_names_by_identifiers } from "./signify";
 import { KeyStateType, get_keyState } from "./signify";
 import { Configuration } from "./config";
 import { CreateIdentifierRequest, CreateIdentifierResponse } from "./signify";
@@ -14,9 +14,9 @@ export class MultisigIcpBuilder {
      * @param lead Name of local member (local identifier)
      * @param members Names of remote members (contact)
      */
-    static async create(client: SignifyClient, alias: string, lead: string, members: string[]): Promise<MultisigIcpBuilder> {
-        let tasks = members.map(member => Contact.create(client, member));
-        let lead_id = await Identifier.create(client, lead);
+    static async create(client: SignifyClient, alias: string, lead?: string, members?: string[]): Promise<MultisigIcpBuilder> {
+        let tasks = members?.map(member => Contact.create(client, member)) ?? [];
+        let lead_id = (lead !== undefined) ? await Identifier.create(client, lead) : undefined;
         let builder = new MultisigIcpBuilder(client, alias, lead_id);
         builder.addMember(lead_id);
         for (let task of tasks) {
@@ -27,16 +27,18 @@ export class MultisigIcpBuilder {
     }
     client: SignifyClient;
     alias: string;
-    lead: Identifier;
+    lead?: Identifier;
     members: IdentifierOrContact[];
-    constructor(client: SignifyClient, alias: string, lead: Identifier) {
+    constructor(client: SignifyClient, alias: string, lead?: Identifier) {
         this.client = client;
         this.alias = alias;
         this.lead = lead;
         this.members = new Array<Contact>(0);
     }
-    addMember(member: IdentifierOrContact) {
-        this.members.push(member);
+    addMember(member?: IdentifierOrContact) {
+        if (member !== undefined) {
+            this.members.push(member);
+        }
     }
     sortMembers() {
         this.members.sort((a, b) => a.compare(b));
@@ -58,9 +60,10 @@ export class MultisigIcpBuilder {
         let nsith = isith;
         let states = await this.getKeyStates();
         let rstates = states;
+        console.assert(this.lead !== undefined);
         let request: CreateIdentifierRequest = {
             algo: Algos.group,
-            mhab: this.lead.getIdentifier(),
+            mhab: this.lead?.getIdentifier(),
             isith: isith,
             nsith: nsith,
             toad: config.toad,
@@ -70,16 +73,24 @@ export class MultisigIcpBuilder {
         };
         return request;
     }
+    async getLead(icp: GroupIcpRequest): Promise<IdentifierType | undefined> {
+        for await (let name of get_names_by_identifiers(this.client, icp.exn.a.smids)) {
+            return await get_identifier(this.client, name);
+        }
+        return undefined;
+    }
     async *acceptCreateIdentifierRequest(notification: NotificationType): AsyncGenerator<CreateIdentifierRequest> {
         for (let icp of await get_icp_request(this.client, notification)) {
+            let lead_id = await this.getLead(icp);
             let exn = icp.exn;
             let isith = exn.e.icp.kt;
             let nsith = exn.e.icp.nt;
             let states = await Promise.all(exn.a.smids.map(i => get_keyState(this.client, i)));
             let rstates = await Promise.all(exn.a.rmids.map(i => get_keyState(this.client, i)));
+            console.assert(lead_id !== undefined);
             let request: CreateIdentifierRequest = {
                 algo: Algos.group,
-                mhab: this.lead.getIdentifier(),
+                mhab: lead_id,
                 isith: isith,
                 nsith: nsith,
                 toad: parseInt(exn.e.icp.bt),
@@ -104,7 +115,7 @@ export class MultisigIcpBuilder {
         };
         let recipients: string[] = identifierRequest.states!.map(i => i.i);
         let request: MultisigIcpRequest = {
-            sender: this.lead.alias,
+            sender: identifierRequest.mhab?.name,
             topic: this.alias,
             sender_id: identifierRequest.mhab,
             route: MULTISIG_ICP,
