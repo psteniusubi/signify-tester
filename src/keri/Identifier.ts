@@ -1,5 +1,5 @@
-import { EmptyMaterialError, SignifyClient } from 'signify-ts';
-import { ContactType, IdentifierType, KeyStateType, MemberType, MembersType, get_contact, get_identifier, get_keyState, get_members } from './signify';
+import { SignifyClient } from 'signify-ts';
+import { ContactType, IdentifierType, KeyStateType, MembersType, get_contact, get_identifier, get_keyState, get_members } from './signify';
 
 export abstract class IdentifierOrContact {
     readonly client: SignifyClient;

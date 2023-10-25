@@ -1,9 +1,9 @@
-import { REFRESH_EVENT, debug_json, dispatch_form_event, sleep } from "./util/helper";
+import { REFRESH_EVENT, dispatch_form_event, sleep } from "./util/helper";
 import { signify } from "./client";
 import { SignifyClient } from "signify-ts";
 import { json2string } from "./util/helper";
-import { list_notifications, NotificationType, list_operations, OperationType, wait_operation, remove_operation, create_identifier, send_exchange, get_icp_request, GroupIcpRequestExn, MultisigIcpBuilder, mark_notification, get_names_by_identifiers, AddEndRoleBuilder, add_endRole, MULTISIG_ICP, MULTISIG_RPY, get_rpy_request, delete_notification } from "./keri/signify";
-import { GROUP1, NAME1 } from "./keri/config";
+import { list_notifications, NotificationType, list_operations, OperationType, remove_operation, create_identifier, send_exchange, get_icp_request, MultisigIcpBuilder, AddEndRoleBuilder, add_endRole, MULTISIG_ICP, MULTISIG_RPY, get_rpy_request, delete_notification, get_name_by_identifier } from "./keri/signify";
+import { GROUP1 } from "./keri/config";
 
 export async function load_notifications(): Promise<void> {
     const div = document.querySelector("#notifications div.code") as HTMLDivElement;
@@ -110,7 +110,7 @@ async function create_rpy_form(client: SignifyClient, notification: Notification
 
         form.addEventListener("submit", async e => {
             e.preventDefault();
-            let builder = await AddEndRoleBuilder.create(client, GROUP1);
+            let builder = await AddEndRoleBuilder.create(client);
             let addEndRoleRequest = await builder.acceptGroupRpyRequest(rpy);
             let addEndRoleResponse = await add_endRole(client, addEndRoleRequest);
             let rpyRequest = await builder.buildMultisigRpyRequest(addEndRoleRequest, addEndRoleResponse);
@@ -170,12 +170,7 @@ async function show_notification(client: SignifyClient | null, notifications: No
 }
 
 async function add_end_roles(client: SignifyClient, id: string): Promise<void> {
-    let name;
-    for await (let i of get_names_by_identifiers(client, [id])) {
-        name = i.name;
-        break;
-    }
-    if (name === undefined) return;
+    let name = await get_name_by_identifier(client, id);
     let builder = await AddEndRoleBuilder.create(client, name);
     let isLead = await builder.isLead();
     if (!isLead) return;

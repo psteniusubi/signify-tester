@@ -1,6 +1,6 @@
 import { Agent, Authenticater, Controller, KeyManager, SignifyClient } from "signify-ts";
 import { Configuration, NAME1, connect_or_boot, getLocalConfig } from "../src/keri/config";
-import { get_identifiers, get_names_by_identifiers } from "../src/keri/get_identifier";
+import { get_identifiers, get_name_by_identifier, get_names_by_identifiers } from "../src/keri/get_identifier";
 import { debug_json } from "../src/util/helper";
 import { Identifier } from "../src/keri/Identifier";
 
@@ -32,12 +32,17 @@ describe("SignifyClient", () => {
             debug_json(`identifier ${n++}`, i);
         }
     });
-    test("get_identifiers_by_ids", async () => {
+    test("get_names_by_identifiers", async () => {
         let name1 = await Identifier.create(client1, NAME1);
         let name: string | undefined = undefined;
         for await (let i of get_names_by_identifiers(client1, [name1.getId()])) {
             name = i.name;
         }
+        expect(name1.alias).toEqual(name);
+    });
+    test("get_name_by_identifier", async () => {
+        let name1 = await Identifier.create(client1, NAME1);
+        let name = await get_name_by_identifier(client1, name1.getId());
         expect(name1.alias).toEqual(name);
     });
 });

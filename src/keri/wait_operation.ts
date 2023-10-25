@@ -1,5 +1,5 @@
 import { SignifyClient } from 'signify-ts';
-import { debug_json, sleep, wait_async_operation } from '../util/helper';
+import { sleep, wait_async_operation } from '../util/helper';
 
 export interface OperationType {
     name: string,

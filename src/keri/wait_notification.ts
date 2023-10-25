@@ -1,6 +1,6 @@
 import { SignifyClient } from 'signify-ts';
 import { RangeType } from './signify';
-import { debug_json, wait_async_operation } from '../util/helper';
+import { wait_async_operation } from '../util/helper';
 
 export interface NotificationType {
     i: string,

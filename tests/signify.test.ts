@@ -126,9 +126,10 @@ describe("SignifyClient", () => {
         }
     });
     test("endrole2a", async () => {
-        let builder = await AddEndRoleBuilder.create(client2, GROUP1);
+        let builder = await AddEndRoleBuilder.create(client2);
         let n = await wait_notification(client2, MULTISIG_RPY);
         for await (let addEndRoleRequest of builder.acceptGroupRpyNotification(n)) {
+            expect(addEndRoleRequest.alias).toStrictEqual(GROUP1);
             let addEndRoleResponse = await add_endRole(client2, addEndRoleRequest);
             let rpyRequest = await builder.buildMultisigRpyRequest(addEndRoleRequest, addEndRoleResponse);
             expect(rpyRequest.sender).toStrictEqual(NAME1);
@@ -137,9 +138,10 @@ describe("SignifyClient", () => {
         await mark_notification(client2, n);
     });
     test("endrole2b", async () => {
-        let builder = await AddEndRoleBuilder.create(client2, GROUP1);
+        let builder = await AddEndRoleBuilder.create(client2);
         let n = await wait_notification(client2, MULTISIG_RPY);
         for await (let addEndRoleRequest of builder.acceptGroupRpyNotification(n)) {
+            expect(addEndRoleRequest.alias).toStrictEqual(GROUP1);
             let addEndRoleResponse = await add_endRole(client2, addEndRoleRequest);
             let rpyRequest = await builder.buildMultisigRpyRequest(addEndRoleRequest, addEndRoleResponse);
             expect(rpyRequest.sender).toStrictEqual(NAME1);
@@ -149,14 +151,14 @@ describe("SignifyClient", () => {
     });
     test("endrole3", async () => {
         let builder = await AddEndRoleBuilder.create(client1, GROUP1);
-        let group = await builder._group;
+        let group = await builder._group!;
         for await (let eid of builder.getEids()) {
             await wait_operation(client1, { name: `endrole.${group.getId()}.agent.${eid}` });
         }
     });
     test("endrole4", async () => {
         let builder = await AddEndRoleBuilder.create(client2, GROUP1);
-        let group = await builder._group;
+        let group = await builder._group!;
         for await (let eid of builder.getEids()) {
             await wait_operation(client2, { name: `endrole.${group.getId()}.agent.${eid}` });
         }

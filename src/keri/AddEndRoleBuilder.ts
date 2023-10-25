@@ -1,5 +1,5 @@
 import { Siger, SignifyClient, d, messagize } from "signify-ts";
-import { AGENT, AddEndRoleRequest, AddEndRoleResponse, Group, GroupRpyRequest, MULTISIG_RPY, MultisigRpyRequestEmbeds, MultisigRpyRequestPayload } from "./signify";
+import { AGENT, AddEndRoleRequest, AddEndRoleResponse, Group, GroupRpyRequest, MULTISIG_RPY, MultisigRpyRequestEmbeds, MultisigRpyRequestPayload, get_name_by_identifier } from "./signify";
 import { MultisigRpyRequest, NotificationType, get_rpy_request } from "./signify";
 import { date2string } from "../util/helper";
 
@@ -7,23 +7,24 @@ export class AddEndRoleBuilder {
     /**
      * @param group Name of new group
      */
-    static async create(client: SignifyClient, group: string): Promise<AddEndRoleBuilder> {
+    static async create(client: SignifyClient, group?: string): Promise<AddEndRoleBuilder> {
         let builder = new AddEndRoleBuilder(client, group);
         return builder;
     }
     client: SignifyClient;
-    group: string;
-    _group: Promise<Group>;
-    constructor(client: SignifyClient, group: string) {
+    group?: string;
+    _group?: Promise<Group>;
+    constructor(client: SignifyClient, group?: string) {
         this.client = client;
         this.group = group;
-        this._group = Group.create(client, group);
+        this._group = (group !== undefined) ? Group.create(client, group) : undefined;
     }
     async isLead(): Promise<boolean> {
         let group = await this._group;
-        return group.isLead();
+        return group?.isLead() ?? false;
     }
     async *getEids(): AsyncGenerator<string> {
+        if (this._group === undefined) return;
         let group = await this._group;
         for (let s of group.members.signing) {
             for (let eid of Object.keys(s.ends.agent)) {
@@ -49,8 +50,9 @@ export class AddEndRoleBuilder {
         }
     }
     async acceptGroupRpyRequest(rpy: GroupRpyRequest): Promise<AddEndRoleRequest> {
+        let name = await get_name_by_identifier(this.client, rpy.exn.a.gid);
         let request: AddEndRoleRequest = {
-            alias: this.group,
+            alias: name,
             role: rpy.exn.e.rpy.a.role,
             eid: rpy.exn.e.rpy.a.eid,
             stamp: rpy.exn.e.rpy.dt
@@ -58,7 +60,7 @@ export class AddEndRoleBuilder {
         return request;
     }
     async buildMultisigRpyRequest(addEndRoleRequest: AddEndRoleRequest, addEndRoleResponse: AddEndRoleResponse): Promise<MultisigRpyRequest> {
-        let group = await this._group;
+        let group = await this._group ?? await Group.create(this.client, addEndRoleRequest.alias!);
         let lead = group.getIdentifier().group!.mhab;
         let payload: MultisigRpyRequestPayload = {
             gid: group.getId()

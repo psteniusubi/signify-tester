@@ -67,3 +67,10 @@ export async function* get_names_by_identifiers(client: SignifyClient, ids: stri
         if (ids.length < 1) return;
     }
 }
+
+export async function get_name_by_identifier(client: SignifyClient, id: string): Promise<string> {
+    for await (let i of get_names_by_identifiers(client, [id])) {
+        return i.name;
+    }
+    throw new Error(`get_name_by_identifier(${id}): not found`);
+}
