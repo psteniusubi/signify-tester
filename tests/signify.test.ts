@@ -83,7 +83,7 @@ describe("SignifyClient", () => {
         let createIdentifierResponse = await create_identifier(client1, builder.alias, createIdentifierRequest);
         let icpRequest: MultisigIcpRequest = await builder.buildMultisigIcpRequest(createIdentifierRequest, createIdentifierResponse);
         expect(icpRequest.sender_id?.name).toStrictEqual(NAME1);
-        await send_exchange(client1, icpRequest);
+        let icpResponse = await send_exchange(client1, icpRequest);
     });
     test("group2", async () => {
         let n = await wait_notification(client2, MULTISIG_ICP);
@@ -93,7 +93,7 @@ describe("SignifyClient", () => {
             let createIdentifierResponse = await create_identifier(client2, builder.alias, createIdentifierRequest);
             let icpRequest = await builder.buildMultisigIcpRequest(createIdentifierRequest, createIdentifierResponse);
             expect(icpRequest.sender_id?.name).toStrictEqual(NAME1);
-            await send_exchange(client2, icpRequest);
+            let icpResponse = await send_exchange(client2, icpRequest);
         }
         await mark_notification(client2, n);
     });

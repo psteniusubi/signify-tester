@@ -54,8 +54,8 @@ export class AddEndRoleBuilder {
     }
     async getLead(members: MembersType): Promise<IdentifierType | undefined> {
         let ids = members.signing.map(i => i.aid);
-        for await (let name of get_names_by_identifiers(this.client, ids)) {
-            return await get_identifier(this.client, name);
+        for await (let i of get_names_by_identifiers(this.client, ids)) {
+            return await get_identifier(this.client, i.name);
         }
         return undefined;
     }

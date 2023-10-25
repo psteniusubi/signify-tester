@@ -36,7 +36,7 @@ describe("SignifyClient", () => {
         let name1 = await Identifier.create(client1, NAME1);
         let name: string | undefined = undefined;
         for await (let i of get_names_by_identifiers(client1, [name1.getId()])) {
-            name = i;
+            name = i.name;
         }
         expect(name1.alias).toEqual(name);
     });
