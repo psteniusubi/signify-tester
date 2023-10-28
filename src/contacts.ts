@@ -1,8 +1,8 @@
 import { signify } from "./client";
-import { REFRESH_EVENT } from "./util/helper";
+import { REFRESH_EVENT, dispatch_form_event } from "./util/helper";
 import { resolve_oobi, list_contacts } from "./keri/signify";
 
-export async function load_contacts() {
+export async function setup_contacts_form() {
     const table = document.querySelector("#contacts table") as HTMLTableElement;
     const form = document.querySelector("#contacts form") as HTMLFormElement;
     const name = form.elements.namedItem("name") as HTMLInputElement;
@@ -12,52 +12,68 @@ export async function load_contacts() {
 
     form.addEventListener("submit", async (e: SubmitEvent) => {
         e.preventDefault();
-        name.classList.remove("error");
+        name.classList.value = "";
         if (signify === null) return;
         try {
             await resolve_oobi(signify, name.value, oobi.value);
             oobi.value = "";
-            form.dispatchEvent(new CustomEvent(REFRESH_EVENT));
+            dispatch_form_event(new CustomEvent(REFRESH_EVENT));
         } catch {
-            name.classList.add("error");
+            console.error(e);
+            name.classList.value = "error";
         }
     });
 
     form.addEventListener("reset", async (e: Event) => {
         e.preventDefault();
-        // reset
-        form.reset();
-        oobi.value = "";
-        // remove error status
-        name.classList.remove("error");
-        // erase table
-        while (table.rows.length > 1) {
-            table.deleteRow(1);
-        }
+        form.dispatchEvent(new CustomEvent(REFRESH_EVENT));
     });
 
     form.addEventListener(REFRESH_EVENT, async (e: Event) => {
-        // reset
-        form.dispatchEvent(new Event("reset"));
-        // signify client
+        name.value = "";
+        oobi.value = "";
+        name.classList.value = "";
+        while (table.rows.length > 1) {
+            table.deleteRow(1);
+        }
         if (signify === null) return;
-        // get identifiers
+        // get contacts
         let res = await list_contacts(signify);
         let count = 1;
         for (let i of res) {
-            // console.log(JSON.stringify(i));
             let tr = table.insertRow();
-            let td = tr.insertCell(); // name
-            td.innerText = i.alias ?? "";
-            td = tr.insertCell(); // id
-            td.innerText = i.id ?? "";
-            td = tr.insertCell(); // oobi
-            let input = document.createElement("input");
+
+            // checkbox
+            let td = tr.insertCell();
+            let checkbox = document.createElement("input");
+            checkbox.type = "checkbox";
+            checkbox.id = `contact${count}`;
+            td.appendChild(checkbox);
+
+            // name
+            td = tr.insertCell();
+            let label = document.createElement("label") as HTMLLabelElement;
+            label.innerText = i.alias ?? "";
+            label.htmlFor = checkbox.id;
+            td.appendChild(label);
+
+            // id
+            td = tr.insertCell();
+            label = document.createElement("label") as HTMLLabelElement;
+            label.innerText = i.id ?? "";
+            label.htmlFor = checkbox.id;
+            td.appendChild(label);
+
+            // oobi
+            td = tr.insertCell();
+            let input = document.createElement("input") as HTMLInputElement;
             input.type = "text";
             input.readOnly = true;
             input.value = i.oobi ?? "";
             td.appendChild(input);
-            let button = document.createElement("button");
+
+            // copy
+            let button = document.createElement("button") as HTMLButtonElement;
             button.innerText = "Copy";
             button.title = "Copy OOBI value to Clipboard";
             button.addEventListener("click", async (e: Event) => {
@@ -67,6 +83,7 @@ export async function load_contacts() {
                 await navigator.clipboard.writeText(input.value);
             })
             td.appendChild(button);
+
             ++count;
         }
         name.value = `contact${count}`;

@@ -5,15 +5,15 @@
   <title>Signify Client</title>
   <script type="module">
     import './src/style.css';
-    import { load_client } from "./src/client";
-    import { load_notifications } from "./src/notifications";
+    import { setup_client_form } from "./src/client";
+    import { setup_notifications } from "./src/notifications";
     import { load_identifiers } from "./src/identifiers";
-    import { load_contacts } from "./src/contacts";
+    import { setup_contacts_form } from "./src/contacts";
     import { load_multisig } from "./src/multisig";
-    load_client();
-    load_notifications();
+    setup_client_form();
+    setup_notifications();
     load_identifiers();
-    load_contacts();
+    setup_contacts_form();
     load_multisig();
   </script>
 </head>
@@ -61,6 +61,7 @@
     <h1>Identifiers</h1>
     <table>
       <thead>
+        <th>&nbsp;</th>
         <th>Name</th>
         <th>ID</th>
         <th>OOBI</th>
@@ -88,6 +89,7 @@
     <h1>Contacts</h1>
     <table>
       <thead>
+        <th>&nbsp;</th>
         <th>Name</th>
         <th>ID</th>
         <th>OOBI</th>

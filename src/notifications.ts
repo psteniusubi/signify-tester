@@ -2,10 +2,10 @@ import { REFRESH_EVENT, dispatch_form_event, sleep } from "./util/helper";
 import { signify } from "./client";
 import { SignifyClient } from "signify-ts";
 import { json2string } from "./util/helper";
-import { list_notifications, NotificationType, list_operations, OperationType, remove_operation, create_identifier, send_exchange, get_icp_request, MultisigIcpBuilder, AddEndRoleBuilder, add_endRole, MULTISIG_ICP, MULTISIG_RPY, get_rpy_request, delete_notification, get_name_by_identifier } from "./keri/signify";
+import { list_notifications, NotificationType, list_operations, OperationType, remove_operation, create_identifier, send_exchange, get_icp_request, MultisigIcpBuilder, AddEndRoleBuilder, add_endRole, MULTISIG_ICP, MULTISIG_RPY, get_rpy_request, delete_notification, get_name_by_identifier, has_notification } from "./keri/signify";
 import { GROUP1 } from "./keri/config";
 
-export async function load_notifications(): Promise<void> {
+export async function setup_notifications(): Promise<void> {
     const div = document.querySelector("#notifications div.code") as HTMLDivElement;
     while (true) {
         // loop forever polling for notifications
@@ -26,12 +26,14 @@ export async function load_notifications(): Promise<void> {
             } catch (e) {
                 console.error(e);
             }
+            /*
             try {
                 let list = await signify.escrows().listReply("/end/role");
                 text += "escrows.listReply:\r\n" + json2string(list) + "\r\n";
             } catch (e) {
                 console.error(e);
             }
+            */
             div.innerText = text;
         } else {
             div.innerText = "";
@@ -82,6 +84,16 @@ async function create_icp_form(client: SignifyClient, notification: Notification
             dispatch_form_event(new CustomEvent(REFRESH_EVENT));
         });
 
+        form.addEventListener(REFRESH_EVENT, async e => {
+            if (signify === null) {
+                section.remove();
+            } else {
+                if (!has_notification(client, notification)) {
+                    section.remove();
+                }
+            }
+        });
+
         section.appendChild(form);
     }
 }
@@ -119,21 +131,50 @@ async function create_rpy_form(client: SignifyClient, notification: Notification
             dispatch_form_event(new CustomEvent(REFRESH_EVENT));
         });
 
+        form.addEventListener(REFRESH_EVENT, async e => {
+            if (signify === null) {
+                section.remove();
+            } else {
+                if (!has_notification(client, notification)) {
+                    section.remove();
+                }
+            }
+        });
+
         section.appendChild(form);
     }
 }
 
 async function create_form(client: SignifyClient, notification: NotificationType, section: HTMLElement): Promise<void> {
     let form = document.createElement("form") as HTMLFormElement;
+
     let div = document.createElement("div") as HTMLDivElement;
+
     let input = document.createElement("input") as HTMLInputElement;
     input.type = "text";
     input.readOnly = true;
     input.value = notification.a.r;
     input.name = "a.r";
     input.title = "a.r";
+
     div.appendChild(input);
+
     form.appendChild(div);
+
+    form.addEventListener("submit", async e => {
+        e.preventDefault();
+    });
+
+    form.addEventListener(REFRESH_EVENT, async e => {
+        if (signify === null) {
+            section.remove();
+        } else {
+            if (!has_notification(client, notification)) {
+                section.remove();
+            }
+        }
+    });
+
     section.appendChild(form);
 }
 
@@ -183,6 +224,7 @@ async function add_end_roles(client: SignifyClient, id: string): Promise<void> {
 }
 
 async function process_operations(client: SignifyClient, operations: OperationType[]): Promise<void> {
+    //return
     for (let op of operations) {
         if (op.done !== true) continue;
         let [type, id, role, eid] = op.name.split(".");
@@ -195,6 +237,8 @@ async function process_operations(client: SignifyClient, operations: OperationTy
             case "endrole":
                 await remove_operation(client, op);
                 dispatch_form_event(new CustomEvent(REFRESH_EVENT));
+                break;
+            default:
                 break;
         }
     }

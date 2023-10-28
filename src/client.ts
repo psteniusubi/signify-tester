@@ -28,7 +28,7 @@ async function load_history() {
     }
 }
 
-export async function load_client() {
+export async function setup_client_form() {
     const form = document.querySelector("#client form") as HTMLFormElement;
     const status = form.elements.namedItem("status") as HTMLInputElement;
     const hostname = form.elements.namedItem("hostname") as HTMLInputElement;
@@ -38,8 +38,6 @@ export async function load_client() {
     const passcode = form.elements.namedItem("passcode") as HTMLInputElement;
     const register = form.elements.namedItem("register") as HTMLButtonElement;
     const history = form.elements.namedItem("history") as HTMLSelectElement;
-    passcode.value = random_seed();
-    await load_history();
     signify = null;
     // login
     form.addEventListener("submit", async (e: SubmitEvent) => {
@@ -48,26 +46,19 @@ export async function load_client() {
         status.value = "";
         agent.value = "";
         controller.value = "";
-        status.classList.remove("success", "error");
-        dispatch_form_event(new Event("reset"), form);
+        status.classList.value = "";
         try {
-            let bran = passcode.value as string;
+            let bran = passcode.value;
             let _signify = await create_client(config, bran);
             await _signify.connect();
-            status.classList.add("success");
-            status.value = "connected";
-            agent.value = _signify.agent!.pre;
-            controller.value = _signify.controller.pre;
             signify = _signify;
-            dispatch_form_event(new CustomEvent(REFRESH_EVENT), form);
             await save_passcode(bran);
-            await load_history();
+            dispatch_form_event(new CustomEvent(REFRESH_EVENT));
         } catch (e) {
             console.error(e);
-            status.classList.add("error");
             status.value = `error ${e}`;
             await remove_passcode(passcode.value);
-            await load_history();
+            dispatch_form_event(new CustomEvent(REFRESH_EVENT));
         }
     });
     // register
@@ -77,8 +68,7 @@ export async function load_client() {
         status.value = "";
         agent.value = "";
         controller.value = "";
-        status.classList.remove("success", "error");
-        dispatch_form_event(new Event("reset"), form);
+        status.classList.value = "";
         try {
             let bran = passcode.value as string;
             let _signify = await create_client(config, bran);
@@ -87,22 +77,41 @@ export async function load_client() {
             form.dispatchEvent(new SubmitEvent("submit"));
         } catch (e) {
             console.error(e);
-            status.classList.add("error");
             status.value = `error ${e}`;
+            dispatch_form_event(new CustomEvent(REFRESH_EVENT));
         }
-    });
-    form.addEventListener("reset", async (e: Event) => {
-        status.classList.remove("success", "error");
-        signify = null;
-        dispatch_form_event(new Event("reset"), form);
-        await sleep(0);
-        passcode.value = random_seed();
-        await load_history();
-    });
-    form.addEventListener(REFRESH_EVENT, async (e: Event) => {
     });
     history.addEventListener("change", e => {
         passcode.value = history.value;
         form.dispatchEvent(new SubmitEvent("submit"));
     });
+    form.addEventListener("reset", async (e: Event) => {
+        e.preventDefault();
+        signify = null;
+        status.value = "";
+        passcode.value = "";
+        dispatch_form_event(new CustomEvent(REFRESH_EVENT));
+    });
+    form.addEventListener(REFRESH_EVENT, async (e: Event) => {
+        if (signify !== null) {
+            status.value = "connected";
+            status.classList.value = "success";
+            agent.value = signify.agent!.pre;
+            controller.value = signify.controller.pre;
+            passcode.value = signify.bran.replace(/_+$/, "");
+        } else {
+            if (status.value === "") {
+                status.classList.value = "";
+            } else {
+                status.classList.value = "error";
+            }
+            agent.value = "";
+            controller.value = "";
+            if (passcode.value === "") {
+                passcode.value = random_seed();
+            }
+        }
+        await load_history();
+    });
+    form.dispatchEvent(new CustomEvent(REFRESH_EVENT));
 }

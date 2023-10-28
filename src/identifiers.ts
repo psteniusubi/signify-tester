@@ -1,5 +1,5 @@
 import { signify, config } from "./client";
-import { REFRESH_EVENT } from "./util/helper";
+import { REFRESH_EVENT, dispatch_form_event } from "./util/helper";
 import { create_single_identifier, list_identifiers, get_oobi } from "./keri/signify";
 import { SignifyClient } from "signify-ts";
 
@@ -38,46 +38,62 @@ export async function load_identifiers() {
 
     form.addEventListener("submit", async (e: SubmitEvent) => {
         e.preventDefault();
-        name.classList.remove("error");
+        name.classList.value = "";
         if (signify === null) return;
         try {
             await create_single_identifier(signify, config, name.value, salt.value !== "" ? salt.value : undefined);
-            form.dispatchEvent(new CustomEvent(REFRESH_EVENT));
+            dispatch_form_event(new CustomEvent(REFRESH_EVENT));
         } catch (e) {
             console.error(e);
-            name.classList.add("error");
+            name.classList.value = "error";
         }
     });
 
     form.addEventListener("reset", async (e: Event) => {
         e.preventDefault();
-        // reset
-        form.reset();
-        //  remove error status
-        name.classList.remove("error");
-        // erase table
-        while (table.rows.length > 1) {
-            table.deleteRow(1);
-        }
+        form.dispatchEvent(new CustomEvent(REFRESH_EVENT));
     });
 
     form.addEventListener(REFRESH_EVENT, async (e: Event) => {
-        // reset
-        form.dispatchEvent(new Event("reset"));
-        // signify client
+        name.value = "";
+        name.classList.value = "";
+        while (table.rows.length > 1) {
+            table.deleteRow(1);
+        }
         if (signify === null) return;
-        // list identifiers
+        // get identifiers
         let res = await list_identifiers(signify);
         let count = 1;
         for (let i of res.aids) {
-            // console.log(JSON.stringify(i));
             let tr = table.insertRow();
-            let td = tr.insertCell(); // name
-            td.innerText = i.name ?? "";
-            td = tr.insertCell(); // id
-            td.innerText = i.prefix ?? "";
-            td = tr.insertCell(); // oobi
+
+            tr.classList.add((i.group !== undefined) ? "group" : "single");
+
+            // checkbox
+            let td = tr.insertCell();
+            let checkbox = document.createElement("input");
+            checkbox.type = "checkbox";
+            checkbox.id = `name${count}`;
+            td.appendChild(checkbox);
+
+            // name
+            td = tr.insertCell();
+            let label = document.createElement("label") as HTMLLabelElement;
+            label.innerText = i.name ?? "";
+            label.htmlFor = checkbox.id;
+            td.appendChild(label);
+
+            // id
+            td = tr.insertCell();
+            label = document.createElement("label") as HTMLLabelElement;
+            label.innerText = i.prefix ?? "";
+            label.htmlFor = checkbox.id;
+            td.appendChild(label);
+
+            // oobi
+            td = tr.insertCell();
             async_oobi(signify, td, i.name ?? "");
+
             ++count;
         }
         name.value = `name${count}`;
@@ -85,6 +101,6 @@ export async function load_identifiers() {
 
     refresh.addEventListener("click", async (e: Event) => {
         e.preventDefault();
-        form.dispatchEvent(new CustomEvent("x-refresh"));
+        form.dispatchEvent(new CustomEvent(REFRESH_EVENT));
     });
 }
