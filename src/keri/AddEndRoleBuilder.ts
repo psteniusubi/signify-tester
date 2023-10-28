@@ -79,9 +79,11 @@ export class AddEndRoleBuilder {
         let embeds: MultisigRpyRequestEmbeds = {
             rpy: [addEndRoleResponse.serder, atc]
         };
-        let recipients = group.members.signing.map(i => i.aid);
+        let recipients = group.members.signing
+            .map(i => i.aid)
+            .filter(i => i !== lead.prefix);
         let request: MultisigRpyRequest = {
-            sender: lead?.name,
+            sender: lead.name,
             topic: this.group,
             sender_id: lead,
             route: MULTISIG_RPY,

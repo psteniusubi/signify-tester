@@ -73,7 +73,7 @@ export class MultisigIcpBuilder {
         };
         return request;
     }
-    async getLead(icp: GroupIcpRequest): Promise<IdentifierType | undefined> {
+    async getSelf(icp: GroupIcpRequest): Promise<IdentifierType | undefined> {
         for await (let i of get_names_by_identifiers(this.client, icp.exn.a.smids)) {
             return await get_identifier(this.client, i.name);
         }
@@ -85,7 +85,7 @@ export class MultisigIcpBuilder {
         }
     }
     async acceptGroupIcpRequest(icp: GroupIcpRequest): Promise<CreateIdentifierRequest> {
-        let lead_id = await this.getLead(icp);
+        let lead_id = await this.getSelf(icp);
         let exn = icp.exn;
         let isith = exn.e.icp.kt;
         let nsith = exn.e.icp.nt;
@@ -116,7 +116,9 @@ export class MultisigIcpBuilder {
         let embeds: MultisigIcpRequestEmbeds = {
             icp: [identifierResponse.serder, atc]
         };
-        let recipients: string[] = identifierRequest.states!.map(i => i.i);
+        let recipients: string[] = identifierRequest.states!
+            .map(i => i.i)
+            .filter(i => i !== identifierRequest.mhab?.prefix);
         let request: MultisigIcpRequest = {
             sender: identifierRequest.mhab?.name,
             topic: this.alias,
