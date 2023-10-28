@@ -38,6 +38,17 @@ export async function* get_notifications(client: SignifyClient): AsyncGenerator<
     }
 }
 
+export async function get_notification(client: SignifyClient, notification: NotificationType): Promise<NotificationType | undefined> {
+    for await (let note of get_notifications(client)) {
+        if (note.i == notification.i && note.r === false) return note;
+    }
+    return undefined;
+}
+
+export async function has_notification(client: SignifyClient, notification: NotificationType): Promise<boolean> {
+    return await get_notification(client, notification) !== null;
+}
+
 export async function wait_notification(client: SignifyClient, route: string): Promise<NotificationType> {
     let notification: NotificationType = await wait_async_operation(async () => {
         for await (let note of get_notifications(client)) {
