@@ -13,3 +13,4 @@ export * from "./MultisigIcpBuilder";
 export * from "./AddEndRoleBuilder";
 export * from "./endRole";
 export * from "./Identifier";
+export * from "./lookup";
