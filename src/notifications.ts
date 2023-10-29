@@ -2,7 +2,7 @@ import { REFRESH_EVENT, dispatch_form_event, sleep } from "./util/helper";
 import { signify } from "./client";
 import { SignifyClient } from "signify-ts";
 import { json2string } from "./util/helper";
-import { list_notifications, NotificationType, list_operations, OperationType, remove_operation, create_identifier, send_exchange, get_icp_request, MultisigIcpBuilder, AddEndRoleBuilder, add_endRole, MULTISIG_ICP, MULTISIG_RPY, get_rpy_request, delete_notification, get_name_by_identifier, has_notification } from "./keri/signify";
+import { list_notifications, NotificationType, list_operations, OperationType, remove_operation, create_identifier, send_exchange, get_icp_request, MultisigIcpBuilder, AddEndRoleBuilder, add_endRole, MULTISIG_ICP, MULTISIG_RPY, get_rpy_request, delete_notification, get_name_by_identifier, has_notification, mark_notification, GroupRpyRequest, Group, GroupIcpRequest, lookup, IDENTIFIER, has_endRole } from "./keri/signify";
 import { GROUP1 } from "./keri/config";
 
 export async function setup_notifications(): Promise<void> {
@@ -43,8 +43,29 @@ export async function setup_notifications(): Promise<void> {
     }
 }
 
+async function is_icp_from_lead(client: SignifyClient, icp: GroupIcpRequest): Promise<boolean> {
+    return (icp.exn.a.smids.indexOf(icp.exn.i) == 0);
+}
+
+async function is_icp_done(client: SignifyClient, icp: GroupIcpRequest): Promise<boolean> {
+    for (let i of await lookup(client, { type: [IDENTIFIER], id: [icp.exn.a.gid] })) {
+        return true;
+    }
+    return false;
+}
+
 async function create_icp_form(client: SignifyClient, notification: NotificationType, section: HTMLElement): Promise<void> {
     for (let icp of await get_icp_request(client, notification)) {
+        if (await is_icp_done(client, icp)) {
+            await delete_notification(client, notification);
+            continue;
+        }
+
+        // if (!await is_icp_from_lead(client, icp)) {
+        //     await mark_notification(client, notification);
+        //     continue;
+        // }
+
         let form = document.createElement("form") as HTMLFormElement;
 
         let div = document.createElement("div") as HTMLDivElement;
@@ -65,6 +86,8 @@ async function create_icp_form(client: SignifyClient, notification: Notification
         input.title = "name";
         div.appendChild(input);
 
+        let name = input;
+
         input = document.createElement("input") as HTMLInputElement;
         input.type = "submit";
         input.value = "Accept";
@@ -75,7 +98,7 @@ async function create_icp_form(client: SignifyClient, notification: Notification
 
         form.addEventListener("submit", async e => {
             e.preventDefault();
-            let builder = await MultisigIcpBuilder.create(client, GROUP1);
+            let builder = await MultisigIcpBuilder.create(client, name.value);
             let createIdentifierRequest = await builder.acceptGroupIcpRequest(icp);
             let createIdentifierResponse = await create_identifier(client, builder.alias, createIdentifierRequest);
             let icpRequest = await builder.buildMultisigIcpRequest(createIdentifierRequest, createIdentifierResponse);
@@ -88,7 +111,8 @@ async function create_icp_form(client: SignifyClient, notification: Notification
             if (signify === null) {
                 section.remove();
             } else {
-                if (!has_notification(client, notification)) {
+                const predicate = (note: NotificationType) => note.i == notification.i && note.r === false;
+                if (!has_notification(client, predicate)) {
                     section.remove();
                 }
             }
@@ -98,8 +122,28 @@ async function create_icp_form(client: SignifyClient, notification: Notification
     }
 }
 
+async function is_rpy_from_lead(client: SignifyClient, rpy: GroupRpyRequest): Promise<boolean> {
+    let group = await Group.create(client, await get_name_by_identifier(client, rpy.exn.a.gid));
+    return !group.isLead();
+}
+
+async function is_rpy_done(client: SignifyClient, rpy: GroupRpyRequest): Promise<boolean> {
+    let alias = await get_name_by_identifier(client, rpy.exn.e.rpy.a.cid);
+    return await has_endRole(client, alias, rpy.exn.e.rpy.a.role, rpy.exn.e.rpy.a.eid);
+}
+
 async function create_rpy_form(client: SignifyClient, notification: NotificationType, section: HTMLElement): Promise<void> {
     for (let rpy of await get_rpy_request(client, notification)) {
+        if (await is_rpy_done(client, rpy)) {
+            await delete_notification(client, notification);
+            continue;
+        }
+
+        // if (!await is_rpy_from_lead(client, rpy)) {
+        //     await mark_notification(client, notification);
+        //     continue;
+        // }
+
         let form = document.createElement("form") as HTMLFormElement;
 
         let div = document.createElement("div") as HTMLDivElement;
@@ -135,7 +179,8 @@ async function create_rpy_form(client: SignifyClient, notification: Notification
             if (signify === null) {
                 section.remove();
             } else {
-                if (!has_notification(client, notification)) {
+                const predicate = (note: NotificationType) => note.i == notification.i && note.r === false;
+                if (!has_notification(client, predicate)) {
                     section.remove();
                 }
             }
@@ -169,7 +214,8 @@ async function create_form(client: SignifyClient, notification: NotificationType
         if (signify === null) {
             section.remove();
         } else {
-            if (!has_notification(client, notification)) {
+            const predicate = (note: NotificationType) => note.i == notification.i && note.r === false;
+            if (!has_notification(client, predicate)) {
                 section.remove();
             }
         }

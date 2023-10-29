@@ -74,8 +74,8 @@ export class MultisigIcpBuilder {
         return request;
     }
     async getSelf(icp: GroupIcpRequest): Promise<IdentifierType | undefined> {
-        for await (let i of get_names_by_identifiers(this.client, icp.exn.a.smids)) {
-            return await get_identifier(this.client, i.name);
+        for (let i of await get_names_by_identifiers(this.client, icp.exn.a.smids)) {
+            return i;
         }
         return undefined;
     }

@@ -1,6 +1,9 @@
 import { SignifyClient } from "signify-ts";
 import { debug_json } from "../util/helper";
 
+export const IDENTIFIER = "identifier";
+export const CONTACT = "contact";
+
 export interface LookupRequest {
     type?: string[] | undefined,
     id?: string[] | undefined,

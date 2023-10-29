@@ -1,6 +1,6 @@
 import { signify, config } from "./client";
 import { REFRESH_EVENT, dispatch_form_event } from "./util/helper";
-import { create_single_identifier, list_identifiers, get_oobi } from "./keri/signify";
+import { create_single_identifier, get_oobi, get_identifiers } from "./keri/signify";
 import { SignifyClient } from "signify-ts";
 
 async function async_oobi(client: SignifyClient, td: HTMLTableCellElement, name: string) {
@@ -62,11 +62,9 @@ export async function load_identifiers() {
         }
         if (signify === null) return;
         // get identifiers
-        let res = await list_identifiers(signify);
         let count = 1;
-        for (let i of res.aids) {
+        for await (let i of get_identifiers(signify)) {
             let tr = table.insertRow();
-
             tr.classList.add((i.group !== undefined) ? "group" : "single");
 
             // checkbox
@@ -74,6 +72,7 @@ export async function load_identifiers() {
             let checkbox = document.createElement("input");
             checkbox.type = "checkbox";
             checkbox.id = `name${count}`;
+            checkbox.value = i.name ?? "";
             td.appendChild(checkbox);
 
             // name

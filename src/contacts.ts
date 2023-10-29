@@ -42,12 +42,14 @@ export async function setup_contacts_form() {
         let count = 1;
         for (let i of res) {
             let tr = table.insertRow();
+            tr.classList.add("contact");
 
             // checkbox
             let td = tr.insertCell();
             let checkbox = document.createElement("input");
             checkbox.type = "checkbox";
             checkbox.id = `contact${count}`;
+            checkbox.value = i.alias ?? "";
             td.appendChild(checkbox);
 
             // name

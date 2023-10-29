@@ -1,6 +1,6 @@
 import { SignifyClient } from 'signify-ts';
 import { RangeType } from './signify';
-import { wait_async_operation } from '../util/helper';
+import { debug_json, wait_async_operation } from '../util/helper';
 
 export interface NotificationType {
     i: string,
@@ -22,7 +22,11 @@ export async function list_notifications(client: SignifyClient, start?: number, 
     return res;
 }
 
-export async function* get_notifications(client: SignifyClient): AsyncGenerator<NotificationType> {
+export type NotificationPredicate = (notification: NotificationType) => boolean;
+
+export const UNREAD_NOTIFICATION: NotificationPredicate = (note: NotificationType) => note.r === false;
+
+export async function* get_notifications(client: SignifyClient, predicate: NotificationPredicate | undefined = undefined): AsyncGenerator<NotificationType, any, undefined> {
     const PAGE = 20;
     let start = 0;
     let end = start + PAGE - 1;
@@ -32,27 +36,39 @@ export async function* get_notifications(client: SignifyClient): AsyncGenerator<
         total = range.total;
         start += range.notes.length;
         end = start + PAGE - 1;
-        for (let i of range.notes) {
-            yield i;
+        if (predicate === undefined) {
+            debug_json("get_notifications", range.notes, "NotificationType");
+            yield* range.notes;
+        } else {
+            for (let i of range.notes) {
+                debug_json("get_notifications", i, "NotificationType");
+                if (predicate(i)) {
+                    yield i;
+                }
+            }
         }
     }
 }
 
-export async function get_notification(client: SignifyClient, notification: NotificationType): Promise<NotificationType | undefined> {
-    for await (let note of get_notifications(client)) {
-        if (note.i == notification.i && note.r === false) return note;
+export async function get_notification(client: SignifyClient, predicate: NotificationPredicate): Promise<NotificationType | undefined> {
+    for await (let note of get_notifications(client, predicate)) {
+        return note;
     }
     return undefined;
 }
 
-export async function has_notification(client: SignifyClient, notification: NotificationType): Promise<boolean> {
-    return await get_notification(client, notification) !== null;
+export async function has_notification(client: SignifyClient, predicate: NotificationPredicate): Promise<boolean> {
+    for await (let note of get_notifications(client, predicate)) {
+        return true;
+    }
+    return false;
 }
 
 export async function wait_notification(client: SignifyClient, route: string): Promise<NotificationType> {
+    const predicate: NotificationPredicate = (note: NotificationType) => note.a.r === route && note.r === false;
     let notification: NotificationType = await wait_async_operation(async () => {
-        for await (let note of get_notifications(client)) {
-            if (note.a.r === route && note.r === false) return note;
+        for await (let note of get_notifications(client, predicate)) {
+            return note;
         }
         return undefined;
     });

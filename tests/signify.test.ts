@@ -1,23 +1,27 @@
 import { describe, test } from '@jest/globals';
 import { SignifyClient } from 'signify-ts';
-import { AGENT, AddEndRoleBuilder, AddEndRoleRequest, MultisigIcpBuilder, add_endRole, create_identifier, create_single_identifier, get_contact, get_identifier, get_oobi, has_endRole, mark_notification, resolve_oobi, wait_notification, wait_operation, CreateIdentifierRequest, MultisigIcpRequest, Group, Identifier } from "../src/keri/signify";
+import { AGENT, AddEndRoleBuilder, AddEndRoleRequest, MultisigIcpBuilder, add_endRole, create_identifier, create_single_identifier, get_contact, get_identifier, get_oobi, has_endRole, resolve_oobi, wait_notification, wait_operation, CreateIdentifierRequest, MultisigIcpRequest, Group, Identifier, delete_notification, list_operations, list_notifications, get_notifications, get_group_request, UNREAD_NOTIFICATION } from "../src/keri/signify";
 import { Configuration, connect_or_boot, getLocalConfig, NAME1, CONTACT1, GROUP1 } from "../src/keri/config";
 import { MULTISIG_ICP, MULTISIG_RPY, send_exchange } from '../src/keri/signify';
+import { debug_json } from '../src/util/helper';
 
 const CLIENT1 = "client1";
 const CLIENT2 = "client2";
+const CLIENT3 = "client3";
 
 describe("SignifyClient", () => {
     let config: Configuration;
     let client1: SignifyClient;
     let client2: SignifyClient;
+    let client3: SignifyClient;
     beforeAll(async () => {
         config = await getLocalConfig();
         let tasks = [
             connect_or_boot(config, CLIENT1),
-            connect_or_boot(config, CLIENT2)
+            connect_or_boot(config, CLIENT2),
+            connect_or_boot(config, CLIENT3)
         ];
-        [client1, client2] = await Promise.all(tasks);
+        [client1, client2, client3] = await Promise.all(tasks);
     })
     test("name1", async () => {
         try {
@@ -94,7 +98,7 @@ describe("SignifyClient", () => {
             expect(icpRequest.sender_id?.name).toStrictEqual(NAME1);
             let icpResponse = await send_exchange(client2, icpRequest);
         }
-        await mark_notification(client2, n);
+        await delete_notification(client2, n);
     });
     test("group3", async () => {
         let identifier = await Identifier.create(client1, GROUP1);
@@ -135,7 +139,7 @@ describe("SignifyClient", () => {
             expect(rpyRequest.sender).toStrictEqual(NAME1);
             let rpyResponse = await send_exchange(client2, rpyRequest);
         }
-        await mark_notification(client2, n);
+        await delete_notification(client2, n);
     });
     test("endrole2b", async () => {
         let builder = await AddEndRoleBuilder.create(client2);
@@ -147,7 +151,7 @@ describe("SignifyClient", () => {
             expect(rpyRequest.sender).toStrictEqual(NAME1);
             let rpyResponse = await send_exchange(client2, rpyRequest);
         }
-        await mark_notification(client2, n);
+        await delete_notification(client2, n);
     });
     test("endrole3", async () => {
         let builder = await AddEndRoleBuilder.create(client1, GROUP1);
@@ -162,5 +166,27 @@ describe("SignifyClient", () => {
         for await (let eid of builder.getEids()) {
             await wait_operation(client2, { name: `endrole.${group.getId()}.agent.${eid}` });
         }
+    });
+    test("client1", async () => {
+        let operations = await list_operations(client1);
+        debug_json("list_operations", operations);
+        expect(operations.length).toBe(0);
+        for await (let note of get_notifications(client1, UNREAD_NOTIFICATION)) {
+            let r = await get_group_request(client1, note);
+            expect(note).toBeNull();
+        }
+    });
+    test("client2", async () => {
+        let operations = await list_operations(client2);
+        debug_json("list_operations", operations);
+        expect(operations.length).toBe(0);
+        for await (let note of get_notifications(client2, UNREAD_NOTIFICATION)) {
+            let r = await get_group_request(client2, note);
+            expect(note).toBeNull();
+        }
+    });
+    test("client3", async () => {
+        let oobi = await get_oobi(client1, GROUP1, AGENT);
+        await resolve_oobi(client3, CONTACT1, oobi.oobis[0]);
     });
 });

@@ -1,5 +1,5 @@
 import { SignifyClient } from 'signify-ts';
-import { KeyStateType, RangeType } from './signify';
+import { IDENTIFIER, KeyStateType, RangeType, lookup } from './signify';
 import { debug_json } from '../util/helper';
 
 export interface ListIdentifierType {
@@ -34,7 +34,9 @@ export async function list_identifiers(client: SignifyClient, start?: number, en
     return res;
 }
 
-export async function* get_identifiers(client: SignifyClient): AsyncGenerator<ListIdentifierType> {
+export type IdentifierPredicate = (notification: ListIdentifierType) => boolean;
+
+export async function* get_identifiers(client: SignifyClient, predicate: IdentifierPredicate | undefined = undefined): AsyncGenerator<ListIdentifierType, any, undefined> {
     const PAGE = 20;
     let start = 0;
     let end = start + PAGE - 1;
@@ -44,8 +46,16 @@ export async function* get_identifiers(client: SignifyClient): AsyncGenerator<Li
         total = range.total;
         start += range.aids.length;
         end = start + PAGE - 1;
-        for (let i of range.aids) {
-            yield i;
+        if (predicate === undefined) {
+            debug_json("get_identifiers", range.aids, "ListIdentifierType");
+            yield* range.aids;
+        } else {
+            for (let i of range.aids) {
+                debug_json("get_identifiers", i, "ListIdentifierType");
+                if (predicate(i)) {
+                    yield i;
+                }
+            }
         }
     }
 }
@@ -56,21 +66,21 @@ export async function get_identifier(client: SignifyClient, alias: string): Prom
     return res;
 }
 
-export async function* get_names_by_identifiers(client: SignifyClient, ids: string[]): AsyncGenerator<ListIdentifierType> {
-    if (ids.length < 1) return;
-    ids = Array.from(ids);
-    for await (let i of get_identifiers(client)) {
-        let n = ids.indexOf(i.prefix);
-        if (n === -1) continue;
-        yield i;
-        ids.splice(n, 1);
-        if (ids.length < 1) return;
+export async function get_names_by_identifiers(client: SignifyClient, ids: string[]): Promise<IdentifierType[]> {
+    let tasks: Promise<IdentifierType>[] = [];
+    for (let i of await lookup(client, { type: [IDENTIFIER], id: ids })) {
+        if (i.name !== undefined) {
+            tasks.push(get_identifier(client, i.name));
+        }
     }
+    return Promise.all(tasks);
 }
 
 export async function get_name_by_identifier(client: SignifyClient, id: string): Promise<string> {
-    for await (let i of get_names_by_identifiers(client, [id])) {
-        return i.name;
+    for (let i of await lookup(client, { type: [IDENTIFIER], id: [id] })) {
+        if (i.name !== undefined) {
+            return i.name;
+        }
     }
     throw new Error(`get_name_by_identifier(${id}): not found`);
 }
