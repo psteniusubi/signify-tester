@@ -32,7 +32,7 @@ export async function setup_client_form() {
     const form = document.querySelector("#client form") as HTMLFormElement;
     const status = form.elements.namedItem("status") as HTMLInputElement;
     const hostname = form.elements.namedItem("hostname") as HTMLInputElement;
-    hostname.defaultValue = config.admin;
+    hostname.value = config.admin;
     const agent = form.elements.namedItem("agent") as HTMLInputElement;
     const controller = form.elements.namedItem("controller") as HTMLInputElement;
     const passcode = form.elements.namedItem("passcode") as HTMLInputElement;

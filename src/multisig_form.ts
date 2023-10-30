@@ -1,14 +1,13 @@
 import { signify, config } from "./client_form";
-import { CONTACT1, GROUP1, NAME1 } from "./keri/config";
 import { MultisigIcpBuilder, create_identifier, send_exchange } from "./keri/signify";
-import { REFRESH_EVENT, dispatch_form_event } from "./util/helper";
+import { REFRESH_EVENT, dispatch_form_event, find_next_name } from "./util/helper";
 
 export async function setup_multisig_form(): Promise<void> {
     const form = document.querySelector("#multisig form") as HTMLFormElement;
     const name = form.elements.namedItem("name") as HTMLInputElement;
-    name.defaultValue = GROUP1;
-    const create = form.elements.namedItem("create") as HTMLButtonElement;
-    create.addEventListener("click", async e => {
+    const refresh = form.elements.namedItem("refresh") as HTMLButtonElement;
+
+    form.addEventListener("submit", async e => {
         e.preventDefault();
         if (signify === null) return;
         let lead = (document.querySelector("#identifiers tr.single input:checked") as HTMLInputElement | undefined)?.value;
@@ -21,4 +20,16 @@ export async function setup_multisig_form(): Promise<void> {
         await send_exchange(signify, exn);
         dispatch_form_event(new CustomEvent(REFRESH_EVENT));
     });
+
+    form.addEventListener(REFRESH_EVENT, async e => {
+        e.preventDefault();
+        name.value = "";
+        if (signify === null) return;
+        name.value = await find_next_name(signify, "group", ["identifier", "contact"]);
+    });
+
+    refresh.addEventListener("click", async e => {
+        e.preventDefault();
+        form.dispatchEvent(new CustomEvent(REFRESH_EVENT));
+    })
 }

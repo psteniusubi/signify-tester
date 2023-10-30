@@ -1,4 +1,5 @@
-import fs from "fs/promises";
+import { SignifyClient } from "signify-ts";
+import { invoke_lookup } from "../keri/lookup";
 
 export const REFRESH_EVENT = "x-refresh";
 
@@ -52,4 +53,17 @@ export async function wait_async_operation<T>(async_operation: () => Promise<T |
         if (--retries < 1) throw new Error(`wait_async_operation failed`);
         ms *= 1.2;
     }
+}
+
+export async function find_next_name(client: SignifyClient, prefix: string, type: string[], begin?: number): Promise<string> {
+    const PAGE = 10;
+    let n = begin ?? 1;
+    while (n < 100) {
+        let names = Array(PAGE).fill("").map((value, index) => `${prefix}${index + n}`);
+        let result = await invoke_lookup(client, { type: type, name: names });
+        names = names.filter(name => !result.some(i => i.name === name));
+        if (names.length > 0) return names[0];
+        n += PAGE;
+    }
+    throw new Error("find_next_name");
 }

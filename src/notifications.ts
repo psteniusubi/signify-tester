@@ -2,7 +2,7 @@ import { REFRESH_EVENT, dispatch_form_event, sleep } from "./util/helper";
 import { signify } from "./client_form";
 import { SignifyClient } from "signify-ts";
 import { json2string } from "./util/helper";
-import { list_notifications, NotificationType, list_operations, OperationType, remove_operation, create_identifier, send_exchange, get_icp_request, MultisigIcpBuilder, AddEndRoleBuilder, add_endRole, MULTISIG_ICP, MULTISIG_RPY, get_rpy_request, delete_notification, get_name_by_identifier, has_notification, GroupRpyRequest, Group, GroupIcpRequest, IDENTIFIER, has_endRole, invoke_lookup } from "./keri/signify";
+import { list_notifications, NotificationType, list_operations, OperationType, remove_operation, create_identifier, send_exchange, get_icp_request, MultisigIcpBuilder, AddEndRoleBuilder, add_endRole, MULTISIG_ICP, MULTISIG_RPY, get_rpy_request, delete_notification, get_name_by_identifier, has_notification, GroupRpyRequest, Group, GroupIcpRequest, IDENTIFIER, has_endRole, invoke_lookup, AID } from "./keri/signify";
 import { GROUP1 } from "./keri/config";
 
 export async function setup_notifications(): Promise<void> {
@@ -256,7 +256,7 @@ async function show_notification(client: SignifyClient | null, notifications: No
     });
 }
 
-async function add_end_roles(client: SignifyClient, id: string): Promise<void> {
+async function add_end_roles(client: SignifyClient, id: AID): Promise<void> {
     let name = await get_name_by_identifier(client, id);
     let builder = await AddEndRoleBuilder.create(client, name);
     let isLead = await builder.isLead();
@@ -273,7 +273,7 @@ async function process_operations(client: SignifyClient, operations: OperationTy
     //return
     for (let op of operations) {
         if (op.done !== true) continue;
-        let [type, id, role, eid] = op.name.split(".");
+        let [type, id, role, eid] = op.name.split(".") as [string, AID, string?, AID?];
         switch (type) {
             case "group":
                 await add_end_roles(client, id);

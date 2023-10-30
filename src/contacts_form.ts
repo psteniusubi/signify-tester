@@ -1,5 +1,5 @@
 import { signify } from "./client_form";
-import { REFRESH_EVENT, dispatch_form_event } from "./util/helper";
+import { REFRESH_EVENT, dispatch_form_event, find_next_name } from "./util/helper";
 import { resolve_oobi, list_contacts } from "./keri/signify";
 
 export async function setup_contacts_form() {
@@ -33,22 +33,23 @@ export async function setup_contacts_form() {
         name.value = "";
         oobi.value = "";
         name.classList.value = "";
-        while (table.rows.length > 1) {
-            table.deleteRow(1);
+        let tbody = document.createElement("tbody") as HTMLTableSectionElement;
+        if (signify === null) {
+            table.replaceChild(tbody, table.tBodies.item(0)!);
+            return;
         }
-        if (signify === null) return;
         // get contacts
         let res = await list_contacts(signify);
         let count = 1;
         for (let i of res) {
-            let tr = table.insertRow();
+            let tr = tbody.insertRow();
             tr.classList.add("contact");
 
             // checkbox
             let td = tr.insertCell();
             let checkbox = document.createElement("input");
             checkbox.type = "checkbox";
-            checkbox.id = `contact${count}`;
+            checkbox.id = `contact-${count}`;
             checkbox.value = i.alias ?? "";
             td.appendChild(checkbox);
 
@@ -88,7 +89,8 @@ export async function setup_contacts_form() {
 
             ++count;
         }
-        name.value = `contact${count}`;
+        table.replaceChild(tbody, table.tBodies.item(0)!);
+        name.value = await find_next_name(signify, "contact", ["identifier", "contact"]);
     });
 
     refresh.addEventListener("click", async (e: Event) => {

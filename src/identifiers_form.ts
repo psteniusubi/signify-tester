@@ -1,5 +1,5 @@
 import { signify, config } from "./client_form";
-import { REFRESH_EVENT, dispatch_form_event } from "./util/helper";
+import { REFRESH_EVENT, dispatch_form_event, find_next_name } from "./util/helper";
 import { create_single_identifier, get_oobi, get_identifiers } from "./keri/signify";
 import { SignifyClient } from "signify-ts";
 
@@ -57,21 +57,22 @@ export async function setup_identifiers_form() {
     form.addEventListener(REFRESH_EVENT, async (e: Event) => {
         name.value = "";
         name.classList.value = "";
-        while (table.rows.length > 1) {
-            table.deleteRow(1);
+        let tbody = document.createElement("tbody") as HTMLTableSectionElement;
+        if (signify === null) {
+            table.replaceChild(tbody, table.tBodies.item(0)!);
+            return;
         }
-        if (signify === null) return;
         // get identifiers
         let count = 1;
         for await (let i of get_identifiers(signify)) {
-            let tr = table.insertRow();
+            let tr = tbody.insertRow();
             tr.classList.add((i.group !== undefined) ? "group" : "single");
 
             // checkbox
             let td = tr.insertCell();
             let checkbox = document.createElement("input");
             checkbox.type = "checkbox";
-            checkbox.id = `name${count}`;
+            checkbox.id = `identifier-${count}`;
             checkbox.value = i.name ?? "";
             td.appendChild(checkbox);
 
@@ -95,7 +96,8 @@ export async function setup_identifiers_form() {
 
             ++count;
         }
-        name.value = `name${count}`;
+        table.replaceChild(tbody, table.tBodies.item(0)!);
+        name.value = await find_next_name(signify, "name", ["identifier", "contact"]);
     });
 
     refresh.addEventListener("click", async (e: Event) => {
