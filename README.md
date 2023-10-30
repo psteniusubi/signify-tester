@@ -54,9 +54,9 @@ npx jest
 
 ```
 npx jest ./tests/signify.test.ts
+npx jest ./tests/api.test.ts
 ```
 
 ```
-npx jest ./tests/signify.test.ts -t client1
-npx jest ./tests/signify.test.ts -t "name1|name2|oobi1|oobi2"
+npx jest ./tests/signify.test.ts -t test1
 ```

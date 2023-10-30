@@ -2,6 +2,8 @@ import { SignifyClient, Tier, ready } from "signify-ts";
 
 export const NAME1 = "name1";
 export const CONTACT1 = "contact1";
+export const CONTACT2 = "contact2";
+export const CONTACT3 = "contact3";
 export const GROUP1 = "group1";
 
 export interface Configuration {
