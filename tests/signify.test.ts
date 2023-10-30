@@ -79,7 +79,9 @@ describe("SignifyClient", () => {
             await resolve_oobi(client1, CONTACT1, oobi.oobis[0]);
         }
     });
-    test("group1", async () => {
+    test("group1a", async () => {
+        // lead multisig inception
+        // contact1 is name1 on client2
         let builder = await MultisigIcpBuilder.create(client1, GROUP1, NAME1, [CONTACT1]);
         let createIdentifierRequest: CreateIdentifierRequest = await builder.buildCreateIdentifierRequest(config);
         expect(createIdentifierRequest.mhab?.name).toStrictEqual(NAME1);
@@ -89,6 +91,7 @@ describe("SignifyClient", () => {
         let icpResponse = await send_exchange(client1, icpRequest);
     });
     test("group2", async () => {
+        // wait for icp notification from contact1 to name1 (client1 -> client2)
         let n = await wait_notification(client2, MULTISIG_ICP);
         let builder = await MultisigIcpBuilder.create(client2, GROUP1);
         for await (let createIdentifierRequest of builder.acceptGroupIcpNotification(n)) {
@@ -99,6 +102,11 @@ describe("SignifyClient", () => {
             let icpResponse = await send_exchange(client2, icpRequest);
         }
         await delete_notification(client2, n);
+    });
+    test("group1b", async () => {
+        // wait for icp notification from contact1 to name1 (client2 -> client1)
+        let n = await wait_notification(client1, MULTISIG_ICP);
+        delete_notification(client1, n);
     });
     test("group3", async () => {
         let identifier = await Identifier.create(client1, GROUP1);
@@ -120,7 +128,8 @@ describe("SignifyClient", () => {
         let n = ids.indexOf(lead_id!.prefix);
         expect(n).toBe(1);
     })
-    test("endrole1", async () => {
+    test("endrole1a", async () => {
+        // lead end role authorization
         let builder = await AddEndRoleBuilder.create(client1, GROUP1);
         for await (let addEndRoleRequest of builder.buildAddEndRoleRequest()) {
             let addEndRoleResponse = await add_endRole(client1, addEndRoleRequest);
@@ -130,6 +139,7 @@ describe("SignifyClient", () => {
         }
     });
     test("endrole2a", async () => {
+        // wait for rpy notification from contact1 to name1 (client1 -> client2)
         let builder = await AddEndRoleBuilder.create(client2);
         let n = await wait_notification(client2, MULTISIG_RPY);
         for await (let addEndRoleRequest of builder.acceptGroupRpyNotification(n)) {
@@ -142,6 +152,7 @@ describe("SignifyClient", () => {
         await delete_notification(client2, n);
     });
     test("endrole2b", async () => {
+        // wait for rpy notification from contact1 to name1 (client1 -> client2)
         let builder = await AddEndRoleBuilder.create(client2);
         let n = await wait_notification(client2, MULTISIG_RPY);
         for await (let addEndRoleRequest of builder.acceptGroupRpyNotification(n)) {
@@ -152,6 +163,13 @@ describe("SignifyClient", () => {
             let rpyResponse = await send_exchange(client2, rpyRequest);
         }
         await delete_notification(client2, n);
+    });
+    test("endrole1b", async () => {
+        // wait for rpy notification from contact1 to name1 (client2 -> client1)
+        let n = await wait_notification(client1, MULTISIG_RPY);
+        await delete_notification(client1, n);
+        n = await wait_notification(client1, MULTISIG_RPY);
+        await delete_notification(client1, n);
     });
     test("endrole3", async () => {
         let builder = await AddEndRoleBuilder.create(client1, GROUP1);
@@ -173,7 +191,7 @@ describe("SignifyClient", () => {
         expect(operations.length).toBe(0);
         for await (let note of get_notifications(client1, UNREAD_NOTIFICATION)) {
             let r = await get_group_request(client1, note);
-            expect(note).toBeNull();
+            expect(r).toHaveLength(0);
         }
     });
     test("client2", async () => {
@@ -182,7 +200,7 @@ describe("SignifyClient", () => {
         expect(operations.length).toBe(0);
         for await (let note of get_notifications(client2, UNREAD_NOTIFICATION)) {
             let r = await get_group_request(client2, note);
-            expect(note).toBeNull();
+            expect(r).toHaveLength(0);
         }
     });
     test("client3", async () => {

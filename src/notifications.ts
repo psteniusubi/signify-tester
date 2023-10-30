@@ -2,7 +2,7 @@ import { REFRESH_EVENT, dispatch_form_event, sleep } from "./util/helper";
 import { signify } from "./client_form";
 import { SignifyClient } from "signify-ts";
 import { json2string } from "./util/helper";
-import { list_notifications, NotificationType, list_operations, OperationType, remove_operation, create_identifier, send_exchange, get_icp_request, MultisigIcpBuilder, AddEndRoleBuilder, add_endRole, MULTISIG_ICP, MULTISIG_RPY, get_rpy_request, delete_notification, get_name_by_identifier, has_notification, mark_notification, GroupRpyRequest, Group, GroupIcpRequest, lookup, IDENTIFIER, has_endRole } from "./keri/signify";
+import { list_notifications, NotificationType, list_operations, OperationType, remove_operation, create_identifier, send_exchange, get_icp_request, MultisigIcpBuilder, AddEndRoleBuilder, add_endRole, MULTISIG_ICP, MULTISIG_RPY, get_rpy_request, delete_notification, get_name_by_identifier, has_notification, GroupRpyRequest, Group, GroupIcpRequest, IDENTIFIER, has_endRole, invoke_lookup } from "./keri/signify";
 import { GROUP1 } from "./keri/config";
 
 export async function setup_notifications(): Promise<void> {
@@ -48,7 +48,7 @@ async function is_icp_from_lead(client: SignifyClient, icp: GroupIcpRequest): Pr
 }
 
 async function is_icp_done(client: SignifyClient, icp: GroupIcpRequest): Promise<boolean> {
-    for (let i of await lookup(client, { type: [IDENTIFIER], id: [icp.exn.a.gid] })) {
+    for (let i of await invoke_lookup(client, { type: [IDENTIFIER], id: [icp.exn.a.gid] })) {
         return true;
     }
     return false;

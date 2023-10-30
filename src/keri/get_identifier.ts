@@ -1,5 +1,5 @@
 import { SignifyClient } from 'signify-ts';
-import { IDENTIFIER, KeyStateType, RangeType, lookup } from './signify';
+import { IDENTIFIER, KeyStateType, RangeType, invoke_lookup } from './signify';
 import { debug_json } from '../util/helper';
 
 export interface ListIdentifierType {
@@ -68,7 +68,7 @@ export async function get_identifier(client: SignifyClient, alias: string): Prom
 
 export async function get_names_by_identifiers(client: SignifyClient, ids: string[]): Promise<IdentifierType[]> {
     let tasks: Promise<IdentifierType>[] = [];
-    for (let i of await lookup(client, { type: [IDENTIFIER], id: ids })) {
+    for (let i of await invoke_lookup(client, { type: [IDENTIFIER], id: ids })) {
         if (i.name !== undefined) {
             tasks.push(get_identifier(client, i.name));
         }
@@ -77,7 +77,7 @@ export async function get_names_by_identifiers(client: SignifyClient, ids: strin
 }
 
 export async function get_name_by_identifier(client: SignifyClient, id: string): Promise<string> {
-    for (let i of await lookup(client, { type: [IDENTIFIER], id: [id] })) {
+    for (let i of await invoke_lookup(client, { type: [IDENTIFIER], id: [id] })) {
         if (i.name !== undefined) {
             return i.name;
         }

@@ -16,7 +16,7 @@ export interface LookupType {
     name?: string | undefined;
 }
 
-export async function lookup(client: SignifyClient, request: LookupRequest): Promise<LookupType[]> {
+export async function invoke_lookup(client: SignifyClient, request: LookupRequest): Promise<LookupType[]> {
     let q = new URLSearchParams();
     request.type?.forEach(i => q.append("type", i));
     request.id?.forEach(i => q.append("id", i));
