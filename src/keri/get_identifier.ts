@@ -1,15 +1,15 @@
 import { SignifyClient } from 'signify-ts';
-import { IDENTIFIER, KeyStateType, RangeType, invoke_lookup } from './signify';
+import { AID, IDENTIFIER, KeyStateType, QB64, RangeType, invoke_lookup } from './signify';
 import { debug_json } from '../util/helper';
 
 export interface ListIdentifierType {
     name: string;
-    prefix: string;
+    prefix: AID;
     salty?: any;
     group?: {
         mhab: IdentifierType;
-        keys: string[];
-        ndigs: string[]
+        keys: QB64[];
+        ndigs: QB64[]
     };
 }
 
@@ -66,7 +66,7 @@ export async function get_identifier(client: SignifyClient, alias: string): Prom
     return res;
 }
 
-export async function get_names_by_identifiers(client: SignifyClient, ids: string[]): Promise<IdentifierType[]> {
+export async function get_names_by_identifiers(client: SignifyClient, ids: AID[]): Promise<IdentifierType[]> {
     let tasks: Promise<IdentifierType>[] = [];
     for (let i of await invoke_lookup(client, { type: [IDENTIFIER], id: ids })) {
         if (i.name !== undefined) {
@@ -76,7 +76,7 @@ export async function get_names_by_identifiers(client: SignifyClient, ids: strin
     return Promise.all(tasks);
 }
 
-export async function get_name_by_identifier(client: SignifyClient, id: string): Promise<string> {
+export async function get_name_by_identifier(client: SignifyClient, id: AID): Promise<string> {
     for (let i of await invoke_lookup(client, { type: [IDENTIFIER], id: [id] })) {
         if (i.name !== undefined) {
             return i.name;

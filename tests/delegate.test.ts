@@ -1,6 +1,6 @@
 import { describe, test } from '@jest/globals';
 import { config, client1, client2, createClients, createIdentifiers, createContacts, name1_id } from './prepare';
-import { AGENT, AddEndRoleRequest, CreateIdentifierRequest, add_endRole, create_identifier, get_notifications, wait_operation } from '../src/keri/signify';
+import { AGENT, AddEndRoleRequest, CreateIdentifierRequest, add_endRole, create_identifier, get_agentIdentifier, get_notifications, wait_operation } from '../src/keri/signify';
 import { debug_json } from '../src/util/helper';
 
 beforeAll(createClients);
@@ -21,7 +21,7 @@ describe("Delegate", () => {
         let req2: AddEndRoleRequest = {
             alias: alias,
             role: AGENT,
-            eid: client2.agent?.pre
+            eid: get_agentIdentifier(client2)
         }
         let res2 = await add_endRole(client2, req2);
         await wait_operation(client2, res2.op);

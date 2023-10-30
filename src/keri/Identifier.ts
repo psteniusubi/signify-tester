@@ -1,5 +1,5 @@
 import { SignifyClient } from 'signify-ts';
-import { ContactType, IdentifierType, KeyStateType, MembersType, get_contact, get_identifier, get_keyState, get_members } from './signify';
+import { AID, ContactType, IdentifierType, KeyStateType, MembersType, get_contact, get_identifier, get_keyState, get_members } from './signify';
 
 export abstract class IdentifierOrContact {
     readonly client: SignifyClient;
@@ -12,9 +12,9 @@ export abstract class IdentifierOrContact {
     compare(other: IdentifierOrContact): number {
         return this.getId().localeCompare(other.getId());
     }
-    abstract getId(): string;
+    abstract getId(): AID;
     async getKeyState(): Promise<KeyStateType> {
-        let id = await this.getId();
+        let id = this.getId();
         return this._keyState ??= await get_keyState(this.client, id);
     }
 }
@@ -35,7 +35,7 @@ export class Identifier extends IdentifierOrContact {
     getIdentifier(): IdentifierType {
         return this.identifier;
     }
-    getId(): string {
+    getId(): AID {
         return this.identifier.prefix;
     }
 }
@@ -56,7 +56,7 @@ export class Group extends Identifier {
         this.members = members;
     }
     isLead(): boolean {
-        let ids = this.members.signing.map(i => i.aid);
+        let ids: AID[] = this.members.signing.map(i => i.aid);
         let n = ids.indexOf(this.getIdentifier().group!.mhab.prefix);
         return n === 0;
     }
@@ -75,7 +75,7 @@ export class Contact extends IdentifierOrContact {
     getContact(): ContactType {
         return this.contact;
     }
-    getId(): string {
+    getId(): AID {
         return this.contact.id;
     }
 }

@@ -1,5 +1,5 @@
 import { Serder, SignifyClient } from "signify-ts";
-import { IdentifierType } from "./signify";
+import { AID, IdentifierType } from "./signify";
 import { debug_json } from "../util/helper";
 
 export const MULTISIG_ICP = "/multisig/icp";
@@ -14,15 +14,15 @@ export interface ExchangeRequest {
     route?: string;
     payload?: any;
     embeds?: any;
-    recipients?: string[];
+    recipients?: AID[];
 }
 
 // /multisig/icp
 
 export interface MultisigIcpRequestPayload {
-    gid?: string;
-    smids?: string[];
-    rmids?: string[];
+    gid?: AID;
+    smids?: AID[];
+    rmids?: AID[];
 }
 
 export interface MultisigIcpRequestEmbeds {
@@ -37,7 +37,7 @@ export interface MultisigIcpRequest extends ExchangeRequest {
 // /multisig/rpy
 
 export interface MultisigRpyRequestPayload {
-    gid?: string;
+    gid?: AID;
 }
 
 export interface MultisigRpyRequestEmbeds {

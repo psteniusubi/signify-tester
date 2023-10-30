@@ -1,13 +1,18 @@
 import { EventResult, Serder, SignifyClient } from 'signify-ts';
-import { OperationType } from './signify';
+import { AID, OperationType, QB64 } from './signify';
 import { debug_json } from '../util/helper';
 
 export const AGENT = "agent";
 
 export interface EndRoleType {
-    cid: string,
-    role: string,
-    eid: string
+    cid: AID;
+    role: string;
+    eid: AID;
+}
+
+export function get_agentIdentifier(client: SignifyClient): AID {
+    if (client.agent === null) throw new Error();
+    return client.agent!.pre as AID;
 }
 
 export async function get_endRoles(client: SignifyClient, alias: string, role: string | undefined = undefined): Promise<EndRoleType[]> {
@@ -22,7 +27,7 @@ export async function get_endRoles(client: SignifyClient, alias: string, role: s
 export interface AddEndRoleRequest {
     alias?: string;
     role?: string;
-    eid?: string;
+    eid?: AID;
     stamp?: string;
 }
 
@@ -31,7 +36,7 @@ export interface AddEndRoleRequest {
  */
 export interface AddEndRoleResponse {
     serder: Serder;
-    sigs: string[];
+    sigs: QB64[];
     op: OperationType;
 }
 
@@ -44,13 +49,13 @@ export async function add_endRole(client: SignifyClient, request: AddEndRoleRequ
     );
     let response: AddEndRoleResponse = {
         serder: res.serder,
-        sigs: res.sigs,
+        sigs: res.sigs as QB64[],
         op: await res.op()
     };
     return response;
 }
 
-export async function has_endRole(client: SignifyClient, alias: string, role: string, eid?: string): Promise<boolean> {
+export async function has_endRole(client: SignifyClient, alias: string, role: string, eid?: AID): Promise<boolean> {
     let list = await get_endRoles(client, alias, role);
     for (let i of list) {
         if (i.role === role && i.eid === eid) {

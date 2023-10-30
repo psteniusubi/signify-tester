@@ -1,12 +1,12 @@
 import { SignifyClient } from 'signify-ts';
-import { NotificationType } from './signify';
+import { AID, NotificationType } from './signify';
 import { debug_json } from '../util/helper';
 
 // GroupRequest
 
 export interface GroupRequestExn {
     t: string;
-    i: string;
+    i: AID;
     r: string;
     a: any;
     e: any;
@@ -27,14 +27,14 @@ export async function get_group_request(client: SignifyClient, note: Notificatio
 // /multisig/icp
 
 export interface GroupIcpRequestA {
-    gid: string;
-    smids: string[];
-    rmids: string[];
+    gid: AID;
+    smids: AID[];
+    rmids: AID[];
 }
 
 export interface GroupIcpRequestE {
     icp: any;
-    d: string;
+    d: AID;
 }
 
 export interface GroupIcpRequestExn extends GroupRequestExn {
@@ -59,7 +59,7 @@ export async function get_icp_request(client: SignifyClient, note: NotificationT
 // /multisig/rpy
 
 export interface GroupRpyRequestA {
-    gid: string;
+    gid: AID;
 }
 
 export interface GroupRpyRequestE {
@@ -67,12 +67,12 @@ export interface GroupRpyRequestE {
         dt: string;
         r: string;
         a: {
-            cid: string;
+            cid: AID;
             role: string;
-            eid: string;
+            eid: AID;
         }
     };
-    d: string;
+    d: AID;
 }
 
 export interface GroupRpyRequestExn extends GroupRequestExn {

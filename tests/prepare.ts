@@ -1,6 +1,6 @@
 import { SignifyClient } from 'signify-ts';
 import { Configuration, connect_or_boot, getLocalConfig, NAME1, CONTACT1, CONTACT2, CONTACT3 } from "../src/keri/config";
-import { AGENT, AddEndRoleRequest, CONTACT, IDENTIFIER, IdentifierType, add_endRole, create_single_identifier, get_contact, get_identifier, get_oobi, has_endRole, invoke_lookup, resolve_oobi, wait_operation } from '../src/keri/signify';
+import { AGENT, AID, AddEndRoleRequest, CONTACT, IDENTIFIER, IdentifierType, add_endRole, create_single_identifier, get_agentIdentifier, get_contact, get_identifier, get_oobi, has_endRole, invoke_lookup, resolve_oobi, wait_operation } from '../src/keri/signify';
 
 const CLIENT1 = "client1";
 const CLIENT2 = "client2";
@@ -33,13 +33,14 @@ async function exist_contact(client: SignifyClient, alias: string): Promise<bool
     return r[0].type === CONTACT && r[0].name === alias;
 }
 
-export async function get_or_create_identifier(client: SignifyClient, alias: string): Promise<string[]> {
+export async function get_or_create_identifier(client: SignifyClient, alias: string): Promise<[AID, string]> {
     if (await exist_identifier(client, alias)) {
-        if (!has_endRole(client, alias, AGENT, client.agent?.pre)) {
+        let eid = get_agentIdentifier(client);
+        if (!has_endRole(client, alias, AGENT, eid)) {
             let req: AddEndRoleRequest = {
                 alias: alias,
                 role: AGENT,
-                eid: client.agent?.pre
+                eid: eid
             };
             let r = await add_endRole(client, req);
             await wait_operation(client, r.op);
@@ -65,9 +66,9 @@ export async function get_or_create_contact(client: SignifyClient, alias: string
     }
 }
 
-export let name1_id: string, name1_oobi: string;
-export let name2_id: string, name2_oobi: string;
-export let name3_id: string, name3_oobi: string;
+export let name1_id: AID, name1_oobi: string;
+export let name2_id: AID, name2_oobi: string;
+export let name3_id: AID, name3_oobi: string;
 
 export async function createIdentifiers() {
     let tasks = [

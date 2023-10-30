@@ -1,4 +1,5 @@
 import { SignifyClient, Tier, ready } from "signify-ts";
+import { AID } from "./primitives";
 
 export const NAME1 = "name1";
 export const CONTACT1 = "contact1";
@@ -10,13 +11,13 @@ export interface Configuration {
     admin: string,
     boot: string,
     toad: number,
-    wits: string[]
+    wits: AID[]
 }
 
-const WITS_PUBLIC: string[] = [
-    "BOyuCyHFluqsV0rAYLxJuBSY-ObuLSOL3RaCQdwN1aL0",
-    "BJqgbfyC0ZLIOSLqYLtwrVYo44o-VMA4l5kX7Ooxe3y0",
-    "BNAsMJ69E5kxnpzAQKDzDghZMdk3nr1-zosV22oXmQGw"
+const WITS_PUBLIC: AID[] = [
+    "BOyuCyHFluqsV0rAYLxJuBSY-ObuLSOL3RaCQdwN1aL0" as AID,
+    "BJqgbfyC0ZLIOSLqYLtwrVYo44o-VMA4l5kX7Ooxe3y0" as AID,
+    "BNAsMJ69E5kxnpzAQKDzDghZMdk3nr1-zosV22oXmQGw" as AID
 ];
 const KERIA_ADMIN_PUBLIC: string = "https://keri-admin.io.ubidemo1.com";
 const KERIA_BOOT_PUBLIC: string = "https://keri-boot.io.ubidemo1.com";
@@ -27,10 +28,10 @@ const PUBLIC: Configuration = {
     wits: WITS_PUBLIC
 }
 
-const WITS_LOCAL: string[] = [
-    "BBilc4-L3tFUnfM_wJr4S4OJanAv_VmF_dJNN6vkf2Ha",
-    "BLskRTInXnMxWaGqcpSyMgo0nYbalW99cGZESrz3zapM",
-    "BIKKuvBwpmDVA4Ds-EpL5bt9OqPzWPja2LigFYZN2YfX"
+const WITS_LOCAL: AID[] = [
+    "BBilc4-L3tFUnfM_wJr4S4OJanAv_VmF_dJNN6vkf2Ha" as AID,
+    "BLskRTInXnMxWaGqcpSyMgo0nYbalW99cGZESrz3zapM" as AID,
+    "BIKKuvBwpmDVA4Ds-EpL5bt9OqPzWPja2LigFYZN2YfX" as AID
 ];
 const KERIA_ADMIN_LOCAL: string = "http://localhost:3901";
 const KERIA_BOOT_LOCAL: string = "http://localhost:3903";

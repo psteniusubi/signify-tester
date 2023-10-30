@@ -1,18 +1,19 @@
 import { SignifyClient } from "signify-ts";
 import { debug_json } from "../util/helper";
+import { AID } from "./signify";
 
 export const IDENTIFIER = "identifier";
 export const CONTACT = "contact";
 
 export interface LookupRequest {
     type?: string[] | undefined,
-    id?: string[] | undefined,
+    id?: AID[] | undefined,
     name?: string[] | undefined,
 }
 
 export interface LookupType {
     type: string;
-    id: string;
+    id: AID;
     name?: string | undefined;
 }
 

@@ -1,5 +1,5 @@
 import { Siger, SignifyClient, d, messagize } from "signify-ts";
-import { Contact, GroupIcpRequest, Identifier, IdentifierOrContact, IdentifierType, get_identifier, get_names_by_identifiers } from "./signify";
+import { AID, Contact, GroupIcpRequest, Identifier, IdentifierOrContact, IdentifierType, get_identifier, get_names_by_identifiers } from "./signify";
 import { KeyStateType, get_keyState } from "./signify";
 import { Configuration } from "./config";
 import { CreateIdentifierRequest, CreateIdentifierResponse } from "./signify";
@@ -107,7 +107,7 @@ export class MultisigIcpBuilder {
     }
     async buildMultisigIcpRequest(identifierRequest: CreateIdentifierRequest, identifierResponse: CreateIdentifierResponse): Promise<MultisigIcpRequest> {
         let payload: MultisigIcpRequestPayload = {
-            gid: identifierResponse.serder.pre,
+            gid: identifierResponse.serder.pre as AID,
             smids: identifierRequest.states?.map(i => i.i),
             rmids: identifierRequest.rstates?.map(i => i.i),
         };
@@ -117,7 +117,7 @@ export class MultisigIcpBuilder {
         let embeds: MultisigIcpRequestEmbeds = {
             icp: [identifierResponse.serder, atc]
         };
-        let recipients: string[] = identifierRequest.states!
+        let recipients: AID[] = identifierRequest.states!
             .map(i => i.i)
             .filter(i => i !== identifierRequest.mhab?.prefix);
         let request: MultisigIcpRequest = {

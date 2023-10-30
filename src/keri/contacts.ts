@@ -1,8 +1,9 @@
 import { SignifyClient } from 'signify-ts';
 import { debug_json } from '../util/helper';
+import { AID } from './signify';
 
 export interface ContactType {
-    id: string,
+    id: AID,
     alias: string,
     oobi: string,
     challenges?: any[],

@@ -1,5 +1,5 @@
 import { Siger, SignifyClient, d, messagize } from "signify-ts";
-import { AGENT, AddEndRoleRequest, AddEndRoleResponse, Group, GroupRpyRequest, MULTISIG_RPY, MultisigRpyRequestEmbeds, MultisigRpyRequestPayload, get_name_by_identifier } from "./signify";
+import { AGENT, AID, AddEndRoleRequest, AddEndRoleResponse, Group, GroupRpyRequest, MULTISIG_RPY, MultisigRpyRequestEmbeds, MultisigRpyRequestPayload, get_name_by_identifier } from "./signify";
 import { MultisigRpyRequest, NotificationType, get_rpy_request } from "./signify";
 import { date2string } from "../util/helper";
 
@@ -23,12 +23,12 @@ export class AddEndRoleBuilder {
         let group = await this._group;
         return group?.isLead() ?? false;
     }
-    async *getEids(): AsyncGenerator<string> {
+    async *getEids(): AsyncGenerator<AID> {
         if (this._group === undefined) return;
         let group = await this._group;
         for (let s of group.members.signing) {
             for (let eid of Object.keys(s.ends.agent)) {
-                yield eid;
+                yield eid as AID;
             }
         }
     }

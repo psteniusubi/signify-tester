@@ -1,5 +1,6 @@
 import { SignifyClient } from 'signify-ts';
 import { debug_json } from '../util/helper';
+import { AID } from './signify';
 
 export interface SchemesType {
     http?: string;
@@ -7,7 +8,7 @@ export interface SchemesType {
 }
 
 export interface EndsType {
-    [id: string]: SchemesType;
+    [id: AID]: SchemesType;
 }
 
 export interface RolesType {
@@ -15,7 +16,7 @@ export interface RolesType {
 }
 
 export interface MemberType {
-    aid: string;
+    aid: AID;
     ends: RolesType;
 }
 

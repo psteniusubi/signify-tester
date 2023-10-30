@@ -1,5 +1,5 @@
 import { describe, test } from '@jest/globals';
-import { AGENT, AddEndRoleBuilder, MultisigIcpBuilder, add_endRole, create_identifier, get_oobi, resolve_oobi, wait_notification, wait_operation, CreateIdentifierRequest, MultisigIcpRequest, Group, Identifier, delete_notification, list_operations, get_notifications, get_group_request, UNREAD_NOTIFICATION, get_endRoles, Contact, has_endRole } from "../src/keri/signify";
+import { AGENT, AddEndRoleBuilder, MultisigIcpBuilder, add_endRole, create_identifier, get_oobi, resolve_oobi, wait_notification, wait_operation, CreateIdentifierRequest, MultisigIcpRequest, Group, Identifier, delete_notification, list_operations, get_notifications, get_group_request, UNREAD_NOTIFICATION, get_endRoles, Contact, has_endRole, get_agentIdentifier } from "../src/keri/signify";
 import { NAME1, GROUP1, CONTACT2 } from "../src/keri/config";
 import { MULTISIG_ICP, MULTISIG_RPY, send_exchange } from '../src/keri/signify';
 import { debug_json } from '../src/util/helper';
@@ -133,8 +133,8 @@ describe("MultisigIcp", () => {
             expect(r).toHaveLength(0);
             expect(note).toBeNull();
         }
-        expect(await has_endRole(client1, GROUP1, AGENT, client1.agent?.pre)).toBeTruthy();
-        expect(await has_endRole(client1, GROUP1, AGENT, client2.agent?.pre)).toBeTruthy();
+        expect(await has_endRole(client1, GROUP1, AGENT, get_agentIdentifier(client1))).toBeTruthy();
+        expect(await has_endRole(client1, GROUP1, AGENT, get_agentIdentifier(client2))).toBeTruthy();
         expect(await get_endRoles(client1, GROUP1)).toHaveLength(2);
     });
     test("client2", async () => {
@@ -146,8 +146,8 @@ describe("MultisigIcp", () => {
             let r = await get_group_request(client2, note);
             expect(r).toHaveLength(0);
         }
-        expect(await has_endRole(client2, GROUP1, AGENT, client1.agent?.pre)).toBeTruthy();
-        expect(await has_endRole(client2, GROUP1, AGENT, client2.agent?.pre)).toBeTruthy();
+        expect(await has_endRole(client2, GROUP1, AGENT, get_agentIdentifier(client1))).toBeTruthy();
+        expect(await has_endRole(client2, GROUP1, AGENT, get_agentIdentifier(client2))).toBeTruthy();
         expect(await get_endRoles(client2, GROUP1)).toHaveLength(2);
     });
     test("client3", async () => {

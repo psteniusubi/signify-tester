@@ -1,6 +1,6 @@
 import { SignifyClient, CreateIdentiferArgs, EventResult, } from 'signify-ts';
 import { Serder } from "signify-ts";
-import { KeyStateType } from "./signify";
+import { AID, KeyStateType, QB64, get_agentIdentifier } from "./signify";
 import { AGENT, AddEndRoleRequest, IdentifierType, add_endRole } from "./signify";
 import { OperationType, wait_operation } from "./signify";
 import { Configuration } from './config';
@@ -10,6 +10,8 @@ import { Configuration } from './config';
  * <p>Overrides types for states, rstates and mhab
  */
 export interface CreateIdentifierRequest extends CreateIdentiferArgs {
+    wits?: AID[];
+    delpre?: AID;
     states?: KeyStateType[];
     rstates?: KeyStateType[];
     mhab?: IdentifierType;
@@ -17,7 +19,7 @@ export interface CreateIdentifierRequest extends CreateIdentiferArgs {
 
 export interface CreateIdentifierResponse {
     serder: Serder;
-    sigs: string[];
+    sigs: QB64[];
     op: OperationType;
 }
 
@@ -25,7 +27,7 @@ export async function create_identifier(client: SignifyClient, alias: string, re
     let result: EventResult = await client.identifiers().create(alias, request);
     let response: CreateIdentifierResponse = {
         serder: result.serder,
-        sigs: result.sigs,
+        sigs: result.sigs as QB64[],
         op: await result.op()
     };
     return response;
@@ -42,7 +44,7 @@ export async function create_single_identifier(client: SignifyClient, config: Co
     let req2: AddEndRoleRequest = {
         alias: alias,
         role: AGENT,
-        eid: client.agent?.pre
+        eid: get_agentIdentifier(client)
     }
     let res2 = await add_endRole(client, req2);
     await wait_operation(client, res2.op);
