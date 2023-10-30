@@ -48,15 +48,29 @@ git diff master github-pages  -- . ':!docs'
 
 # Unit tests
 
+## Run all tests
+
 ```
 npx jest
 ```
 
-```
-npx jest ./tests/signify.test.ts
-npx jest ./tests/api.test.ts
-```
+## Prepare
 
 ```
-npx jest ./tests/signify.test.ts -t test1
+npx jest ./tests/prepare.test.ts
+```
+
+## Individual tests
+
+```
+npx jest ./tests/api.test.ts
+npx jest ./tests/delegate.test.ts
+npx jest ./tests/multisig.test.ts
+```
+
+## Single test
+
+```
+npx jest ./tests/multisig.test.ts -t client3
+npx jest ./tests/multisig.test.ts -t status
 ```

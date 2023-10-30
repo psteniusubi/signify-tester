@@ -1,5 +1,5 @@
 import { describe, test } from '@jest/globals';
-import { AGENT, AddEndRoleBuilder, MultisigIcpBuilder, add_endRole, create_identifier, get_oobi, resolve_oobi, wait_notification, wait_operation, CreateIdentifierRequest, MultisigIcpRequest, Group, Identifier, delete_notification, list_operations, get_notifications, get_group_request, UNREAD_NOTIFICATION } from "../src/keri/signify";
+import { AGENT, AddEndRoleBuilder, MultisigIcpBuilder, add_endRole, create_identifier, get_oobi, resolve_oobi, wait_notification, wait_operation, CreateIdentifierRequest, MultisigIcpRequest, Group, Identifier, delete_notification, list_operations, get_notifications, get_group_request, UNREAD_NOTIFICATION, get_endRoles, Contact, has_endRole } from "../src/keri/signify";
 import { NAME1, GROUP1, CONTACT2 } from "../src/keri/config";
 import { MULTISIG_ICP, MULTISIG_RPY, send_exchange } from '../src/keri/signify';
 import { debug_json } from '../src/util/helper';
@@ -37,6 +37,7 @@ describe("MultisigIcp", () => {
     test("group1b", async () => {
         // wait for icp notification from contact2 to name1 (client2 -> client1)
         let n = await wait_notification(client1, MULTISIG_ICP);
+        // TODO: check notification contents
         delete_notification(client1, n);
     });
     test("group3", async () => {
@@ -100,8 +101,10 @@ describe("MultisigIcp", () => {
     test("endrole1b", async () => {
         // wait for rpy notification from contact2 to name1 (client2 -> client1)
         let n = await wait_notification(client1, MULTISIG_RPY);
+        // TODO: check notification contents
         await delete_notification(client1, n);
         n = await wait_notification(client1, MULTISIG_RPY);
+        // TODO: check notification contents
         await delete_notification(client1, n);
     });
     test("endrole3", async () => {
@@ -128,7 +131,11 @@ describe("MultisigIcp", () => {
         for await (let note of get_notifications(client1, UNREAD_NOTIFICATION)) {
             let r = await get_group_request(client1, note);
             expect(r).toHaveLength(0);
+            expect(note).toBeNull();
         }
+        expect(await has_endRole(client1, GROUP1, AGENT, client1.agent?.pre)).toBeTruthy();
+        expect(await has_endRole(client1, GROUP1, AGENT, client2.agent?.pre)).toBeTruthy();
+        expect(await get_endRoles(client1, GROUP1)).toHaveLength(2);
     });
     test("client2", async () => {
         // check results
@@ -139,10 +146,15 @@ describe("MultisigIcp", () => {
             let r = await get_group_request(client2, note);
             expect(r).toHaveLength(0);
         }
+        expect(await has_endRole(client2, GROUP1, AGENT, client1.agent?.pre)).toBeTruthy();
+        expect(await has_endRole(client2, GROUP1, AGENT, client2.agent?.pre)).toBeTruthy();
+        expect(await get_endRoles(client2, GROUP1)).toHaveLength(2);
     });
     test("client3", async () => {
         // oobi group1 to client3
         let oobi = await get_oobi(client1, GROUP1, AGENT);
-        await resolve_oobi(client3, "group1", oobi.oobis[0]);
+        await resolve_oobi(client3, "ex-group1", oobi.oobis[0]);
+        let contact = await Contact.create(client3, "ex-group1");
+        await contact.getKeyState();
     });
 });

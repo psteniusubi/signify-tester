@@ -10,12 +10,12 @@ export interface EndRoleType {
     eid: string
 }
 
-export async function get_endRoles(client: SignifyClient, alias: string): Promise<EndRoleType[]> {
-    let path = `/identifiers/${alias}/endroles`;
+export async function get_endRoles(client: SignifyClient, alias: string, role: string | undefined = undefined): Promise<EndRoleType[]> {
+    let path = (role !== undefined) ? `/identifiers/${alias}/endroles/${role}` : `/identifiers/${alias}/endroles`;
     let response: Response = await client.fetch(path, "GET", null);
     if (!response.ok) throw new Error(await response.text());
     let res: EndRoleType[] = await response.json();
-    debug_json(`get_endRoles(${alias})`, res, "EndRoleType");
+    debug_json(`get_endRoles(${alias},role=${role})`, res, "EndRoleType");
     return res;
 }
 
@@ -51,7 +51,7 @@ export async function add_endRole(client: SignifyClient, request: AddEndRoleRequ
 }
 
 export async function has_endRole(client: SignifyClient, alias: string, role: string, eid?: string): Promise<boolean> {
-    let list = await get_endRoles(client, alias);
+    let list = await get_endRoles(client, alias, role);
     for (let i of list) {
         if (i.role === role && i.eid === eid) {
             return true;
