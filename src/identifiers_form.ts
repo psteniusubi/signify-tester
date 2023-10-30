@@ -1,6 +1,6 @@
 import { signify, config } from "./client_form";
 import { REFRESH_EVENT, dispatch_form_event, find_next_name } from "./util/helper";
-import { create_single_identifier, get_oobi, get_identifiers } from "./keri/signify";
+import { create_single_identifier, get_oobi, get_identifiers, IDENTIFIER, CONTACT } from "./keri/signify";
 import { SignifyClient } from "signify-ts";
 
 async function async_oobi(client: SignifyClient, td: HTMLTableCellElement, name: string) {
@@ -97,7 +97,7 @@ export async function setup_identifiers_form() {
             ++count;
         }
         table.replaceChild(tbody, table.tBodies.item(0)!);
-        name.value = await find_next_name(signify, "name", ["identifier", "contact"]);
+        name.value = await find_next_name(signify, "name", [IDENTIFIER, CONTACT]);
     });
 
     refresh.addEventListener("click", async (e: Event) => {

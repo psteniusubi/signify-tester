@@ -1,6 +1,6 @@
 import { signify } from "./client_form";
 import { REFRESH_EVENT, dispatch_form_event, find_next_name } from "./util/helper";
-import { resolve_oobi, list_contacts } from "./keri/signify";
+import { resolve_oobi, list_contacts, IDENTIFIER, CONTACT } from "./keri/signify";
 
 export async function setup_contacts_form() {
     const table = document.querySelector("#contacts table") as HTMLTableElement;
@@ -90,7 +90,7 @@ export async function setup_contacts_form() {
             ++count;
         }
         table.replaceChild(tbody, table.tBodies.item(0)!);
-        name.value = await find_next_name(signify, "contact", ["identifier", "contact"]);
+        name.value = await find_next_name(signify, "contact", [IDENTIFIER, CONTACT]);
     });
 
     refresh.addEventListener("click", async (e: Event) => {

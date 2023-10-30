@@ -1,5 +1,5 @@
 import { signify, config } from "./client_form";
-import { MultisigIcpBuilder, create_identifier, send_exchange } from "./keri/signify";
+import { CONTACT, IDENTIFIER, MultisigIcpBuilder, create_identifier, send_exchange } from "./keri/signify";
 import { REFRESH_EVENT, dispatch_form_event, find_next_name } from "./util/helper";
 
 export async function setup_multisig_form(): Promise<void> {
@@ -25,7 +25,7 @@ export async function setup_multisig_form(): Promise<void> {
         e.preventDefault();
         name.value = "";
         if (signify === null) return;
-        name.value = await find_next_name(signify, "group", ["identifier", "contact"]);
+        name.value = await find_next_name(signify, "group", [IDENTIFIER, CONTACT]);
     });
 
     refresh.addEventListener("click", async e => {

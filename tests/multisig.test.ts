@@ -1,9 +1,9 @@
 import { describe, test } from '@jest/globals';
-import { AGENT, AddEndRoleBuilder, MultisigIcpBuilder, add_endRole, create_identifier, get_oobi, resolve_oobi, wait_notification, wait_operation, CreateIdentifierRequest, MultisigIcpRequest, Group, Identifier, delete_notification, list_operations, get_notifications, get_group_request, UNREAD_NOTIFICATION, get_endRoles, Contact, has_endRole, get_agentIdentifier } from "../src/keri/signify";
+import { AGENT, AddEndRoleBuilder, MultisigIcpBuilder, add_endRole, create_identifier, get_oobi, resolve_oobi, wait_notification, wait_operation, CreateIdentifierRequest, MultisigIcpRequest, Group, Identifier, delete_notification, list_operations, get_notifications, get_group_request, UNREAD_NOTIFICATION, get_endRoles, Contact, has_endRole, get_agentIdentifier, get_icp_request, get_rpy_request } from "../src/keri/signify";
 import { NAME1, GROUP1, CONTACT2 } from "../src/keri/config";
 import { MULTISIG_ICP, MULTISIG_RPY, send_exchange } from '../src/keri/signify';
 import { debug_json } from '../src/util/helper';
-import { createClients, createIdentifiers, createContacts, config, client1, client2, client3 } from './prepare';
+import { createClients, createIdentifiers, createContacts, config, client1, client2, client3, name2_id } from './prepare';
 
 beforeAll(createClients);
 beforeAll(createIdentifiers);
@@ -37,6 +37,9 @@ describe("MultisigIcp", () => {
     test("group1b", async () => {
         // wait for icp notification from contact2 to name1 (client2 -> client1)
         let n = await wait_notification(client1, MULTISIG_ICP);
+        let icp = await get_icp_request(client1, n);
+        expect(icp).toHaveLength(1);
+        expect(icp[0].exn.i).toStrictEqual(name2_id);
         // TODO: check notification contents
         delete_notification(client1, n);
     });
@@ -101,9 +104,15 @@ describe("MultisigIcp", () => {
     test("endrole1b", async () => {
         // wait for rpy notification from contact2 to name1 (client2 -> client1)
         let n = await wait_notification(client1, MULTISIG_RPY);
+        let rpy = await get_rpy_request(client1, n);
+        expect(rpy).toHaveLength(1);
+        expect(rpy[0].exn.i).toStrictEqual(name2_id);
         // TODO: check notification contents
         await delete_notification(client1, n);
         n = await wait_notification(client1, MULTISIG_RPY);
+        rpy = await get_rpy_request(client1, n);
+        expect(rpy).toHaveLength(1);
+        expect(rpy[0].exn.i).toStrictEqual(name2_id);
         // TODO: check notification contents
         await delete_notification(client1, n);
     });
@@ -124,37 +133,48 @@ describe("MultisigIcp", () => {
         }
     });
     test("client1", async () => {
-        // check results
+        // check pending operations
         let operations = await list_operations(client1);
         debug_json("list_operations", operations);
-        expect(operations.length).toBe(0);
+        expect(operations).toHaveLength(0);
+        // check notifications
         for await (let note of get_notifications(client1, UNREAD_NOTIFICATION)) {
             let r = await get_group_request(client1, note);
             expect(r).toHaveLength(0);
-            expect(note).toBeNull();
+            expect(note).toBeUndefined();
         }
+        // check end roles
         expect(await has_endRole(client1, GROUP1, AGENT, get_agentIdentifier(client1))).toBeTruthy();
         expect(await has_endRole(client1, GROUP1, AGENT, get_agentIdentifier(client2))).toBeTruthy();
         expect(await get_endRoles(client1, GROUP1)).toHaveLength(2);
+        // key state
+        let group = await Group.create(client1, GROUP1);
+        expect(await group.getKeyState()).toBeDefined();
     });
     test("client2", async () => {
-        // check results
+        // check pending operations
         let operations = await list_operations(client2);
         debug_json("list_operations", operations);
-        expect(operations.length).toBe(0);
+        expect(operations).toHaveLength(0);
+        // check notifications
         for await (let note of get_notifications(client2, UNREAD_NOTIFICATION)) {
             let r = await get_group_request(client2, note);
             expect(r).toHaveLength(0);
+            expect(note).toBeUndefined();
         }
+        // check end roles
         expect(await has_endRole(client2, GROUP1, AGENT, get_agentIdentifier(client1))).toBeTruthy();
         expect(await has_endRole(client2, GROUP1, AGENT, get_agentIdentifier(client2))).toBeTruthy();
         expect(await get_endRoles(client2, GROUP1)).toHaveLength(2);
+        // key state
+        let group = await Group.create(client2, GROUP1);
+        expect(await group.getKeyState()).toBeDefined();
     });
     test("client3", async () => {
         // oobi group1 to client3
         let oobi = await get_oobi(client1, GROUP1, AGENT);
         await resolve_oobi(client3, "ex-group1", oobi.oobis[0]);
         let contact = await Contact.create(client3, "ex-group1");
-        await contact.getKeyState();
+        expect(await contact.getKeyState()).toBeDefined();
     });
 });
