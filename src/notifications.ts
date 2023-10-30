@@ -1,5 +1,5 @@
 import { REFRESH_EVENT, dispatch_form_event, sleep } from "./util/helper";
-import { signify } from "./client";
+import { signify } from "./client_form";
 import { SignifyClient } from "signify-ts";
 import { json2string } from "./util/helper";
 import { list_notifications, NotificationType, list_operations, OperationType, remove_operation, create_identifier, send_exchange, get_icp_request, MultisigIcpBuilder, AddEndRoleBuilder, add_endRole, MULTISIG_ICP, MULTISIG_RPY, get_rpy_request, delete_notification, get_name_by_identifier, has_notification, mark_notification, GroupRpyRequest, Group, GroupIcpRequest, lookup, IDENTIFIER, has_endRole } from "./keri/signify";

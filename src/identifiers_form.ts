@@ -1,4 +1,4 @@
-import { signify, config } from "./client";
+import { signify, config } from "./client_form";
 import { REFRESH_EVENT, dispatch_form_event } from "./util/helper";
 import { create_single_identifier, get_oobi, get_identifiers } from "./keri/signify";
 import { SignifyClient } from "signify-ts";
@@ -29,7 +29,7 @@ async function async_oobi(client: SignifyClient, td: HTMLTableCellElement, name:
     }
 }
 
-export async function load_identifiers() {
+export async function setup_identifiers_form() {
     const table = document.querySelector("#identifiers table") as HTMLTableElement;
     const form = document.querySelector("#identifiers form") as HTMLFormElement;
     const name = form.elements.namedItem("name") as HTMLInputElement;

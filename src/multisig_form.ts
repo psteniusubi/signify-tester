@@ -1,9 +1,9 @@
-import { signify, config } from "./client";
+import { signify, config } from "./client_form";
 import { CONTACT1, GROUP1, NAME1 } from "./keri/config";
 import { MultisigIcpBuilder, create_identifier, send_exchange } from "./keri/signify";
 import { REFRESH_EVENT, dispatch_form_event } from "./util/helper";
 
-export async function load_multisig(): Promise<void> {
+export async function setup_multisig_form(): Promise<void> {
     const form = document.querySelector("#multisig form") as HTMLFormElement;
     const name = form.elements.namedItem("name") as HTMLInputElement;
     name.defaultValue = GROUP1;

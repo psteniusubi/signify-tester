@@ -1,4 +1,4 @@
-import { signify } from "./client";
+import { signify } from "./client_form";
 import { REFRESH_EVENT, dispatch_form_event } from "./util/helper";
 import { resolve_oobi, list_contacts } from "./keri/signify";
 

@@ -5,16 +5,16 @@
   <title>Signify Client</title>
   <script type="module">
     import './src/style.css';
-    import { setup_client_form } from "./src/client";
+    import { setup_client_form } from "./src/client_form";
+    import { setup_identifiers_form } from "./src/identifiers_form";
+    import { setup_contacts_form } from "./src/contacts_form";
+    import { setup_multisig_form } from "./src/multisig_form";
     import { setup_notifications } from "./src/notifications";
-    import { load_identifiers } from "./src/identifiers";
-    import { setup_contacts_form } from "./src/contacts";
-    import { load_multisig } from "./src/multisig";
     setup_client_form();
-    setup_notifications();
-    load_identifiers();
+    setup_identifiers_form();
     setup_contacts_form();
-    load_multisig();
+    setup_multisig_form();
+    setup_notifications();
   </script>
 </head>
 
