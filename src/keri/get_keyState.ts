@@ -5,7 +5,7 @@ import { AID } from './primitives';
 export interface KeyStateType {
     i: AID;
     ee: {
-        s: AID;
+        s: AID | string;
         d: AID;
         br: any[];
         ba: any[];

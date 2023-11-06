@@ -1,7 +1,7 @@
 import { Siger, SignifyClient, d, messagize } from "signify-ts";
-import { AGENT, AID, AddEndRoleRequest, AddEndRoleResponse, Group, GroupRpyRequest, MULTISIG_RPY, MultisigRpyRequestEmbeds, MultisigRpyRequestPayload, get_name_by_identifier } from "./signify";
+import { AGENT, AID, AddEndRoleRequest, AddEndRoleResponse, Group, GroupRpyRequest, MULTISIG_RPY, MultisigRpyRequestEmbeds, MultisigRpyRequestPayload, SEAL_EVENT, SealEventType, get_name_by_identifier } from "./signify";
 import { MultisigRpyRequest, NotificationType, get_rpy_request } from "./signify";
-import { date2string } from "../util/helper";
+import { date2string, debug_json } from "../util/helper";
 
 export class AddEndRoleBuilder {
     /**
@@ -41,6 +41,7 @@ export class AddEndRoleBuilder {
                 eid: eid,
                 stamp: stamp
             };
+            debug_json("buildAddEndRoleRequest", request, "AddEndRoleRequest");
             yield request;
         }
     }
@@ -57,20 +58,22 @@ export class AddEndRoleBuilder {
             eid: rpy.exn.e.rpy.a.eid,
             stamp: rpy.exn.e.rpy.dt
         };
+        debug_json("acceptGroupRpyRequest", request, "AddEndRoleRequest");
         return request;
     }
     async buildMultisigRpyRequest(addEndRoleRequest: AddEndRoleRequest, addEndRoleResponse: AddEndRoleResponse): Promise<MultisigRpyRequest> {
         let group = await this._group ?? await Group.create(this.client, addEndRoleRequest.alias!);
+        let state = await group.getKeyState();
         let lead = group.getIdentifier().group!.mhab;
         let payload: MultisigRpyRequestPayload = {
-            gid: group.getId()
+            gid: state.i
         };
-        let seal = [
-            "SealEvent",
+        let seal: SealEventType = [
+            SEAL_EVENT,
             {
-                i: group.getId(),
-                s: group.getIdentifier().state!.ee.s,
-                d: group.getIdentifier().state!.ee.d,
+                i: state.i,
+                s: state.ee.s,
+                d: state.ee.d,
             }
         ];
         let sigers = addEndRoleResponse.sigs.map(i => new Siger({ qb64: i }));
@@ -83,14 +86,14 @@ export class AddEndRoleBuilder {
             .map(i => i.aid)
             .filter(i => i !== lead.prefix);
         let request: MultisigRpyRequest = {
-            sender: lead.name,
+            sender: lead,
             topic: this.group,
-            sender_id: lead,
             route: MULTISIG_RPY,
             payload: payload,
             embeds: embeds,
             recipients: recipients
         };
+        debug_json("buildMultisigRpyRequest", request, "MultisigRpyRequest");
         return request;
     }
 }

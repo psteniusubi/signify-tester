@@ -1,4 +1,4 @@
-import { SignifyClient } from "signify-ts";
+import { Serder, SignifyClient } from "signify-ts";
 import { invoke_lookup } from "../keri/lookup";
 
 export const REFRESH_EVENT = "x-refresh";
@@ -11,8 +11,15 @@ export function sleep(ms: number): Promise<void> {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
 
+function replacer(k: string, v: any): any {
+    if (v instanceof Serder) {
+        return v.ked;
+    }
+    return v;
+}
+
 export function json2string(value: any) {
-    return JSON.stringify(value, undefined, 2);
+    return JSON.stringify(value, replacer, 2);
 }
 
 const fs_log = false;

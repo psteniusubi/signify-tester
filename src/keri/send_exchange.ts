@@ -8,9 +8,8 @@ export const MULTISIG_RPY = "/multisig/rpy";
 // ExchangeRequest
 
 export interface ExchangeRequest {
-    sender?: string;
+    sender?: IdentifierType;
     topic?: string;
-    sender_id?: IdentifierType;
     route?: string;
     payload?: any;
     embeds?: any;
@@ -26,7 +25,7 @@ export interface MultisigIcpRequestPayload {
 }
 
 export interface MultisigIcpRequestEmbeds {
-    icp?: (string | Serder)[];
+    icp?: [Serder, string];
 }
 
 export interface MultisigIcpRequest extends ExchangeRequest {
@@ -41,7 +40,7 @@ export interface MultisigRpyRequestPayload {
 }
 
 export interface MultisigRpyRequestEmbeds {
-    rpy?: (string | Serder)[];
+    rpy?: [Serder, string];
 }
 
 export interface MultisigRpyRequest extends ExchangeRequest {
@@ -54,15 +53,28 @@ export interface MultisigRpyRequest extends ExchangeRequest {
 export interface ExchangeResponse {
 }
 
+// SealEvent
+
+export const SEAL_EVENT = "SealEvent";
+
+export type SealEventType = [
+    string,
+    {
+        i: AID;
+        s: AID | string | number
+        d: AID;
+    }
+];
+
 export async function send_exchange(client: SignifyClient, request: ExchangeRequest): Promise<ExchangeResponse> {
     let res: ExchangeResponse = await client.exchanges().send(
-        request.sender ?? "",
+        request.sender?.name ?? "",
         request.topic ?? "",
-        request.sender_id ?? {},
+        request.sender ?? {},
         request.route ?? "",
         request.payload ?? {},
         request.embeds ?? {},
         request.recipients ?? []);
-    debug_json(`send_exchange(${request.sender})`, res, "ExchangeResponse");
+    debug_json(`send_exchange(${request.sender?.name})`, res, "ExchangeResponse");
     return res;
 }
