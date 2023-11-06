@@ -21,13 +21,13 @@ export async function createClients() {
     [client1, client2, client3] = await Promise.all(tasks);
 }
 
-async function exist_identifier(client: SignifyClient, alias: string): Promise<boolean> {
+export async function exist_identifier(client: SignifyClient, alias: string): Promise<boolean> {
     let r = await invoke_lookup(client, { type: [IDENTIFIER], name: [alias] });
     if (r.length < 1) return false;
     return r[0].type === IDENTIFIER && r[0].name === alias;
 }
 
-async function exist_contact(client: SignifyClient, alias: string): Promise<boolean> {
+export async function exist_contact(client: SignifyClient, alias: string): Promise<boolean> {
     let r = await invoke_lookup(client, { type: [CONTACT], name: [alias] });
     if (r.length < 1) return false;
     return r[0].type === CONTACT && r[0].name === alias;

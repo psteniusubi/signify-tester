@@ -18,7 +18,7 @@ describe("MultisigIcp", () => {
         expect(createIdentifierRequest.mhab?.name).toStrictEqual(NAME1);
         let createIdentifierResponse = await create_identifier(client1, builder.alias, createIdentifierRequest);
         let icpRequest: MultisigIcpRequest = await builder.buildMultisigIcpRequest(createIdentifierRequest, createIdentifierResponse);
-        expect(icpRequest.sender_id?.name).toStrictEqual(NAME1);
+        expect(icpRequest.sender?.name).toStrictEqual(NAME1);
         let icpResponse = await send_exchange(client1, icpRequest);
     });
     test("group2", async () => {
@@ -29,7 +29,7 @@ describe("MultisigIcp", () => {
             expect(createIdentifierRequest.mhab?.name).toStrictEqual(NAME1);
             let createIdentifierResponse = await create_identifier(client2, builder.alias, createIdentifierRequest);
             let icpRequest = await builder.buildMultisigIcpRequest(createIdentifierRequest, createIdentifierResponse);
-            expect(icpRequest.sender_id?.name).toStrictEqual(NAME1);
+            expect(icpRequest.sender?.name).toStrictEqual(NAME1);
             let icpResponse = await send_exchange(client2, icpRequest);
         }
         await delete_notification(client2, n);
@@ -71,7 +71,7 @@ describe("MultisigIcp", () => {
         for await (let addEndRoleRequest of builder.buildAddEndRoleRequest()) {
             let addEndRoleResponse = await add_endRole(client1, addEndRoleRequest);
             let rpyRequest = await builder.buildMultisigRpyRequest(addEndRoleRequest, addEndRoleResponse);
-            expect(rpyRequest.sender).toStrictEqual(NAME1);
+            expect(rpyRequest.sender?.name).toStrictEqual(NAME1);
             let rpyResponse = await send_exchange(client1, rpyRequest);
         }
     });
@@ -83,7 +83,7 @@ describe("MultisigIcp", () => {
             expect(addEndRoleRequest.alias).toStrictEqual(GROUP1);
             let addEndRoleResponse = await add_endRole(client2, addEndRoleRequest);
             let rpyRequest = await builder.buildMultisigRpyRequest(addEndRoleRequest, addEndRoleResponse);
-            expect(rpyRequest.sender).toStrictEqual(NAME1);
+            expect(rpyRequest.sender?.name).toStrictEqual(NAME1);
             let rpyResponse = await send_exchange(client2, rpyRequest);
         }
         await delete_notification(client2, n);
@@ -96,7 +96,7 @@ describe("MultisigIcp", () => {
             expect(addEndRoleRequest.alias).toStrictEqual(GROUP1);
             let addEndRoleResponse = await add_endRole(client2, addEndRoleRequest);
             let rpyRequest = await builder.buildMultisigRpyRequest(addEndRoleRequest, addEndRoleResponse);
-            expect(rpyRequest.sender).toStrictEqual(NAME1);
+            expect(rpyRequest.sender?.name).toStrictEqual(NAME1);
             let rpyResponse = await send_exchange(client2, rpyRequest);
         }
         await delete_notification(client2, n);

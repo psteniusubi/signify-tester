@@ -8,8 +8,8 @@ beforeAll(createContacts);
 
 describe("Prepare", () => {
     test("test1", async () => {
-        expect(name1_id).not.toBeNull();
-        expect(name2_id).not.toBeNull();
-        expect(name3_id).not.toBeNull();
+        expect(name1_id).toBeDefined();
+        expect(name2_id).toBeDefined();
+        expect(name3_id).toBeDefined();
     });
 });
