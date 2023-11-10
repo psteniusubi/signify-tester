@@ -9,7 +9,7 @@ beforeAll(createClients);
 beforeAll(createIdentifiers);
 beforeAll(createContacts);
 
-describe("MultisigIcp", () => {
+describe("Multisig", () => {
     test("group1a", async () => {
         // lead multisig inception
         // contact2 is name1 on client2

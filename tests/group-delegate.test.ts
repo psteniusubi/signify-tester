@@ -1,8 +1,8 @@
 import { describe, test } from '@jest/globals';
-import { AGENT, AID, CreateIdentifierRequest, CreateIdentifierResponse, ExchangeRequest, ExchangeResponse, Identifier, KeyStateType, MULTISIG_ICP, MultisigIcpBuilder, MultisigIcpRequest, SEAL_EVENT, SealEventType, create_identifier, delete_notification, get_identifier, get_keyState, get_oobi, list_notifications, list_operations, send_exchange, wait_notification, wait_operation } from '../src/keri/signify';
+import { AGENT, AID, CreateIdentifierRequest, CreateIdentifierResponse, ExchangeRequest, ExchangeResponse, Identifier, MULTISIG_ICP, MultisigIcpBuilder, MultisigIcpRequest, create_identifier, delete_notification, get_oobi, list_notifications, list_operations, send_exchange, wait_notification, wait_operation } from '../src/keri/signify';
 import { createClients, createContacts, createIdentifiers, client1, client2, client3, config, name3_id } from './prepare';
 import { CONTACT2, GROUP1, NAME1 } from '../src/keri/config';
-import { Serder, Siger, d, messagize } from 'signify-ts';
+import { Serder } from 'signify-ts';
 import { debug_json } from '../src/util/helper';
 
 beforeAll(createClients);

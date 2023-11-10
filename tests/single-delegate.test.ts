@@ -1,49 +1,53 @@
 import { describe, test } from '@jest/globals';
-import { client1, client2, createClients, createIdentifiers, createContacts, name1_id } from './prepare';
+import { client1, client2, createClients, createIdentifiers, createContacts, name1_id, config } from './prepare';
 import { AGENT, CreateIdentifierRequest, Identifier, add_endRole, create_identifier, get_agentIdentifier, get_notifications, list_operations, wait_operation } from '../src/keri/signify';
 import { debug_json } from '../src/util/helper';
+import { NAME1 } from '../src/keri/config';
 
 beforeAll(createClients);
 beforeAll(createIdentifiers);
 beforeAll(createContacts);
 
 describe("SingleDelegate", () => {
-    const alias = "delegatee";
+    const DELEGATE = "delegate";
     test("step1", async () => {
+        // delegator is name1 on client1
         let identifierRequest: CreateIdentifierRequest = {
-            delpre: name1_id
+            delpre: name1_id,
+            // toad: config.toad,
+            // wits: config.wits
         };
-        let identifierResponse = await create_identifier(client2, alias, identifierRequest);
+        // delegate on client2
+        let identifierResponse = await create_identifier(client2, DELEGATE, identifierRequest);
         debug_json("create_identifier", identifierResponse.serder.ked);
     });
     test("step2", async () => {
-        let id = await Identifier.create(client2, alias);
+        // lookup delegate on client2
+        let id = await Identifier.create(client2, DELEGATE);
+        // anchoring event
         let anchor = {
             i: id.getId(),
             s: 0,
             d: id.getId()
         };
-        let res1 = await client1.identifiers().interact("name1", anchor);
+        // interact with name1 on client1
+        let res1 = await client1.identifiers().interact(NAME1, anchor);
         await wait_operation(client1, await res1.op());
     });
     test("step3", async () => {
-        let id = await Identifier.create(client2, alias);
+        // lookup delegate on client2
+        let id = await Identifier.create(client2, DELEGATE);
+        // wait for delegation operation
         await wait_operation(client2, { name: `delegation.${id.getId()}` });
     });
     test("step4", async () => {
+        // add end roles to delegate on client1
         let endRoleResponse = await add_endRole(client2, {
-            alias: alias,
+            alias: DELEGATE,
             role: AGENT,
             eid: get_agentIdentifier(client2)
         });
         await wait_operation(client2, endRoleResponse.op);
-    });
-    test("step5", async () => {
-        // let res = await client2.identifiers().rotate(alias, {
-        //     toad: config.toad,
-        //     adds: config.wits
-        // });
-        // await wait_operation(client2, await res.op());
     });
 
     // let id = await Identifier.create(client2, alias);

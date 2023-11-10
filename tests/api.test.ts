@@ -1,6 +1,6 @@
 import { Agent, Authenticater, Controller, KeyManager, SignifyClient } from "signify-ts";
-import { Configuration, NAME1, connect_or_boot, getLocalConfig } from "../src/keri/config";
-import { get_identifiers, get_name_by_identifier, get_names_by_identifiers, get_oobi } from "../src/keri/signify";
+import { NAME1 } from "../src/keri/config";
+import { AGENT, WITNESS, get_identifiers, get_name_by_identifier, get_names_by_identifiers, get_oobi } from "../src/keri/signify";
 import { debug_json } from "../src/util/helper";
 import { Identifier, invoke_lookup } from "../src/keri/signify";
 import { createClients, createContacts, createIdentifiers, client1, client2, name1_id, get_or_create_identifier, name2_id, name3_id } from "./prepare";
@@ -9,7 +9,7 @@ beforeAll(createClients);
 beforeAll(createIdentifiers);
 beforeAll(createContacts);
 
-describe("ApiTests", () => {
+describe("Api", () => {
     let name1b_id: string;
     beforeAll(async () => {
         [name1b_id] = await get_or_create_identifier(client1, "name2");
@@ -34,9 +34,17 @@ describe("ApiTests", () => {
             // expect(json2string(t1)).toBe(json2string(t2));
         }
     });
-    test("oobi1", async () => {
-        let oobi = await get_oobi(client1, "name1", "witness");        
+    test("name1", async () => {
+        let oobi = await get_oobi(client1, "name1", AGENT);
+        expect(oobi.oobis).toHaveLength(1);
+        oobi = await get_oobi(client1, "name1", WITNESS);
         expect(oobi.oobis).toHaveLength(3);
+    });
+    test("delegate", async () => {
+        let oobi = await get_oobi(client2, "delegate", AGENT);
+        expect(oobi.oobis).toHaveLength(1);
+        oobi = await get_oobi(client2, "delegate", WITNESS);
+        expect(oobi.oobis).toHaveLength(0);
     });
     test("get_names_by_identifiers", async () => {
         let name1 = await Identifier.create(client1, NAME1);
