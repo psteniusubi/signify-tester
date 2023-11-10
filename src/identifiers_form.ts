@@ -5,7 +5,7 @@ import { SignifyClient } from "signify-ts";
 
 async function async_oobi(client: SignifyClient, td: HTMLTableCellElement, name: string) {
     try {
-        let oobi = await get_oobi(client, name, "agent");
+        let oobi = await get_oobi(client, name);
         // console.log(JSON.stringify(oobi));
         let input = document.createElement("input") as HTMLInputElement;
         input.type = "text";

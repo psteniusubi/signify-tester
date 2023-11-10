@@ -3,6 +3,7 @@ import { AID, OperationType, QB64 } from './signify';
 import { debug_json } from '../util/helper';
 
 export const AGENT = "agent";
+export const WITNESS = "witness";
 
 export interface EndRoleType {
     cid: AID;
