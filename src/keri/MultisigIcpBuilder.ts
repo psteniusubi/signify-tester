@@ -7,7 +7,7 @@ import { Algos } from "signify-ts";
 import { NotificationType } from "./signify";
 import { get_icp_request } from "./signify";
 import { MULTISIG_ICP, MultisigIcpRequest, MultisigIcpRequestEmbeds, MultisigIcpRequestPayload } from "./signify";
-import { debug_json } from "../util/helper";
+import { debug_out } from "../util/helper";
 
 export class MultisigIcpBuilder {
     /**
@@ -72,7 +72,7 @@ export class MultisigIcpBuilder {
             states: states,
             rstates: rstates
         };
-        debug_json("buildCreateIdentifierRequest", request, "CreateIdentifierRequest");
+        debug_out("buildCreateIdentifierRequest", request, "CreateIdentifierRequest");
         return request;
     }
     async getSelf(icp: GroupIcpRequest): Promise<IdentifierType | undefined> {
@@ -105,7 +105,7 @@ export class MultisigIcpBuilder {
             rstates: rstates,
             delpre: exn.e.icp.di
         };
-        debug_json("acceptGroupIcpRequest", request, "CreateIdentifierRequest");
+        debug_out("acceptGroupIcpRequest", request, "CreateIdentifierRequest");
         return request;
     }
     async buildMultisigIcpRequest(identifierRequest: CreateIdentifierRequest, identifierResponse: CreateIdentifierResponse): Promise<MultisigIcpRequest> {
@@ -131,7 +131,7 @@ export class MultisigIcpBuilder {
             embeds: embeds,
             recipients: recipients
         };
-        debug_json("buildMultisigIcpRequest", request, "MultisigIcpRequest");
+        debug_out("buildMultisigIcpRequest", request, "MultisigIcpRequest");
         return request;
     }
 }

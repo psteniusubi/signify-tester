@@ -4,7 +4,7 @@ import { AID, KeyStateType, QB64, get_agentIdentifier } from "./signify";
 import { AGENT, AddEndRoleRequest, IdentifierType, add_endRole } from "./signify";
 import { OperationType, wait_operation } from "./signify";
 import { Configuration } from './config';
-import { debug_json } from '../util/helper';
+import { debug_in, debug_out } from '../util/helper';
 
 /**
  * Extends CreateIdentiferArgs
@@ -25,14 +25,14 @@ export interface CreateIdentifierResponse {
 }
 
 export async function create_identifier(client: SignifyClient, alias: string, request: CreateIdentiferArgs): Promise<CreateIdentifierResponse> {
-    debug_json(`create_identifier(${alias})`, request, "CreateIdentiferArgs");
+    debug_out(`create_identifier(${alias})`, request, "CreateIdentiferArgs");
     let result: EventResult = await client.identifiers().create(alias, request);
     let response: CreateIdentifierResponse = {
         serder: result.serder,
         sigs: result.sigs as QB64[],
         op: await result.op()
     };
-    debug_json(`create_identifier(${alias})`, response, "CreateIdentifierResponse");
+    debug_in(`create_identifier(${alias})`, response, "CreateIdentifierResponse");
     return response;
 }
 

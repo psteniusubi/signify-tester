@@ -1,6 +1,6 @@
 import { SignifyClient } from 'signify-ts';
 import { AID, IDENTIFIER, KeyStateType, QB64, RangeType, invoke_lookup } from './signify';
-import { debug_json } from '../util/helper';
+import { debug_in } from '../util/helper';
 
 export interface ListIdentifierType {
     name: string;
@@ -47,11 +47,11 @@ export async function* get_identifiers(client: SignifyClient, predicate: Identif
         start += range.aids.length;
         end = start + PAGE - 1;
         if (predicate === undefined) {
-            debug_json("get_identifiers", range.aids, "ListIdentifierType");
+            debug_in("get_identifiers", range.aids, "ListIdentifierType");
             yield* range.aids;
         } else {
             for (let i of range.aids) {
-                debug_json("get_identifiers", i, "ListIdentifierType");
+                debug_in("get_identifiers", i, "ListIdentifierType");
                 if (predicate(i)) {
                     yield i;
                 }
@@ -62,7 +62,7 @@ export async function* get_identifiers(client: SignifyClient, predicate: Identif
 
 export async function get_identifier(client: SignifyClient, alias: string): Promise<IdentifierType> {
     let res: IdentifierType = await client.identifiers().get(alias);
-    debug_json(`get_identifier(${alias})`, res, "IdentifierType");
+    debug_in(`get_identifier(${alias})`, res, "IdentifierType");
     return res;
 }
 

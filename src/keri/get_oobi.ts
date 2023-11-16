@@ -1,6 +1,6 @@
 import { SignifyClient } from 'signify-ts';
 import { OperationType, AGENT, WITNESS, wait_operation } from './signify';
-import { debug_json } from '../util/helper';
+import { debug_in } from '../util/helper';
 export { AGENT, WITNESS } from './endRole';
 
 export const OOBI_DEFAULT_ROLE = AGENT;
@@ -13,7 +13,7 @@ export interface OobiType {
 
 export async function get_oobi(client: SignifyClient, alias: string, role: string = OOBI_DEFAULT_ROLE): Promise<OobiType> {
     let res: OobiType = await client.oobis().get(alias, role);
-    debug_json(`get_oobi(${alias})`, res, "OobiType");
+    debug_in(`get_oobi(${alias})`, res, "OobiType");
     return res;
 }
 

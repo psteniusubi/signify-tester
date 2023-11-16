@@ -1,6 +1,6 @@
 import { EventResult, Serder, SignifyClient } from 'signify-ts';
 import { AID, OperationType, QB64 } from './signify';
-import { debug_json } from '../util/helper';
+import { debug_in } from '../util/helper';
 
 export const AGENT = "agent";
 export const WITNESS = "witness";
@@ -21,7 +21,7 @@ export async function get_endRoles(client: SignifyClient, alias: string, role: s
     let response: Response = await client.fetch(path, "GET", null);
     if (!response.ok) throw new Error(await response.text());
     let res: EndRoleType[] = await response.json();
-    debug_json(`get_endRoles(${alias},role=${role})`, res, "EndRoleType");
+    debug_in(`get_endRoles(${alias},role=${role})`, res, "EndRoleType");
     return res;
 }
 

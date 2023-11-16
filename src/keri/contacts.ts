@@ -1,5 +1,5 @@
 import { SignifyClient } from 'signify-ts';
-import { debug_json } from '../util/helper';
+import { debug_in } from '../util/helper';
 import { AID } from './signify';
 
 export interface ContactType {
@@ -18,7 +18,7 @@ export async function list_contacts(client: SignifyClient): Promise<ContactType[
 export async function get_contact(client: SignifyClient, alias: string): Promise<ContactType> {
     let res: ContactType[] = await client.contacts().list(undefined, "alias", `^${alias}$`);
     if (res.length < 1) throw Error(`get_contact(${alias}): not found`);
-    debug_json(`get_contact(${alias})`, res[0], "ContactType");
+    debug_in(`get_contact(${alias})`, res[0], "ContactType");
     return res[0];
 }
 

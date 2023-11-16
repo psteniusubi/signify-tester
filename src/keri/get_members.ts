@@ -1,5 +1,5 @@
 import { SignifyClient } from 'signify-ts';
-import { debug_json } from '../util/helper';
+import { debug_in } from '../util/helper';
 import { AID } from './signify';
 
 export interface SchemesType {
@@ -27,6 +27,6 @@ export interface MembersType {
 
 export async function get_members(client: SignifyClient, alias: string): Promise<MembersType> {
     let res: MembersType = await client.identifiers().members(alias);
-    debug_json(`get_members(${alias})`, res, "MembersType");
+    debug_in(`get_members(${alias})`, res, "MembersType");
     return res;
 }

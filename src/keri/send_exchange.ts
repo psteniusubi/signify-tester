@@ -1,6 +1,6 @@
 import { Serder, SignifyClient } from "signify-ts";
 import { AID, IdentifierType } from "./signify";
-import { debug_json } from "../util/helper";
+import { debug_in } from "../util/helper";
 
 export const MULTISIG_ICP = "/multisig/icp";
 export const MULTISIG_RPY = "/multisig/rpy";
@@ -75,6 +75,6 @@ export async function send_exchange(client: SignifyClient, request: ExchangeRequ
         request.payload ?? {},
         request.embeds ?? {},
         request.recipients ?? []);
-    debug_json(`send_exchange(${request.sender?.name})`, res, "ExchangeResponse");
+    debug_in(`send_exchange(${request.sender?.name})`, res, "ExchangeResponse");
     return res;
 }

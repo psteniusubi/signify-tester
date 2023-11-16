@@ -1,6 +1,6 @@
 import { SignifyClient } from 'signify-ts';
 import { AID, RangeType } from './signify';
-import { debug_json, wait_async_operation } from '../util/helper';
+import { debug_in, wait_async_operation } from '../util/helper';
 
 export interface NotificationType {
     i: AID,
@@ -37,11 +37,11 @@ export async function* get_notifications(client: SignifyClient, predicate: Notif
         start += range.notes.length;
         end = start + PAGE - 1;
         if (predicate === undefined) {
-            debug_json("get_notifications", range.notes, "NotificationType");
+            debug_in("get_notifications", range.notes, "NotificationType");
             yield* range.notes;
         } else {
             for (let i of range.notes) {
-                debug_json("get_notifications", i, "NotificationType");
+                debug_in("get_notifications", i, "NotificationType");
                 if (predicate(i)) {
                     yield i;
                 }

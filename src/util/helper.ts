@@ -22,13 +22,15 @@ export function json2string(value: any) {
     return JSON.stringify(value, replacer, 2);
 }
 
-const fs_log = false;
+const DIRECTION_IN = "in";
+const DIRECTION_OUT = "out";
+const fs_log = false; // TODO: toggle for recording
 const begin = new Date();
 let sequence = 0;
 
-function log_file(json: string, type: string) {
+function log_file(json: string, type: string, direction: string) {
     import("fs/promises").then(fs => {
-        let path = `/home/uroot/signify-tester/logs/${begin.toISOString()}-${type}-${sequence++}.json`;
+        let path = `/home/uroot/signify-tester/logs/${begin.toISOString()}-${type}-${direction}-${sequence++}.json`;
         fs.open(path, "w").then(f => {
             f.writeFile(json);
             f.close();
@@ -36,12 +38,20 @@ function log_file(json: string, type: string) {
     }).catch(() => { });
 }
 
-export function debug_json(title: string, value: object | string | number | boolean, type?: string) {
+export function debug_json(title: string, value: object | string | number | boolean, type?: string, direction?: string) {
     let json = json2string(value);
     console.log(`## ${title} ##:\r\n${json}`);
-    if (fs_log && type !== undefined) {
-        log_file(json, type);
+    if (fs_log && type !== undefined && direction !== undefined) {
+        log_file(json, type, direction);
     }
+}
+
+export function debug_in(title: string, value: object | string | number | boolean, type: string) {
+    debug_json(title, value, type, DIRECTION_IN);
+}
+
+export function debug_out(title: string, value: object | string | number | boolean, type: string) {
+    debug_json(title, value, type, DIRECTION_OUT);
 }
 
 export function dispatch_form_event(event: Event, from?: HTMLFormElement | undefined) {

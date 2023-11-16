@@ -1,5 +1,5 @@
 import { SignifyClient } from "signify-ts";
-import { debug_json } from "../util/helper";
+import { debug_in } from "../util/helper";
 import { AID } from "./signify";
 
 export const IDENTIFIER = "identifier";
@@ -26,7 +26,7 @@ export async function invoke_lookup(client: SignifyClient, request: LookupReques
     let res = await client.fetch(url, "GET", undefined);
     if (!res.ok) throw new Error(`${url}: ${await res.text()}`);
     let response: LookupType[] = await res.json();
-    debug_json(url, response, "LookupType");
+    debug_in(url, response, "LookupType");
     return response;
 }
 

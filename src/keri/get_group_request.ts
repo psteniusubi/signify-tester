@@ -1,6 +1,6 @@
 import { SignifyClient } from 'signify-ts';
 import { AID, NotificationType } from './signify';
-import { debug_json } from '../util/helper';
+import { debug_in } from '../util/helper';
 
 // GroupRequest
 
@@ -20,7 +20,7 @@ export interface GroupRequest {
 
 export async function get_group_request(client: SignifyClient, note: NotificationType): Promise<GroupRequest[]> {
     let res: GroupRequest[] = await client.groups().getRequest(note.a.d);
-    debug_json(`get_group_request(${note.a.d})`, res, "GroupRequest");
+    debug_in(`get_group_request(${note.a.d})`, res, "GroupRequest");
     return res;
 }
 

@@ -1,7 +1,7 @@
 import { Siger, SignifyClient, d, messagize } from "signify-ts";
 import { AGENT, AID, AddEndRoleRequest, AddEndRoleResponse, Group, GroupRpyRequest, MULTISIG_RPY, MultisigRpyRequestEmbeds, MultisigRpyRequestPayload, SEAL_EVENT, SealEventType, get_name_by_identifier } from "./signify";
 import { MultisigRpyRequest, NotificationType, get_rpy_request } from "./signify";
-import { date2string, debug_json } from "../util/helper";
+import { date2string, debug_out } from "../util/helper";
 
 export class AddEndRoleBuilder {
     /**
@@ -41,7 +41,7 @@ export class AddEndRoleBuilder {
                 eid: eid,
                 stamp: stamp
             };
-            debug_json("buildAddEndRoleRequest", request, "AddEndRoleRequest");
+            debug_out("buildAddEndRoleRequest", request, "AddEndRoleRequest");
             yield request;
         }
     }
@@ -58,7 +58,7 @@ export class AddEndRoleBuilder {
             eid: rpy.exn.e.rpy.a.eid,
             stamp: rpy.exn.e.rpy.dt
         };
-        debug_json("acceptGroupRpyRequest", request, "AddEndRoleRequest");
+        debug_out("acceptGroupRpyRequest", request, "AddEndRoleRequest");
         return request;
     }
     async buildMultisigRpyRequest(addEndRoleRequest: AddEndRoleRequest, addEndRoleResponse: AddEndRoleResponse): Promise<MultisigRpyRequest> {
@@ -93,7 +93,7 @@ export class AddEndRoleBuilder {
             embeds: embeds,
             recipients: recipients
         };
-        debug_json("buildMultisigRpyRequest", request, "MultisigRpyRequest");
+        debug_out("buildMultisigRpyRequest", request, "MultisigRpyRequest");
         return request;
     }
 }
