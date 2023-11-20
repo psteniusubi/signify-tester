@@ -22,3 +22,11 @@ input {
 div {
   margin-bottom: 0.25em;
 }
+
+section.notification.unread input {
+  background-color: lightgreen;
+}
+
+section.notification.read input {
+  background-color: lightgray;
+}

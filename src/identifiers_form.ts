@@ -1,11 +1,11 @@
 import { signify, config } from "./client_form";
 import { REFRESH_EVENT, dispatch_form_event, find_next_name } from "./util/helper";
-import { create_single_identifier, get_oobi, get_identifiers, IDENTIFIER, CONTACT } from "./keri/signify";
+import { create_single_identifier, get_oobi, get_identifiers, IDENTIFIER, CONTACT, AGENT, WITNESS } from "./keri/signify";
 import { SignifyClient } from "signify-ts";
 
-async function async_oobi(client: SignifyClient, td: HTMLTableCellElement, name: string) {
+async function async_oobi(client: SignifyClient, td: HTMLTableCellElement, name: string, role: string) {
     try {
-        let oobi = await get_oobi(client, name);
+        let oobi = await get_oobi(client, name, role);
         // console.log(JSON.stringify(oobi));
         let input = document.createElement("input") as HTMLInputElement;
         input.type = "text";
@@ -90,10 +90,14 @@ export async function setup_identifiers_form() {
             label.htmlFor = checkbox.id;
             td.appendChild(label);
 
-            // oobi
+            // agent oobi
             td = tr.insertCell();
-            async_oobi(signify, td, i.name ?? "");
+            async_oobi(signify, td, i.name ?? "", AGENT);
 
+            // witness oobi
+            td = tr.insertCell();
+            async_oobi(signify, td, i.name ?? "", WITNESS);
+            
             ++count;
         }
         table.replaceChild(tbody, table.tBodies.item(0)!);

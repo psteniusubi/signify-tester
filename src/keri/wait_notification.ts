@@ -76,7 +76,11 @@ export async function wait_notification(client: SignifyClient, route: string): P
 }
 
 export async function mark_notification(client: SignifyClient, notification: NotificationType): Promise<void> {
-    await client.notifications().mark(notification.i);
+    try {
+        await client.notifications().mark(notification.i);
+    } catch {
+        // ignore
+    }
 }
 
 export async function delete_notification(client: SignifyClient, notification: NotificationType): Promise<void> {
