@@ -78,7 +78,7 @@ export class MultisigIcpBuilder {
     async getSelf(icp: GroupIcpRequest): Promise<IdentifierType | undefined> {
         let ids = icp.exn.a.smids.filter(i => i !== icp.exn.i);
         for (let i of await get_names_by_identifiers(this.client, ids)) {
-            return i;
+            return i; // TODO: what if there are more?
         }
         return undefined;
     }

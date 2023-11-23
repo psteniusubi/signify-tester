@@ -64,8 +64,11 @@ npx jest ./tests/prepare.test.ts
 
 ```
 npx jest ./tests/api.test.ts
-npx jest ./tests/delegate.test.ts
+npx jest ./tests/single-interact.test.ts
+npx jest ./tests/single-rotate.test.ts
+npx jest ./tests/single-delegate.test.ts
 npx jest ./tests/multisig.test.ts
+npx jest ./tests/group-delegate.test.ts
 ```
 
 ## Single test

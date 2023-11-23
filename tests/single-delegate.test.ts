@@ -1,6 +1,6 @@
 import { describe, test } from '@jest/globals';
 import { client1, client2, createClients, createIdentifiers, createContacts, name1_id, config } from './prepare';
-import { AGENT, CreateIdentifierRequest, Identifier, add_endRole, create_identifier, get_agentIdentifier, get_notifications, list_operations, wait_operation } from '../src/keri/signify';
+import { AGENT, AID, AnchorRequest, CreateIdentifierRequest, Identifier, InteractionRequest, OperationType, RotationRequest, add_endRole, create_identifier, get_agentIdentifier, get_notifications, interact_identifier, list_operations, rotate_identifier, wait_operation } from '../src/keri/signify';
 import { debug_json } from '../src/util/helper';
 import { NAME1 } from '../src/keri/config';
 
@@ -8,8 +8,10 @@ beforeAll(createClients);
 beforeAll(createIdentifiers);
 beforeAll(createContacts);
 
+const DELEGATE = "delegate";
+
 describe("SingleDelegate", () => {
-    const DELEGATE = "delegate";
+    let delegate_id: AID | undefined = undefined;
     test("step1", async () => {
         // delegator is name1 on client1
         let identifierRequest: CreateIdentifierRequest = {
@@ -19,26 +21,28 @@ describe("SingleDelegate", () => {
         };
         // delegate on client2
         let identifierResponse = await create_identifier(client2, DELEGATE, identifierRequest);
+        // waiting for identifierResponse.op in step3, can't wait here before client1 approves delegation
         debug_json("create_identifier", identifierResponse.serder.ked);
+        delegate_id = identifierResponse.serder.pre as AID;
+        expect(`delegation.${delegate_id}`).toEqual(identifierResponse.op.name);
     });
     test("step2", async () => {
-        // lookup delegate on client2
-        let id = await Identifier.create(client2, DELEGATE);
+        expect(delegate_id).toBeDefined();
         // anchoring event
-        let anchor = {
-            i: id.getId(),
+        let anchor: AnchorRequest = {
+            i: delegate_id!,
             s: 0,
-            d: id.getId()
+            d: delegate_id!
         };
         // interact with name1 on client1
-        let res1 = await client1.identifiers().interact(NAME1, anchor);
-        await wait_operation(client1, await res1.op());
+        let interactionResponse = await interact_identifier(client1, NAME1, anchor);
+        await wait_operation(client1, interactionResponse.op);
     });
     test("step3", async () => {
-        // lookup delegate on client2
-        let id = await Identifier.create(client2, DELEGATE);
-        // wait for delegation operation
-        await wait_operation(client2, { name: `delegation.${id.getId()}` });
+        expect(delegate_id).toBeDefined();
+        // wait for delegation operation (from step1)
+        let op: OperationType = { name: `delegation.${delegate_id}` };
+        await wait_operation(client2, op);
     });
     test("step4", async () => {
         // add end roles to delegate on client1
@@ -48,6 +52,18 @@ describe("SingleDelegate", () => {
             eid: get_agentIdentifier(client2)
         });
         await wait_operation(client2, endRoleResponse.op);
+    });
+    // test("step5", async () => {
+    //     // rotate delegate
+    //     let req: RotationRequest = {};
+    //     let res = await rotate_identifier(client2, DELEGATE, req);
+    //     await wait_operation(client2, res.op);
+    // });
+    test("step6", async () => {
+        // interact delegate
+        let req: InteractionRequest = {};
+        let res = await interact_identifier(client2, DELEGATE, req);
+        await wait_operation(client2, res.op);
     });
 
     // let id = await Identifier.create(client2, alias);

@@ -1,4 +1,4 @@
-import { SignifyClient } from 'signify-ts';
+import { SignifyClient, randomPasscode, ready } from 'signify-ts';
 import { Configuration, connect_or_boot, getLocalConfig, NAME1, CONTACT1, CONTACT2, CONTACT3 } from "../src/keri/config";
 import { AGENT, AID, AddEndRoleRequest, CONTACT, IDENTIFIER, IdentifierType, add_endRole, create_single_identifier, get_agentIdentifier, get_contact, get_identifier, get_oobi, has_endRole, invoke_lookup, resolve_oobi, wait_operation } from '../src/keri/signify';
 
@@ -11,12 +11,26 @@ export let client1: SignifyClient;
 export let client2: SignifyClient;
 export let client3: SignifyClient;
 
+async function get_passcode(clientName: string): Promise<string> {
+    if (false) {
+        await ready();
+        return randomPasscode();
+    } else {
+        return clientName;
+    }
+}
+
 export async function createClients() {
     config = await getLocalConfig();
+    let [bran1, bran2, bran3] = await Promise.all([
+        get_passcode(CLIENT1),
+        get_passcode(CLIENT2),
+        get_passcode(CLIENT3)
+    ]);
     let tasks = [
-        connect_or_boot(config, CLIENT1),
-        connect_or_boot(config, CLIENT2),
-        connect_or_boot(config, CLIENT3)
+        connect_or_boot(config, bran1),
+        connect_or_boot(config, bran2),
+        connect_or_boot(config, bran3),
     ];
     [client1, client2, client3] = await Promise.all(tasks);
 }
