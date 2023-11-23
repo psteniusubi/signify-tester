@@ -131,10 +131,10 @@ async function create_icp_form(client: SignifyClient, notification: Notification
     return read;
 }
 
-async function is_rpy_from_lead(client: SignifyClient, rpy: GroupRpyRequest): Promise<boolean> {
-    let group = await Group.create(client, await get_name_by_identifier(client, rpy.exn.a.gid));
-    return !group.isLead();
-}
+// async function is_rpy_from_lead(client: SignifyClient, rpy: GroupRpyRequest): Promise<boolean> {
+//     let group = await Group.create(client, await get_name_by_identifier(client, rpy.exn.a.gid));
+//     return !group.isLead();
+// }
 
 async function is_rpy_done(client: SignifyClient, rpy: GroupRpyRequest): Promise<boolean> {
     let alias = await get_name_by_identifier(client, rpy.exn.e.rpy.a.cid);

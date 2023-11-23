@@ -1,7 +1,7 @@
 import { describe, test } from '@jest/globals';
 import { AGENT, AddEndRoleBuilder, MultisigIcpBuilder, add_endRole, create_identifier, get_oobi, resolve_oobi, wait_notification, wait_operation, CreateIdentifierRequest, MultisigIcpRequest, Group, Identifier, delete_notification, list_operations, get_notifications, get_group_request, UNREAD_NOTIFICATION, get_endRoles, Contact, has_endRole, get_agentIdentifier, mark_notification, OperationType, WITNESS } from "../src/keri/signify";
 import { NAME1, GROUP1, CONTACT2 } from "../src/keri/config";
-import { MULTISIG_ICP, MULTISIG_RPY, send_exchange } from '../src/keri/signify';
+import { MULTISIG_ICP, MULTISIG_RPY, send_exchange } from "../src/keri/signify";
 import { debug_json } from '../src/util/helper';
 import { createClients, createIdentifiers, createContacts, config, client1, client2, client3 } from './prepare';
 

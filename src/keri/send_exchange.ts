@@ -4,6 +4,7 @@ import { debug_in } from "../util/helper";
 
 export const MULTISIG_ICP = "/multisig/icp";
 export const MULTISIG_RPY = "/multisig/rpy";
+export const MULTISIG_IXN = "/multisig/ixn";
 
 // ExchangeRequest
 
@@ -46,6 +47,23 @@ export interface MultisigRpyRequestEmbeds {
 export interface MultisigRpyRequest extends ExchangeRequest {
     payload?: MultisigRpyRequestPayload;
     embeds?: MultisigRpyRequestEmbeds;
+}
+
+// /multisig/ixn
+
+export interface MultisigIxnRequestPayload {
+    gid?: AID;
+    smids?: AID[];
+    rmids?: AID[];
+}
+
+export interface MultisigIxnRequestEmbeds {
+    ixn?: [Serder, string];
+}
+
+export interface MultisigIxnRequest extends ExchangeRequest {
+    payload?: MultisigIxnRequestPayload;
+    embeds?: MultisigIxnRequestEmbeds;
 }
 
 // ExchangeResponse

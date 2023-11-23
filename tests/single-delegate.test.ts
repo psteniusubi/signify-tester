@@ -53,12 +53,12 @@ describe("SingleDelegate", () => {
         });
         await wait_operation(client2, endRoleResponse.op);
     });
-    // test("step5", async () => {
-    //     // rotate delegate
-    //     let req: RotationRequest = {};
-    //     let res = await rotate_identifier(client2, DELEGATE, req);
-    //     await wait_operation(client2, res.op);
-    // });
+    test.skip("step5", async () => {
+        // rotate delegate
+        let req: RotationRequest = {};
+        let res = await rotate_identifier(client2, DELEGATE, req);
+        await wait_operation(client2, res.op);
+    });
     test("step6", async () => {
         // interact delegate
         let req: InteractionRequest = {};

@@ -84,3 +84,12 @@ export async function get_name_by_identifier(client: SignifyClient, id: AID): Pr
     }
     throw new Error(`get_name_by_identifier(${id}): not found`);
 }
+
+export async function get_identifier_by_name(client: SignifyClient, name: string): Promise<AID> {
+    for (let i of await invoke_lookup(client, { type: [IDENTIFIER], name: [name] })) {
+        if (i.id !== undefined) {
+            return i.id;
+        }
+    }
+    throw new Error(`get_identifier_by_name(${name}): not found`);
+}

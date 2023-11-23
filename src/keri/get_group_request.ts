@@ -93,3 +93,35 @@ export async function get_rpy_request(client: SignifyClient, note: NotificationT
     let r: GroupRpyRequest[] = await get_group_request(client, note);
     return r;
 }
+
+// /multisig/ixn
+
+export interface GroupIxnRequestA {
+    gid: AID;
+    smids: AID[];
+    rmids: AID[];
+}
+
+export interface GroupIxnRequestE {
+    ixn: any;
+    d: AID;
+}
+
+export interface GroupIxnRequestExn extends GroupRequestExn {
+    a: GroupIxnRequestA;
+    e: GroupIxnRequestE;
+}
+
+export interface GroupIxnRequestP {
+    ixn: string;
+}
+
+export interface GroupIxnRequest extends GroupRequest {
+    exn: GroupIxnRequestExn;
+    paths: GroupIxnRequestP;
+}
+
+export async function get_ixn_request(client: SignifyClient, note: NotificationType): Promise<GroupIxnRequest[]> {
+    let r: GroupIxnRequest[] = await get_group_request(client, note);
+    return r;
+}

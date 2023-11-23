@@ -11,6 +11,7 @@ export * from "./RangeType";
 export * from "./create_identifier";
 export * from "./send_exchange";
 export * from "./MultisigIcpBuilder";
+export * from "./MultisigIxnBuilder";
 export * from "./AddEndRoleBuilder";
 export * from "./endRole";
 export * from "./Identifier";
