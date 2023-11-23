@@ -1,6 +1,6 @@
 import { SignifyClient } from 'signify-ts';
 import { debug_in } from '../util/helper';
-import { AID } from './signify';
+import { AID, CONTACT, invoke_lookup } from './signify';
 
 export interface ContactType {
     id: AID,
@@ -30,3 +30,20 @@ export async function get_contacts(client: SignifyClient, aliases: string[]): Pr
     return await Promise.all(tasks);
 }
 
+export async function get_name_by_contact(client: SignifyClient, id: AID): Promise<string> {
+    for (let i of await invoke_lookup(client, { type: [CONTACT], id: [id] })) {
+        if (i.name !== undefined) {
+            return i.name;
+        }
+    }
+    throw new Error(`get_name_by_contact(${id}): not found`);
+}
+
+export async function get_contact_by_name(client: SignifyClient, name: string): Promise<AID> {
+    for (let i of await invoke_lookup(client, { type: [CONTACT], name: [name] })) {
+        if (i.id !== undefined) {
+            return i.id;
+        }
+    }
+    throw new Error(`get_contact_by_name(${name}): not found`);
+}
