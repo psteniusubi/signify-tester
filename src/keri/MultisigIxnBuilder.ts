@@ -40,17 +40,16 @@ export class MultisigIxnBuilder {
         debug_out("buildMultisigIxnRequest", request, "MultisigIxnRequest");
         return request;
     }
-    async *acceptGroupIxnNotification(notification: NotificationType): AsyncGenerator<[string, InteractionRequest]> {
+    async acceptGroupIxnNotification(notification: NotificationType): Promise<[string, InteractionRequest][]> {
+        let res: [string, InteractionRequest][] = [];
         for (let ixn of await get_ixn_request(this.client, notification)) {
-            yield await this.acceptGroupIxnRequest(ixn);
+            res.push(await this.acceptGroupIxnRequest(ixn));
         }
+        return res;
     }
     async acceptGroupIxnRequest(ixn: GroupIxnRequest): Promise<[string, InteractionRequest]> {
         let name = await get_name_by_identifier(this.client, ixn.exn.a.gid);
-        let request: [string, InteractionRequest] = [
-            name,
-            ixn.exn.e.ixn.a
-        ];
+        let request: [string, InteractionRequest] = [name, ixn.exn.e.ixn.a];
         debug_out("acceptGroupIxnRequest", request, "InteractionRequest");
         return request;
     }

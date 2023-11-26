@@ -1,6 +1,6 @@
 import { describe, test } from '@jest/globals';
 import { client1, client2, createClients, createIdentifiers, createContacts, name1_id, config } from './prepare';
-import { AGENT, AID, AnchorRequest, CreateIdentifierRequest, Identifier, InteractionRequest, OperationType, RotationRequest, add_endRole, create_identifier, get_agentIdentifier, get_notifications, interact_identifier, list_operations, rotate_identifier, wait_operation } from '../src/keri/signify';
+import { AGENT, AID, AnchorRequest, CreateIdentifierRequest, Identifier, InteractionRequest, InteractionResponse, OperationType, RotationRequest, RotationResponse, add_endRole, create_identifier, get_agentIdentifier, get_notifications, interact_identifier, list_operations, rotate_identifier, wait_operation } from '../src/keri/signify';
 import { debug_json } from '../src/util/helper';
 import { NAME1 } from '../src/keri/config';
 
@@ -9,9 +9,12 @@ beforeAll(createIdentifiers);
 beforeAll(createContacts);
 
 const DELEGATE = "delegate";
+let delegate_id: AID | undefined = undefined;
 
-describe("SingleDelegate", () => {
-    let delegate_id: AID | undefined = undefined;
+describe("single-delegate", () => {
+    beforeAll(() => {
+        expect(name1_id).not.toBeNull();
+    });
     test("step1", async () => {
         // delegator is name1 on client1
         let identifierRequest: CreateIdentifierRequest = {
@@ -56,13 +59,13 @@ describe("SingleDelegate", () => {
     test.skip("step5", async () => {
         // rotate delegate
         let req: RotationRequest = {};
-        let res = await rotate_identifier(client2, DELEGATE, req);
+        let res: RotationResponse = await rotate_identifier(client2, DELEGATE, req);
         await wait_operation(client2, res.op);
     });
     test("step6", async () => {
         // interact delegate
         let req: InteractionRequest = {};
-        let res = await interact_identifier(client2, DELEGATE, req);
+        let res: InteractionResponse = await interact_identifier(client2, DELEGATE, req);
         await wait_operation(client2, res.op);
     });
 

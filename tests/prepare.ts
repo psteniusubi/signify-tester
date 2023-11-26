@@ -1,6 +1,6 @@
 import { SignifyClient, randomPasscode, ready } from 'signify-ts';
 import { Configuration, connect_or_boot, getLocalConfig, NAME1, CONTACT1, CONTACT2, CONTACT3 } from "../src/keri/config";
-import { AGENT, AID, AddEndRoleRequest, CONTACT, IDENTIFIER, IdentifierType, add_endRole, create_single_identifier, get_agentIdentifier, get_contact, get_identifier, get_oobi, has_endRole, invoke_lookup, resolve_oobi, wait_operation } from '../src/keri/signify';
+import { AGENT, AID, AddEndRoleRequest, CONTACT, IDENTIFIER, IdentifierType, OobiType, add_endRole, create_single_identifier, get_agentIdentifier, get_contact, get_identifier, get_identifier_by_name, get_oobi, has_endRole, invoke_lookup, resolve_oobi, wait_operation } from '../src/keri/signify';
 
 const CLIENT1 = "client1";
 const CLIENT2 = "client2";
@@ -80,6 +80,15 @@ export async function get_or_create_contact(client: SignifyClient, alias: string
     }
 }
 
+async function get_identifier_and_oobi(client: SignifyClient, alias: string): Promise<[AID, string]> {
+    let tasks: [Promise<AID>, Promise<OobiType>] = [
+        get_identifier_by_name(client, alias),
+        get_oobi(client, alias)
+    ];
+    let [aid, oobi] = await Promise.all(tasks);
+    return [aid, oobi.oobis[0]];
+}
+
 export let name1_id: AID, name1_oobi: string;
 export let name2_id: AID, name2_oobi: string;
 export let name3_id: AID, name3_oobi: string;
@@ -90,10 +99,16 @@ export async function createIdentifiers() {
         get_or_create_identifier(client2, NAME1),
         get_or_create_identifier(client3, NAME1),
     ];
-    let res = await Promise.all(tasks);
-    [name1_id, name1_oobi] = res[0];
-    [name2_id, name2_oobi] = res[1];
-    [name3_id, name3_oobi] = res[2];
+    [[name1_id, name1_oobi], [name2_id, name2_oobi], [name3_id, name3_oobi]] = await Promise.all(tasks);
+}
+
+export async function lookupIdentifiers() {
+    let tasks = [
+        get_identifier_and_oobi(client1, NAME1),
+        get_identifier_and_oobi(client2, NAME1),
+        get_identifier_and_oobi(client3, NAME1),
+    ];
+    [[name1_id, name1_oobi], [name2_id, name2_oobi], [name3_id, name3_oobi]] = await Promise.all(tasks);
 }
 
 export async function createContacts() {

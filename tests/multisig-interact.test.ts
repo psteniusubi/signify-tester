@@ -5,7 +5,7 @@ import { CONTACT3, GROUP1 } from '../src/keri/config';
 
 beforeAll(createClients);
 
-describe("Multisig-Interact", () => {
+describe("multisig-interact", () => {
     test("step1", async () => {
         let id = await get_contact_by_name(client1, CONTACT3);
         let interactionRequest: AnchorRequest = {
@@ -21,7 +21,7 @@ describe("Multisig-Interact", () => {
     test("step2", async () => {
         let n = await wait_notification(client2, MULTISIG_IXN);
         let builder = await MultisigIxnBuilder.create(client2);
-        for await (let [name, data] of builder.acceptGroupIxnNotification(n)) {
+        for (let [name, data] of await builder.acceptGroupIxnNotification(n)) {
             let interactionResponse = await interact_identifier(client2, name, data);
             let ixnRequest = await builder.buildMultisigIxnRequest(interactionResponse);
             let ixnResponse = await send_exchange(client2, ixnRequest);
@@ -31,7 +31,7 @@ describe("Multisig-Interact", () => {
     test("step3", async () => {
         let n = await wait_notification(client1, MULTISIG_IXN);
         let builder = await MultisigIxnBuilder.create(client2);
-        for await (let [name, data] of builder.acceptGroupIxnNotification(n)) {
+        for (let [name, data] of await builder.acceptGroupIxnNotification(n)) {
         }
         mark_notification(client1, n);
     });

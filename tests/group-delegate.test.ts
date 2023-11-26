@@ -22,7 +22,7 @@ export interface DelegateRequest extends ExchangeRequest {
     embeds?: DelegateRequestEmbeds;
 }
 
-describe("GroupDelegate", () => {
+describe("group-delegate", () => {
     let group_id: AID | undefined = undefined;
     test("step1", async () => {
         // lead group icp on client1
@@ -43,7 +43,7 @@ describe("GroupDelegate", () => {
         // wait for /multisig/icp from client1 to client2
         let n = await wait_notification(client2, MULTISIG_ICP);
         let builder = await MultisigIcpBuilder.create(client2, GROUP1);
-        for await (let createIdentifierRequest of builder.acceptGroupIcpNotification(n)) {
+        for (let createIdentifierRequest of await builder.acceptGroupIcpNotification(n)) {
             expect(createIdentifierRequest.mhab?.name).toStrictEqual(NAME1);
             expect(createIdentifierRequest.delpre).toBe(name3_id);
             let createIdentifierResponse = await create_identifier(client2, builder.alias, createIdentifierRequest);
@@ -58,7 +58,7 @@ describe("GroupDelegate", () => {
         // wait for /multisig/icp from client2 to client1
         let n = await wait_notification(client1, MULTISIG_ICP);
         let builder = await MultisigIcpBuilder.create(client1, GROUP1);
-        for await (let createIdentifierRequest of builder.acceptGroupIcpNotification(n)) {
+        for (let createIdentifierRequest of await builder.acceptGroupIcpNotification(n)) {
             expect(createIdentifierRequest.mhab?.name).toStrictEqual(NAME1);
             expect(createIdentifierRequest.delpre).toBe(name3_id);
         }
@@ -87,7 +87,7 @@ describe("GroupDelegate", () => {
     test("step7", async () => {
         // lead end role authorization on client1
         let builder = await AddEndRoleBuilder.create(client1, GROUP1);
-        for await (let addEndRoleRequest of builder.buildAddEndRoleRequest()) {
+        for (let addEndRoleRequest of await builder.buildAddEndRoleRequest()) {
             let addEndRoleResponse = await add_endRole(client1, addEndRoleRequest);
             let rpyRequest = await builder.buildMultisigRpyRequest(addEndRoleRequest, addEndRoleResponse);
             expect(rpyRequest.sender?.name).toStrictEqual(NAME1);
@@ -99,7 +99,7 @@ describe("GroupDelegate", () => {
         // wait for first /multisig/icp from client1 to client2
         let builder = await AddEndRoleBuilder.create(client2);
         let n = await wait_notification(client2, MULTISIG_RPY);
-        for await (let addEndRoleRequest of builder.acceptGroupRpyNotification(n)) {
+        for (let addEndRoleRequest of await builder.acceptGroupRpyNotification(n)) {
             expect(addEndRoleRequest.alias).toStrictEqual(GROUP1);
             let addEndRoleResponse = await add_endRole(client2, addEndRoleRequest);
             let rpyRequest = await builder.buildMultisigRpyRequest(addEndRoleRequest, addEndRoleResponse);
@@ -113,7 +113,7 @@ describe("GroupDelegate", () => {
         // wait for second /multisig/icp from client1 to client2
         let builder = await AddEndRoleBuilder.create(client2);
         let n = await wait_notification(client2, MULTISIG_RPY);
-        for await (let addEndRoleRequest of builder.acceptGroupRpyNotification(n)) {
+        for (let addEndRoleRequest of await builder.acceptGroupRpyNotification(n)) {
             expect(addEndRoleRequest.alias).toStrictEqual(GROUP1);
             let addEndRoleResponse = await add_endRole(client2, addEndRoleRequest);
             let rpyRequest = await builder.buildMultisigRpyRequest(addEndRoleRequest, addEndRoleResponse);
@@ -127,7 +127,7 @@ describe("GroupDelegate", () => {
         let builder = await AddEndRoleBuilder.create(client1);
         // wait for first /multisig/icp from client2 to client1
         let n = await wait_notification(client1, MULTISIG_RPY);
-        for await (let addEndRoleRequest of builder.acceptGroupRpyNotification(n)) {
+        for (let addEndRoleRequest of await builder.acceptGroupRpyNotification(n)) {
             expect(addEndRoleRequest.alias).toStrictEqual(GROUP1);
         }
         await mark_notification(client1, n);
@@ -136,7 +136,7 @@ describe("GroupDelegate", () => {
         let builder = await AddEndRoleBuilder.create(client1);
         // wait for second /multisig/icp from client2 to client1
         let n = await wait_notification(client1, MULTISIG_RPY);
-        for await (let addEndRoleRequest of builder.acceptGroupRpyNotification(n)) {
+        for (let addEndRoleRequest of await builder.acceptGroupRpyNotification(n)) {
             expect(addEndRoleRequest.alias).toStrictEqual(GROUP1);
         }
         await mark_notification(client1, n);
@@ -145,7 +145,7 @@ describe("GroupDelegate", () => {
         // wait for end role operation on client1
         let builder = await AddEndRoleBuilder.create(client1, GROUP1);
         let group = await builder._group!;
-        for await (let eid of builder.getEids()) {
+        for (let eid of await builder.getEids()) {
             await wait_operation(client1, { name: `endrole.${group.getId()}.agent.${eid}` });
         }
     });
@@ -153,7 +153,7 @@ describe("GroupDelegate", () => {
         // wait for end role operation on client2
         let builder = await AddEndRoleBuilder.create(client2, GROUP1);
         let group = await builder._group!;
-        for await (let eid of builder.getEids()) {
+        for (let eid of await builder.getEids()) {
             await wait_operation(client2, { name: `endrole.${group.getId()}.agent.${eid}` });
         }
     });

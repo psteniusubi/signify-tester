@@ -125,3 +125,35 @@ export async function get_ixn_request(client: SignifyClient, note: NotificationT
     let r: GroupIxnRequest[] = await get_group_request(client, note);
     return r;
 }
+
+// /multisig/rot
+
+export interface GroupRotRequestA {
+    gid: AID;
+    smids: AID[];
+    rmids: AID[];
+}
+
+export interface GroupRotRequestE {
+    rot: any;
+    d: AID;
+}
+
+export interface GroupRotRequestExn extends GroupRequestExn {
+    a: GroupRotRequestA;
+    e: GroupRotRequestE;
+}
+
+export interface GroupRotRequestP {
+    rot: string;
+}
+
+export interface GroupRotRequest extends GroupRequest {
+    exn: GroupRotRequestExn;
+    paths: GroupRotRequestP;
+}
+
+export async function get_rot_request(client: SignifyClient, note: NotificationType): Promise<GroupRotRequest[]> {
+    let r: GroupRotRequest[] = await get_group_request(client, note);
+    return r;
+}

@@ -7,7 +7,7 @@ beforeAll(createClients);
 const DELEGATOR = "delegator";
 const DELEGATE = "delegate";
 
-describe("SingleDelegateEx", () => {
+describe("single-delegate-ex", () => {
     test("integration", async () => {
         // client1: delegator
         await create_single_identifier(client1, config, DELEGATOR);

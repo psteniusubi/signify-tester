@@ -23,18 +23,21 @@ export class AddEndRoleBuilder {
         let group = await this._group;
         return group?.isLead() ?? false;
     }
-    async *getEids(): AsyncGenerator<AID> {
-        if (this._group === undefined) return;
+    async getEids(): Promise<AID[]> {
+        if (this._group === undefined) throw new Error("getEids()");
+        let res: AID[] = [];
         let group: Group = await this._group;
         for (let s of group.members.signing) {
             for (let eid of Object.keys(s.ends.agent)) {
-                yield eid as AID;
+                res.push(eid as AID);
             }
         }
+        return res;
     }
-    async *buildAddEndRoleRequest(): AsyncGenerator<AddEndRoleRequest> {
+    async buildAddEndRoleRequest(): Promise<AddEndRoleRequest[]> {
+        let res: AddEndRoleRequest[] = [];
         let stamp: string = date2string(new Date());
-        for await (let eid of this.getEids()) {
+        for (let eid of await this.getEids()) {
             let request: AddEndRoleRequest = {
                 alias: this.group,
                 role: AGENT,
@@ -42,13 +45,16 @@ export class AddEndRoleBuilder {
                 stamp: stamp
             };
             debug_out("buildAddEndRoleRequest", request, "AddEndRoleRequest");
-            yield request;
+            res.push(request);
         }
+        return res;
     }
-    async *acceptGroupRpyNotification(notification: NotificationType): AsyncGenerator<AddEndRoleRequest> {
+    async acceptGroupRpyNotification(notification: NotificationType): Promise<AddEndRoleRequest[]> {
+        let res: AddEndRoleRequest[] = [];
         for (let rpy of await get_rpy_request(this.client, notification)) {
-            yield await this.acceptGroupRpyRequest(rpy);
+            res.push(await this.acceptGroupRpyRequest(rpy));
         }
+        return res;
     }
     async acceptGroupRpyRequest(rpy: GroupRpyRequest): Promise<AddEndRoleRequest> {
         let name: string = await get_name_by_identifier(this.client, rpy.exn.a.gid);

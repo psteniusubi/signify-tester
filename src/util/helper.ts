@@ -24,17 +24,18 @@ export function json2string(value: any) {
 
 const DIRECTION_IN = "in";
 const DIRECTION_OUT = "out";
-const fs_log = false; // TODO: toggle for recording
+let fs_log: boolean = false; // TODO: toggle for recording
 const begin = new Date();
 let sequence = 0;
 
+export function set_fs_log(value: boolean): void {
+    fs_log = value;
+}
+
 function log_file(json: string, type: string, direction: string) {
-    import("fs/promises").then(fs => {
+    import("fs").then(fs => {
         let path = `/home/uroot/signify-tester/logs/${begin.toISOString()}-${type}-${direction}-${sequence++}.json`;
-        fs.open(path, "w").then(f => {
-            f.writeFile(json);
-            f.close();
-        });
+        fs.writeFileSync(path, json);
     }).catch(() => { });
 }
 

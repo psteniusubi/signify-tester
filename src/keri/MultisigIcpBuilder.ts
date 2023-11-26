@@ -82,10 +82,12 @@ export class MultisigIcpBuilder {
         }
         return undefined;
     }
-    async *acceptGroupIcpNotification(notification: NotificationType): AsyncGenerator<CreateIdentifierRequest> {
+    async acceptGroupIcpNotification(notification: NotificationType): Promise<CreateIdentifierRequest[]> {
+        let res: CreateIdentifierRequest[] = [];
         for (let icp of await get_icp_request(this.client, notification)) {
-            yield await this.acceptGroupIcpRequest(icp);
+            res.push(await this.acceptGroupIcpRequest(icp));
         }
+        return res;
     }
     async acceptGroupIcpRequest(icp: GroupIcpRequest): Promise<CreateIdentifierRequest> {
         let lead: IdentifierType | undefined = await this.getSelf(icp);

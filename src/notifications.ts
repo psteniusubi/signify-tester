@@ -282,7 +282,7 @@ async function add_end_roles(client: SignifyClient, id: AID): Promise<void> {
     let builder = await AddEndRoleBuilder.create(client, name);
     let isLead = await builder.isLead();
     if (!isLead) return;
-    for await (let addEndRoleRequest of builder.buildAddEndRoleRequest()) {
+    for (let addEndRoleRequest of await builder.buildAddEndRoleRequest()) {
         let addEndRoleResponse = await add_endRole(client, addEndRoleRequest);
         let rpyRequest = await builder.buildMultisigRpyRequest(addEndRoleRequest, addEndRoleResponse);
         let rpyResponse = await send_exchange(client, rpyRequest);
