@@ -1,6 +1,6 @@
 import { Agent, Authenticater, Controller, KeyManager, SignifyClient } from "signify-ts";
-import { NAME1 } from "../src/keri/config";
-import { AGENT, WITNESS, get_identifiers, get_name_by_identifier, get_names_by_identifiers, get_oobi } from "../src/keri/signify";
+import { CONTACT1, CONTACT2, CONTACT3, NAME1 } from "../src/keri/config";
+import { AGENT, CONTACT, IDENTIFIER, WITNESS, get_identifiers, get_name_by_identifier, get_names_by_identifiers, get_oobi } from "../src/keri/signify";
 import { debug_json } from "../src/util/helper";
 import { Identifier, invoke_lookup } from "../src/keri/signify";
 import { createClients, createContacts, createIdentifiers, client1, client2, name1_id, get_or_create_identifier, name2_id, name3_id } from "./prepare";
@@ -9,10 +9,13 @@ beforeAll(createClients);
 beforeAll(createIdentifiers);
 beforeAll(createContacts);
 
-describe("Api", () => {
-    let name1b_id: string;
+const NAME1B = "name1b";
+const DELEGATE = "delegate";
+let name1b_id: string;
+
+describe("api", () => {
     beforeAll(async () => {
-        [name1b_id] = await get_or_create_identifier(client1, "name2");
+        [name1b_id] = await get_or_create_identifier(client1, NAME1B);
     });
     test("client1", async () => {
         expect(client1).toBeInstanceOf(SignifyClient);
@@ -35,15 +38,16 @@ describe("Api", () => {
         }
     });
     test("name1", async () => {
-        let oobi = await get_oobi(client1, "name1", AGENT);
+        let oobi = await get_oobi(client1, NAME1, AGENT);
         expect(oobi.oobis).toHaveLength(1);
-        oobi = await get_oobi(client1, "name1", WITNESS);
+        oobi = await get_oobi(client1, NAME1, WITNESS);
         expect(oobi.oobis).toHaveLength(3);
     });
-    test("delegate", async () => {
-        let oobi = await get_oobi(client2, "delegate", AGENT);
+    test.skip("delegate", async () => {
+        // see single-delegate
+        let oobi = await get_oobi(client2, DELEGATE, AGENT);
         expect(oobi.oobis).toHaveLength(1);
-        oobi = await get_oobi(client2, "delegate", WITNESS);
+        oobi = await get_oobi(client2, DELEGATE, WITNESS);
         expect(oobi.oobis).toHaveLength(0);
     });
     test("get_names_by_identifiers", async () => {
@@ -60,61 +64,61 @@ describe("Api", () => {
         expect(name1.alias).toEqual(name);
     });
     test("lookup1", async () => {
-        let r1 = await invoke_lookup(client1, { name: ["name1"] });
+        let r1 = await invoke_lookup(client1, { name: [NAME1] });
         expect(r1.length).toBe(1);
         expect(r1[0].id).toBe(name1_id);
-        expect(r1[0].name).toBe("name1");
+        expect(r1[0].name).toBe(NAME1);
         r1 = await invoke_lookup(client1, { id: [name1_id] });
         expect(r1.length).toBe(1);
         expect(r1[0].id).toBe(name1_id);
-        expect(r1[0].name).toBe("name1");
+        expect(r1[0].name).toBe(NAME1);
     });
     test("lookup2", async () => {
-        let r1 = await invoke_lookup(client1, { name: ["name1", "name2"] });
+        let r1 = await invoke_lookup(client1, { name: [NAME1, NAME1B] });
         r1 = r1.sort((a, b) => a.name!.localeCompare(b.name!));
         expect(r1.length).toBe(2);
         expect(r1[0].id).toBe(name1_id);
-        expect(r1[0].name).toBe("name1");
+        expect(r1[0].name).toBe(NAME1);
         expect(r1[1].id).toBe(name1b_id);
-        expect(r1[1].name).toBe("name2");
+        expect(r1[1].name).toBe(NAME1B);
         r1 = await invoke_lookup(client1, { id: r1.map(i => i.id) });
         r1 = r1.sort((a, b) => a.name!.localeCompare(b.name!));
         expect(r1.length).toBe(2);
         expect(r1[0].id).toBe(name1_id);
-        expect(r1[0].name).toBe("name1");
+        expect(r1[0].name).toBe(NAME1);
         expect(r1[1].id).toBe(name1b_id);
-        expect(r1[1].name).toBe("name2");
+        expect(r1[1].name).toBe(NAME1B);
     });
     test("lookup3", async () => {
-        let r1 = await invoke_lookup(client1, { type: ["identifier"], name: ["name1", "name2", "contact1", "contact2", "contact3"] });
+        let r1 = await invoke_lookup(client1, { type: [IDENTIFIER], name: [NAME1, NAME1B, CONTACT1, CONTACT2, CONTACT3] });
         r1 = r1.sort((a, b) => a.name!.localeCompare(b.name!));
         expect(r1.length).toBe(2);
         expect(r1[0].id).toBe(name1_id);
-        expect(r1[0].name).toBe("name1");
+        expect(r1[0].name).toBe(NAME1);
         expect(r1[1].id).toBe(name1b_id);
-        expect(r1[1].name).toBe("name2");
-        r1 = await invoke_lookup(client1, { type: ["identifier"], id: r1.map(i => i.id) });
+        expect(r1[1].name).toBe(NAME1B);
+        r1 = await invoke_lookup(client1, { type: [IDENTIFIER], id: r1.map(i => i.id) });
         r1 = r1.sort((a, b) => a.name!.localeCompare(b.name!));
         expect(r1.length).toBe(2);
         expect(r1[0].id).toBe(name1_id);
-        expect(r1[0].name).toBe("name1");
+        expect(r1[0].name).toBe(NAME1);
         expect(r1[1].id).toBe(name1b_id);
-        expect(r1[1].name).toBe("name2");
+        expect(r1[1].name).toBe(NAME1B);
     });
     test("lookup4", async () => {
-        let r1 = await invoke_lookup(client1, { type: ["contact"], name: ["name1", "name2", "contact1", "contact2", "contact3"] });
+        let r1 = await invoke_lookup(client1, { type: [CONTACT], name: [NAME1, NAME1B, CONTACT1, CONTACT2, CONTACT3] });
         r1 = r1.sort((a, b) => a.name!.localeCompare(b.name!));
         expect(r1.length).toBe(2);
         expect(r1[0].id).toBe(name2_id);
-        expect(r1[0].name).toBe("contact2");
+        expect(r1[0].name).toBe(CONTACT2);
         expect(r1[1].id).toBe(name3_id);
-        expect(r1[1].name).toBe("contact3");
-        r1 = await invoke_lookup(client1, { type: ["contact"], id: r1.map(i => i.id) });
+        expect(r1[1].name).toBe(CONTACT3);
+        r1 = await invoke_lookup(client1, { type: [CONTACT], id: r1.map(i => i.id) });
         r1 = r1.sort((a, b) => a.name!.localeCompare(b.name!));
         expect(r1.length).toBe(2);
         expect(r1[0].id).toBe(name2_id);
-        expect(r1[0].name).toBe("contact2");
+        expect(r1[0].name).toBe(CONTACT2);
         expect(r1[1].id).toBe(name3_id);
-        expect(r1[1].name).toBe("contact3");
+        expect(r1[1].name).toBe(CONTACT3);
     });
 });
