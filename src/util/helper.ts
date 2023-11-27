@@ -59,7 +59,15 @@ export function dispatch_form_event(event: Event, from?: HTMLFormElement | undef
     Array.from(document.forms).filter(i => i !== from).forEach(i => i.dispatchEvent(event));
 }
 
-export async function wait_async_operation<T>(async_operation: () => Promise<T | undefined>): Promise<T> {
+
+export type AsyncOperation<T> = () => Promise<T | undefined>;
+
+
+/**
+ * Poll until async_operation returns a value or timeout expires. 
+ * Throws exception if timeout expires.
+ */
+export async function wait_async_operation<T>(async_operation: AsyncOperation<T>): Promise<T> {
     let ms = 500;
     let retries = 10;
     while (true) {
