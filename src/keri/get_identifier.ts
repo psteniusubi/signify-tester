@@ -42,7 +42,7 @@ export async function* get_identifiers(client: SignifyClient, predicate: Identif
     let end = start + PAGE - 1;
     let total = Number.MAX_VALUE;
     while (start < total) {
-        let range = await list_identifiers(client, start, end);
+        let range: IdentifierRangeType = await list_identifiers(client, start, end);
         total = range.total;
         start += range.aids.length;
         end = start + PAGE - 1;

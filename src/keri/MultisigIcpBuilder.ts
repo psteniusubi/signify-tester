@@ -1,11 +1,10 @@
 import { Siger, SignifyClient, d, messagize } from "signify-ts";
-import { AID, Contact, GroupIcpRequest, GroupIcpRequestExn, Identifier, IdentifierOrContact, IdentifierType, get_names_by_identifiers } from "./signify";
+import { AID, Contact, GroupIcpRequest, GroupIcpRequestExn, Identifier, IdentifierOrContact, IdentifierType, get_icp_requests, get_names_by_identifiers } from "./signify";
 import { KeyStateType, get_keyState } from "./signify";
 import { Configuration } from "./config";
 import { CreateIdentifierRequest, CreateIdentifierResponse } from "./signify";
 import { Algos } from "signify-ts";
 import { NotificationType } from "./signify";
-import { get_icp_request } from "./signify";
 import { MULTISIG_ICP, MultisigIcpRequest, MultisigIcpRequestEmbeds, MultisigIcpRequestPayload } from "./signify";
 import { debug_out } from "../util/helper";
 
@@ -84,7 +83,7 @@ export class MultisigIcpBuilder {
     }
     async acceptGroupIcpNotification(notification: NotificationType): Promise<CreateIdentifierRequest[]> {
         let res: CreateIdentifierRequest[] = [];
-        for (let icp of await get_icp_request(this.client, notification)) {
+        for (let icp of await get_icp_requests(this.client, notification)) {
             res.push(await this.acceptGroupIcpRequest(icp));
         }
         return res;

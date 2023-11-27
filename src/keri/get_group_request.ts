@@ -51,7 +51,7 @@ export interface GroupIcpRequest extends GroupRequest {
     paths: GroupIcpRequestP;
 }
 
-export async function get_icp_request(client: SignifyClient, note: NotificationType): Promise<GroupIcpRequest[]> {
+export async function get_icp_requests(client: SignifyClient, note: NotificationType): Promise<GroupIcpRequest[]> {
     let r: GroupIcpRequest[] = await get_group_request(client, note);
     return r;
 }
@@ -89,7 +89,7 @@ export interface GroupRpyRequest extends GroupRequest {
     paths: GroupRpyRequestP;
 }
 
-export async function get_rpy_request(client: SignifyClient, note: NotificationType): Promise<GroupRpyRequest[]> {
+export async function get_rpy_requests(client: SignifyClient, note: NotificationType): Promise<GroupRpyRequest[]> {
     let r: GroupRpyRequest[] = await get_group_request(client, note);
     return r;
 }
@@ -121,7 +121,7 @@ export interface GroupIxnRequest extends GroupRequest {
     paths: GroupIxnRequestP;
 }
 
-export async function get_ixn_request(client: SignifyClient, note: NotificationType): Promise<GroupIxnRequest[]> {
+export async function get_ixn_requests(client: SignifyClient, note: NotificationType): Promise<GroupIxnRequest[]> {
     let r: GroupIxnRequest[] = await get_group_request(client, note);
     return r;
 }
@@ -153,7 +153,7 @@ export interface GroupRotRequest extends GroupRequest {
     paths: GroupRotRequestP;
 }
 
-export async function get_rot_request(client: SignifyClient, note: NotificationType): Promise<GroupRotRequest[]> {
+export async function get_rot_requests(client: SignifyClient, note: NotificationType): Promise<GroupRotRequest[]> {
     let r: GroupRotRequest[] = await get_group_request(client, note);
     return r;
 }

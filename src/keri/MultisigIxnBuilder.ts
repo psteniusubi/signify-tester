@@ -1,5 +1,5 @@
 import { Siger, SignifyClient, d, messagize } from "signify-ts";
-import { AID, Group, GroupIxnRequest, IdentifierType, InteractionRequest, InteractionResponse, MULTISIG_IXN, MultisigIxnRequest, MultisigIxnRequestEmbeds, MultisigIxnRequestPayload, NotificationType, get_ixn_request, get_name_by_identifier } from "./signify";
+import { AID, Group, GroupIxnRequest, IdentifierType, InteractionRequest, InteractionResponse, MULTISIG_IXN, MultisigIxnRequest, MultisigIxnRequestEmbeds, MultisigIxnRequestPayload, NotificationType, get_ixn_requests, get_name_by_identifier } from "./signify";
 import { debug_out } from "../util/helper";
 
 export class MultisigIxnBuilder {
@@ -42,7 +42,7 @@ export class MultisigIxnBuilder {
     }
     async acceptGroupIxnNotification(notification: NotificationType): Promise<[string, InteractionRequest][]> {
         let res: [string, InteractionRequest][] = [];
-        for (let ixn of await get_ixn_request(this.client, notification)) {
+        for (let ixn of await get_ixn_requests(this.client, notification)) {
             res.push(await this.acceptGroupIxnRequest(ixn));
         }
         return res;

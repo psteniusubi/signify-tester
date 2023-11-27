@@ -1,6 +1,6 @@
 import { Siger, SignifyClient, d, messagize } from "signify-ts";
 import { AGENT, AID, AddEndRoleRequest, AddEndRoleResponse, Group, GroupRpyRequest, IdentifierType, KeyStateType, MULTISIG_RPY, MultisigRpyRequestEmbeds, MultisigRpyRequestPayload, SEAL_EVENT, SealEventType, get_name_by_identifier } from "./signify";
-import { MultisigRpyRequest, NotificationType, get_rpy_request } from "./signify";
+import { MultisigRpyRequest, NotificationType, get_rpy_requests } from "./signify";
 import { date2string, debug_out } from "../util/helper";
 
 export class AddEndRoleBuilder {
@@ -51,7 +51,7 @@ export class AddEndRoleBuilder {
     }
     async acceptGroupRpyNotification(notification: NotificationType): Promise<AddEndRoleRequest[]> {
         let res: AddEndRoleRequest[] = [];
-        for (let rpy of await get_rpy_request(this.client, notification)) {
+        for (let rpy of await get_rpy_requests(this.client, notification)) {
             res.push(await this.acceptGroupRpyRequest(rpy));
         }
         return res;

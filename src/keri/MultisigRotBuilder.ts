@@ -1,5 +1,5 @@
 import { Siger, SignifyClient, d, messagize } from "signify-ts";
-import { AID, Group, GroupRotRequest, IdentifierType, KeyStateType, MULTISIG_ROT, MultisigRotRequest, MultisigRotRequestEmbeds, MultisigRotRequestPayload, NotificationType, RotationRequest, RotationResponse, get_keyState, get_name_by_identifier, get_rot_request } from "./signify";
+import { AID, Group, GroupRotRequest, IdentifierType, KeyStateType, MULTISIG_ROT, MultisigRotRequest, MultisigRotRequestEmbeds, MultisigRotRequestPayload, NotificationType, RotationRequest, RotationResponse, get_keyState, get_name_by_identifier, get_rot_requests } from "./signify";
 import { debug_out } from "../util/helper";
 
 export class MultisigRotBuilder {
@@ -42,7 +42,7 @@ export class MultisigRotBuilder {
     }
     async acceptGroupRotNotification(notification: NotificationType): Promise<[string, RotationRequest][]> {
         let res: [string, RotationRequest][] = [];
-        for (let rot of await get_rot_request(this.client, notification)) {
+        for (let rot of await get_rot_requests(this.client, notification)) {
             res.push(await this.acceptGroupRotRequest(rot));
         }
         return res;

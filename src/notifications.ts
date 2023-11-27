@@ -2,7 +2,7 @@ import { REFRESH_EVENT, dispatch_form_event, sleep } from "./util/helper";
 import { signify } from "./client_form";
 import { SignifyClient } from "signify-ts";
 import { json2string } from "./util/helper";
-import { list_notifications, NotificationType, list_operations, OperationType, remove_operation, create_identifier, send_exchange, get_icp_request, MultisigIcpBuilder, AddEndRoleBuilder, add_endRole, MULTISIG_ICP, MULTISIG_RPY, get_rpy_request, delete_notification, get_name_by_identifier, has_notification, GroupRpyRequest, Group, GroupIcpRequest, IDENTIFIER, has_endRole, invoke_lookup, AID, mark_notification } from "./keri/signify";
+import { list_notifications, NotificationType, list_operations, OperationType, remove_operation, create_identifier, send_exchange, MultisigIcpBuilder, AddEndRoleBuilder, add_endRole, MULTISIG_ICP, MULTISIG_RPY, get_rpy_requests, delete_notification, get_name_by_identifier, has_notification, GroupRpyRequest, GroupIcpRequest, IDENTIFIER, has_endRole, invoke_lookup, AID, mark_notification, get_icp_requests } from "./keri/signify";
 import { GROUP1 } from "./keri/config";
 
 export async function setup_notifications(): Promise<void> {
@@ -56,7 +56,7 @@ async function is_icp_done(client: SignifyClient, icp: GroupIcpRequest): Promise
 
 async function create_icp_form(client: SignifyClient, notification: NotificationType, section: HTMLElement): Promise<boolean> {
     let read = notification.r;
-    for (let icp of await get_icp_request(client, notification)) {
+    for (let icp of await get_icp_requests(client, notification)) {
         if (await is_icp_done(client, icp) && !read) {
             await mark_notification(client, notification);
             read = true;
@@ -143,7 +143,7 @@ async function is_rpy_done(client: SignifyClient, rpy: GroupRpyRequest): Promise
 
 async function create_rpy_form(client: SignifyClient, notification: NotificationType, section: HTMLElement): Promise<boolean> {
     let read = notification.r;
-    for (let rpy of await get_rpy_request(client, notification)) {
+    for (let rpy of await get_rpy_requests(client, notification)) {
         if (await is_rpy_done(client, rpy) && !read) {
             await mark_notification(client, notification);
             read = true;

@@ -1,5 +1,5 @@
 import { SignifyClient } from 'signify-ts';
-import { sleep, wait_async_operation } from '../util/helper';
+import { AsyncOperation, sleep, wait_async_operation } from '../util/helper';
 
 export interface OperationType {
     name: string,
@@ -23,12 +23,13 @@ export async function XXwait_operation(client: SignifyClient, op: OperationType)
 }
 
 export async function wait_operation(client: SignifyClient, op: OperationType): Promise<OperationType> {
-    return await wait_async_operation(async () => {
+    const async_operation: AsyncOperation<OperationType> = async () => {
         op = await client.operations().get(op.name);
         if (op.done !== true) return undefined;
         await remove_operation(client, op);
         return op;
-    });
+    };
+    return await wait_async_operation(async_operation);
 }
 
 export async function list_operations(client: SignifyClient, type: string | undefined = undefined): Promise<OperationType[]> {
