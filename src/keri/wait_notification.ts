@@ -1,6 +1,6 @@
 import { SignifyClient } from 'signify-ts';
 import { AID, RangeType } from './signify';
-import { debug_in, wait_async_operation } from '../util/helper';
+import { AsyncOperation, debug_in, wait_async_operation } from '../util/helper';
 
 export interface NotificationType {
     i: AID,
@@ -50,7 +50,7 @@ export async function* get_notifications(client: SignifyClient, predicate: Notif
     }
 }
 
-export async function get_notification(client: SignifyClient, predicate: NotificationPredicate): Promise<NotificationType | undefined> {
+export async function find_notification(client: SignifyClient, predicate: NotificationPredicate): Promise<NotificationType | undefined> {
     for await (let note of get_notifications(client, predicate)) {
         return note;
     }
@@ -65,13 +65,12 @@ export async function has_notification(client: SignifyClient, predicate: Notific
 }
 
 export async function wait_notification(client: SignifyClient, route: string): Promise<NotificationType> {
-    const predicate: NotificationPredicate = (note: NotificationType) => note.a.r === route && note.r === false;
-    let notification: NotificationType = await wait_async_operation(async () => {
-        for await (let note of get_notifications(client, predicate)) {
-            return note;
-        }
-        return undefined;
-    });
+    // notification is unread and matches route
+    const predicate: NotificationPredicate = (note: NotificationType) => (note.r === false) && (note.a.r === route);
+    const async_operation: AsyncOperation<NotificationType> = async () => {
+        return await find_notification(client, predicate);
+    };
+    let notification: NotificationType = await wait_async_operation(async_operation);
     return notification;
 }
 
