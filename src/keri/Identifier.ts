@@ -4,18 +4,19 @@ import { AID, ContactType, IdentifierType, KeyStateType, MembersType, get_contac
 export abstract class IdentifierOrContact {
     readonly client: SignifyClient;
     readonly alias: string;
-    _keyState?: KeyStateType;
+    private _keyState?: Promise<KeyStateType>;
     constructor(client: SignifyClient, alias: string) {
         this.client = client;
         this.alias = alias;
+        this._keyState = undefined;
     }
     compare(other: IdentifierOrContact): number {
         return this.getId().localeCompare(other.getId());
     }
     abstract getId(): AID;
     async getKeyState(): Promise<KeyStateType> {
-        let id = this.getId();
-        return this._keyState ??= await get_keyState(this.client, id);
+        let id: AID = this.getId();
+        return await (this._keyState ??= get_keyState(this.client, id));
     }
 }
 
@@ -27,7 +28,7 @@ export class Identifier extends IdentifierOrContact {
     static async createFromIdentifier(client: SignifyClient, identifier: IdentifierType): Promise<Identifier | Group> {
         return new Identifier(client, identifier);
     }
-    readonly identifier: IdentifierType;
+    private readonly identifier: IdentifierType;
     constructor(client: SignifyClient, identifier: IdentifierType) {
         super(client, identifier.name);
         this.identifier = identifier;
@@ -46,17 +47,20 @@ export class Group extends Identifier {
         return await Group.createFromIdentifier(client, identifier);
     }
     static async createFromIdentifier(client: SignifyClient, identifier: IdentifierType): Promise<Group> {
-        let members = await get_members(client, identifier.name);
-        return new Group(client, identifier, members);
+        return new Group(client, identifier);
     }
-    readonly members: MembersType;
-    constructor(client: SignifyClient, identifier: IdentifierType, members: MembersType) {
+    private _members?: Promise<MembersType>;
+    constructor(client: SignifyClient, identifier: IdentifierType) {
         super(client, identifier);
         if (identifier.group === undefined) throw new Error(`Group(${identifier.name}): not group`);
-        this.members = members;
+        this._members = undefined;
     }
-    isLead(): boolean {
-        let ids: AID[] = this.members.signing.map(i => i.aid);
+    async getMembers(): Promise<MembersType> {
+        return await (this._members ??= get_members(this.client, this.alias));
+    }
+    async isLead(): Promise<boolean> {
+        let members = await this.getMembers();
+        let ids: AID[] = members.signing.map(i => i.aid);
         let n = ids.indexOf(this.getIdentifier().group!.mhab.prefix);
         return n === 0;
     }
@@ -65,11 +69,14 @@ export class Group extends Identifier {
 export class Contact extends IdentifierOrContact {
     static async create(client: SignifyClient, alias: string): Promise<Contact> {
         let contact = await get_contact(client, alias);
-        return new Contact(client, alias, contact);
+        return this.createFromContact(client, contact);
     }
-    readonly contact: ContactType;
-    constructor(client: SignifyClient, alias: string, contact: ContactType) {
-        super(client, alias);
+    static async createFromContact(client: SignifyClient, contact: ContactType): Promise<Contact> {
+        return new Contact(client, contact);
+    }
+    private readonly contact: ContactType;
+    constructor(client: SignifyClient, contact: ContactType) {
+        super(client, contact.alias);
         this.contact = contact;
     }
     getContact(): ContactType {

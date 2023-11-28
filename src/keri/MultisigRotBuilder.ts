@@ -1,5 +1,5 @@
 import { Siger, SignifyClient, d, messagize } from "signify-ts";
-import { AID, Group, GroupRotRequest, IdentifierType, KeyStateType, MULTISIG_ROT, MultisigRotRequest, MultisigRotRequestEmbeds, MultisigRotRequestPayload, NotificationType, RotationRequest, RotationResponse, get_keyState, get_name_by_identifier, get_rot_requests } from "./signify";
+import { AID, Group, GroupRotRequest, IdentifierType, KeyStateType, MULTISIG_ROT, MembersType, MultisigRotRequest, MultisigRotRequestEmbeds, MultisigRotRequestPayload, NotificationType, RotationRequest, RotationResponse, get_keyState, get_name_by_identifier, get_rot_requests } from "./signify";
 import { debug_out } from "../util/helper";
 
 export class MultisigRotBuilder {
@@ -14,9 +14,10 @@ export class MultisigRotBuilder {
     async buildMultisigRotRequest(rotationResponse: RotationResponse): Promise<MultisigRotRequest> {
         let group_name: string = await get_name_by_identifier(this.client, rotationResponse.serder.pre as AID);
         let group: Group = await Group.create(this.client, group_name)
+        let members: MembersType = await group.getMembers();
         let sender: IdentifierType = group.getIdentifier().group?.mhab!;
-        let smids: AID[] = group.members.signing.map(i => i.aid);
-        let rmids: AID[] = group.members.rotation.map(i => i.aid);
+        let smids: AID[] = members.signing.map(i => i.aid);
+        let rmids: AID[] = members.rotation.map(i => i.aid);
         let payload: MultisigRotRequestPayload = {
             gid: group.getId(),
             smids: smids,

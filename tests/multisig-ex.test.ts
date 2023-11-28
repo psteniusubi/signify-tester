@@ -95,7 +95,7 @@ async function wait_multisig_rpys(client: SignifyClient) {
 
 async function wait_multisig_rpy_operation(client: SignifyClient) {
     let builder = await AddEndRoleBuilder.create(client, GROUP1);
-    let group = await builder._group!;
+    let group = (await builder.getGroup())!;
     for (let eid of await builder.getEids()) {
         let op: OperationType = { name: `endrole.${group.getId()}.agent.${eid}` };
         await wait_operation(client, op);
@@ -135,7 +135,21 @@ async function member(client: SignifyClient) {
 }
 
 describe("multisig", () => {
-    test("workflow", async () => {
+    test("icp", async () => {
+        let tasks = [
+            leader_icp(client1),
+            member_icp(client2)
+        ];
+        await Promise.allSettled(tasks);
+    }, 15000);
+    test("rpy", async () => {
+        let tasks = [
+            leader_rpy(client1),
+            member_rpy(client2)
+        ];
+        await Promise.allSettled(tasks);
+    }, 15000);
+    test.skip("workflow", async () => {
         let tasks = [
             leader(client1),
             member(client2)

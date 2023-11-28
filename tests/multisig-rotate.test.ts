@@ -25,8 +25,9 @@ describe("multisig-rotate", () => {
     });
     test("step1", async () => {
         let group = await Group.create(client1, GROUP1);
-        let states: KeyStateType[] = await Promise.all(group.members.signing.map(i => get_keyState(client1, i.aid)));
-        let rstates: KeyStateType[] = await Promise.all(group.members.rotation.map(i => get_keyState(client1, i.aid)));
+        let members = await group.getMembers();
+        let states: KeyStateType[] = await Promise.all(members.signing.map(i => get_keyState(client1, i.aid)));
+        let rstates: KeyStateType[] = await Promise.all(members.rotation.map(i => get_keyState(client1, i.aid)));
         let rotationRequest: RotationRequest = {
             states: states,
             rstates: rstates

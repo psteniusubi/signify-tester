@@ -144,7 +144,7 @@ describe("group-delegate", () => {
     test("step12", async () => {
         // wait for end role operation on client1
         let builder = await AddEndRoleBuilder.create(client1, GROUP1);
-        let group = await builder._group!;
+        let group = (await builder.getGroup())!;
         for (let eid of await builder.getEids()) {
             await wait_operation(client1, { name: `endrole.${group.getId()}.agent.${eid}` });
         }
@@ -152,7 +152,7 @@ describe("group-delegate", () => {
     test("step13", async () => {
         // wait for end role operation on client2
         let builder = await AddEndRoleBuilder.create(client2, GROUP1);
-        let group = await builder._group!;
+        let group = (await builder.getGroup())!;
         for (let eid of await builder.getEids()) {
             await wait_operation(client2, { name: `endrole.${group.getId()}.agent.${eid}` });
         }

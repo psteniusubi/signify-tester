@@ -1,33 +1,38 @@
 import { Siger, SignifyClient, d, messagize } from "signify-ts";
-import { AGENT, AID, AddEndRoleRequest, AddEndRoleResponse, Group, GroupRpyRequest, IdentifierType, KeyStateType, MULTISIG_RPY, MultisigRpyRequestEmbeds, MultisigRpyRequestPayload, SEAL_EVENT, SealEventType, get_name_by_identifier } from "./signify";
+import { AGENT, AID, AddEndRoleRequest, AddEndRoleResponse, Group, GroupRpyRequest, IdentifierType, KeyStateType, MULTISIG_RPY, MembersType, MultisigRpyRequestEmbeds, MultisigRpyRequestPayload, SEAL_EVENT, SealEventType, get_name_by_identifier } from "./signify";
 import { MultisigRpyRequest, NotificationType, get_rpy_requests } from "./signify";
 import { date2string, debug_out } from "../util/helper";
 
 export class AddEndRoleBuilder {
     /**
-     * @param group Name of new group
+     * @param alias Name of new group
      */
-    static async create(client: SignifyClient, group?: string): Promise<AddEndRoleBuilder> {
-        let builder = new AddEndRoleBuilder(client, group);
+    static async create(client: SignifyClient, alias?: string): Promise<AddEndRoleBuilder> {
+        let builder = new AddEndRoleBuilder(client, alias);
         return builder;
     }
     client: SignifyClient;
-    group?: string;
-    _group?: Promise<Group>;
-    constructor(client: SignifyClient, group?: string) {
+    alias?: string;
+    private _group?: Promise<Group>;
+    constructor(client: SignifyClient, alias?: string) {
         this.client = client;
-        this.group = group;
-        this._group = (group !== undefined) ? Group.create(client, group) : undefined;
+        this.alias = alias;
+        this._group = undefined;
+    }
+    async getGroup(): Promise<Group | undefined> {
+        if (this.alias === undefined) return undefined;
+        return await (this._group ??= Group.create(this.client, this.alias));
     }
     async isLead(): Promise<boolean> {
-        let group = await this._group;
-        return group?.isLead() ?? false;
+        let group: Group | undefined = await this.getGroup();
+        return (await group?.isLead()) ?? false;
     }
     async getEids(): Promise<AID[]> {
-        if (this._group === undefined) throw new Error("getEids()");
+        let group: Group | undefined = await this.getGroup();
+        if (group === undefined) throw new Error("AddEndRoleBuilder.getEids()");
+        let members: MembersType = await group.getMembers();
         let res: AID[] = [];
-        let group: Group = await this._group;
-        for (let s of group.members.signing) {
+        for (let s of members.signing ?? []) {
             for (let eid of Object.keys(s.ends.agent)) {
                 res.push(eid as AID);
             }
@@ -39,7 +44,7 @@ export class AddEndRoleBuilder {
         let stamp: string = date2string(new Date());
         for (let eid of await this.getEids()) {
             let request: AddEndRoleRequest = {
-                alias: this.group,
+                alias: this.alias,
                 role: AGENT,
                 eid: eid,
                 stamp: stamp
@@ -68,7 +73,9 @@ export class AddEndRoleBuilder {
         return request;
     }
     async buildMultisigRpyRequest(addEndRoleRequest: AddEndRoleRequest, addEndRoleResponse: AddEndRoleResponse): Promise<MultisigRpyRequest> {
-        let group: Group = await this._group ?? await Group.create(this.client, addEndRoleRequest.alias!);
+        let group: Group | undefined = await Group.create(this.client, addEndRoleRequest.alias!);
+        if (group === undefined) throw new Error("AddEndRoleBuilder.buildMultisigRpyRequest()");
+        let members: MembersType = await group.getMembers();
         let state: KeyStateType = await group.getKeyState();
         let lead: IdentifierType = group.getIdentifier().group!.mhab;
         let payload: MultisigRpyRequestPayload = {
@@ -88,12 +95,12 @@ export class AddEndRoleBuilder {
         let embeds: MultisigRpyRequestEmbeds = {
             rpy: [addEndRoleResponse.serder, atc]
         };
-        let recipients = group.members.signing
+        let recipients = members.signing
             .map(i => i.aid)
             .filter(i => i !== lead.prefix);
         let request: MultisigRpyRequest = {
             sender: lead,
-            topic: this.group,
+            topic: group.alias,
             route: MULTISIG_RPY,
             payload: payload,
             embeds: embeds,

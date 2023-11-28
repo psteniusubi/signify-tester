@@ -60,7 +60,6 @@ export class MultisigIcpBuilder {
         let nsith: string[] = isith;
         let states: KeyStateType[] = await this.getKeyStates();
         let rstates: KeyStateType[] = states;
-        console.assert(this.lead !== undefined);
         let request: CreateIdentifierRequest = {
             algo: Algos.group,
             mhab: this.lead?.getIdentifier(),
@@ -71,13 +70,13 @@ export class MultisigIcpBuilder {
             states: states,
             rstates: rstates
         };
-        debug_out("buildCreateIdentifierRequest", request, "CreateIdentifierRequest");
+        debug_out(`buildCreateIdentifierRequest(${this.lead?.alias})`, request, "CreateIdentifierRequest");
         return request;
     }
-    async getSelf(icp: GroupIcpRequest): Promise<IdentifierType | undefined> {
+    async getSelf(icp: GroupIcpRequest): Promise<Identifier | undefined> {
         let ids = icp.exn.a.smids.filter(i => i !== icp.exn.i);
         for (let i of await get_names_by_identifiers(this.client, ids)) {
-            return i; // TODO: what if there are more?
+            return await Identifier.createFromIdentifier(this.client, i); // TODO: what if there are more?
         }
         return undefined;
     }
@@ -89,7 +88,7 @@ export class MultisigIcpBuilder {
         return res;
     }
     async acceptGroupIcpRequest(icp: GroupIcpRequest): Promise<CreateIdentifierRequest> {
-        let lead: IdentifierType | undefined = await this.getSelf(icp);
+        let lead: Identifier | undefined = await this.getSelf(icp);
         let exn: GroupIcpRequestExn = icp.exn;
         let isith = exn.e.icp.kt;
         let nsith = exn.e.icp.nt;
@@ -97,7 +96,7 @@ export class MultisigIcpBuilder {
         let rstates: KeyStateType[] = await Promise.all(exn.a.rmids.map(i => get_keyState(this.client, i)));
         let request: CreateIdentifierRequest = {
             algo: Algos.group,
-            mhab: lead,
+            mhab: lead?.getIdentifier(),
             isith: isith,
             nsith: nsith,
             toad: parseInt(exn.e.icp.bt),
@@ -106,7 +105,7 @@ export class MultisigIcpBuilder {
             rstates: rstates,
             delpre: exn.e.icp.di
         };
-        debug_out("acceptGroupIcpRequest", request, "CreateIdentifierRequest");
+        debug_out(`acceptGroupIcpRequest(${lead?.alias})`, request, "CreateIdentifierRequest");
         return request;
     }
     async buildMultisigIcpRequest(identifierRequest: CreateIdentifierRequest, identifierResponse: CreateIdentifierResponse): Promise<MultisigIcpRequest> {
@@ -132,7 +131,7 @@ export class MultisigIcpBuilder {
             embeds: embeds,
             recipients: recipients
         };
-        debug_out("buildMultisigIcpRequest", request, "MultisigIcpRequest");
+        debug_out(`buildMultisigIcpRequest(${identifierRequest.mhab?.name})`, request, "MultisigIcpRequest");
         return request;
     }
 }

@@ -1,5 +1,5 @@
 import { Siger, SignifyClient, d, messagize } from "signify-ts";
-import { AID, Group, GroupIxnRequest, IdentifierType, InteractionRequest, InteractionResponse, MULTISIG_IXN, MultisigIxnRequest, MultisigIxnRequestEmbeds, MultisigIxnRequestPayload, NotificationType, get_ixn_requests, get_name_by_identifier } from "./signify";
+import { AID, Group, GroupIxnRequest, IdentifierType, InteractionRequest, InteractionResponse, MULTISIG_IXN, MembersType, MultisigIxnRequest, MultisigIxnRequestEmbeds, MultisigIxnRequestPayload, NotificationType, get_ixn_requests, get_name_by_identifier } from "./signify";
 import { debug_out } from "../util/helper";
 
 export class MultisigIxnBuilder {
@@ -14,9 +14,10 @@ export class MultisigIxnBuilder {
     async buildMultisigIxnRequest(interactionResponse: InteractionResponse): Promise<MultisigIxnRequest> {
         let group_name: string = await get_name_by_identifier(this.client, interactionResponse.serder.pre as AID);
         let group: Group = await Group.create(this.client, group_name)
+        let members: MembersType = await group.getMembers();
         let sender: IdentifierType = group.getIdentifier().group?.mhab!;
-        let smids: AID[] = group.members.signing.map(i => i.aid);
-        let rmids: AID[] = group.members.rotation.map(i => i.aid);
+        let smids: AID[] = members.signing.map(i => i.aid);
+        let rmids: AID[] = members.rotation.map(i => i.aid);
         let payload: MultisigIxnRequestPayload = {
             gid: group.getId(),
             smids: smids,

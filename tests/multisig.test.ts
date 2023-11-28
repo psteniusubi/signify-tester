@@ -52,7 +52,7 @@ describe("multisig", () => {
         let op: OperationType = { name: `group.${identifier.getId()}` };
         await wait_operation(client1, op);
         let group = await Group.create(client1, GROUP1);
-        let members = group.members;
+        let members = await group.getMembers();
         let ids = members.signing.map(i => i.aid);
         let lead_id = group.getIdentifier().group?.mhab;
         let n = ids.indexOf(lead_id!.prefix);
@@ -64,7 +64,7 @@ describe("multisig", () => {
         let op: OperationType = { name: `group.${identifier.getId()}` };
         await wait_operation(client2, op);
         let group = await Group.create(client2, GROUP1);
-        let members = group.members;
+        let members = await group.getMembers();
         let ids = members.signing.map(i => i.aid);
         let lead_id = group.getIdentifier().group?.mhab;
         let n = ids.indexOf(lead_id!.prefix);
@@ -128,7 +128,7 @@ describe("multisig", () => {
     test("endrole3", async () => {
         // end role authorization completed on client1
         let builder = await AddEndRoleBuilder.create(client1, GROUP1);
-        let group = await builder._group!;
+        let group = (await builder.getGroup())!;
         for (let eid of await builder.getEids()) {
             await wait_operation(client1, { name: `endrole.${group.getId()}.agent.${eid}` });
         }
@@ -136,7 +136,7 @@ describe("multisig", () => {
     test("endrole4", async () => {
         // end role authorization completed on client2
         let builder = await AddEndRoleBuilder.create(client2, GROUP1);
-        let group = await builder._group!;
+        let group = (await builder.getGroup())!;
         for (let eid of await builder.getEids()) {
             await wait_operation(client2, { name: `endrole.${group.getId()}.agent.${eid}` });
         }

@@ -12,7 +12,7 @@ describe("Oobi", () => {
         let oobi = await get_oobi(client1, NAME1, AGENT);
         await resolve_oobi(client2, CONTACT1, oobi.oobis[0]);
         let contact = await Contact.create(client2, CONTACT1);
-        expect(contact.contact.oobi).toMatch(/^http:\/\/localhost:3902\/oobi\/.*/);
+        expect(contact.getContact().oobi).toMatch(/^http:\/\/localhost:3902\/oobi\/.*/);
         let state = await contact.getKeyState();
         expect(state).toBeDefined();
     });
@@ -22,7 +22,7 @@ describe("Oobi", () => {
         let oobi = await get_oobi(client2, NAME1, WITNESS);
         await resolve_oobi(client3, CONTACT1, oobi.oobis[0]);
         let contact = await Contact.create(client3, CONTACT1);
-        expect(contact.contact.oobi).not.toMatch(/^http:\/\/localhost:3902\/oobi\/.*/);
+        expect(contact.getContact().oobi).not.toMatch(/^http:\/\/localhost:3902\/oobi\/.*/);
         let state = await contact.getKeyState();
         expect(state).toBeDefined();
     });
