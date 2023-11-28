@@ -1,7 +1,6 @@
 {
   "compilerOptions": {
     "target": "ESNext",
-    "useDefineForClassFields": true,
     "module": "ESNext",
     "lib": [
       "ESNext",
@@ -9,20 +8,22 @@
     ],
     "moduleResolution": "Node",
     "strict": true,
-    "resolveJsonModule": true,
+    // "resolveJsonModule": true,
     "isolatedModules": true,
     "esModuleInterop": true,
     "noEmit": true,
-    "noUnusedLocals": false,
-    "noUnusedParameters": false,
-    "noImplicitReturns": true,
-    "skipLibCheck": true,
+    // "useDefineForClassFields": true,
+    // "noUnusedLocals": false,
+    // "noUnusedParameters": false,
+    // "noImplicitReturns": true,
+    // "noImplicitAny": false,
+    // "skipLibCheck": true,
     "baseUrl": ".",
     "paths": {},
   },
   "include": [
     "src",
-    "signify-ts/src"
+    "../signify-ts/src"
   ],
   "exclude": []
 }

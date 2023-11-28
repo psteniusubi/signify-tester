@@ -2,6 +2,11 @@
   font-family: sans-serif;
 }
 
+.code {
+  font-family: monospace;
+  white-space: pre;
+}
+
 .error {
   background-color: salmon;
 }
@@ -16,4 +21,12 @@ input {
 
 div {
   margin-bottom: 0.25em;
+}
+
+section.notification.unread input {
+  background-color: lightgreen;
+}
+
+section.notification.read input {
+  background-color: lightgray;
 }

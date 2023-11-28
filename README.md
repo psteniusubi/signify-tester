@@ -45,3 +45,35 @@ Navigate to https://psteniusubi.github.io/signify-tester/ with your browser
 ```
 git diff master github-pages  -- . ':!docs'
 ```
+
+# Unit tests
+
+## Run all tests
+
+```
+npx jest
+```
+
+## Prepare
+
+```
+npx jest ./tests/prepare.test.ts
+```
+
+## Individual tests
+
+```
+npx jest ./tests/api.test.ts
+npx jest ./tests/single-interact.test.ts
+npx jest ./tests/single-rotate.test.ts
+npx jest ./tests/single-delegate.test.ts
+npx jest ./tests/multisig.test.ts
+npx jest ./tests/group-delegate.test.ts
+```
+
+## Single test
+
+```
+npx jest ./tests/multisig.test.ts -t client3
+npx jest ./tests/multisig.test.ts -t status
+```

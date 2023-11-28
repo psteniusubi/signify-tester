@@ -1,12 +1,12 @@
-import { ready, SignifyClient, Tier, Salter } from 'signify-ts/src';
+import { SignifyClient } from 'signify-ts';
 import Base64 from "urlsafe-base64"
 import { Buffer } from 'buffer';
-import { KERIA_ADMIN, KERIA_BOOT, get_passcodes, save_passcode } from './config';
-import { sleep } from './helper';
+import { getDefaultConfig, get_passcodes, remove_passcode, save_passcode } from './config';
+import { dispatch_form_event, REFRESH_EVENT, sleep } from './util/helper';
+import { create_client } from './keri/config';
 
 export let signify: SignifyClient | null = null;
-
-const KEY: string = "signify-tester/passcode";
+export const config = await getDefaultConfig();
 
 function random_seed() {
     let buf = Buffer.alloc(20);
@@ -21,25 +21,23 @@ async function load_history() {
     let option = document.createElement("option");
     option.defaultSelected = true;
     history.appendChild(option);
-    for (let i of (await get_passcodes()).sort()) {
+    for (let i of await get_passcodes()) {
         option = document.createElement("option");
         option.innerText = i;
         history.appendChild(option);
     }
 }
 
-export async function load_client() {
+export async function setup_client_form() {
     const form = document.querySelector("#client form") as HTMLFormElement;
     const status = form.elements.namedItem("status") as HTMLInputElement;
     const hostname = form.elements.namedItem("hostname") as HTMLInputElement;
-    hostname.defaultValue = KERIA_ADMIN;
+    hostname.value = config.admin;
     const agent = form.elements.namedItem("agent") as HTMLInputElement;
     const controller = form.elements.namedItem("controller") as HTMLInputElement;
     const passcode = form.elements.namedItem("passcode") as HTMLInputElement;
     const register = form.elements.namedItem("register") as HTMLButtonElement;
     const history = form.elements.namedItem("history") as HTMLSelectElement;
-    passcode.value = random_seed();
-    await load_history();
     signify = null;
     // login
     form.addEventListener("submit", async (e: SubmitEvent) => {
@@ -48,25 +46,19 @@ export async function load_client() {
         status.value = "";
         agent.value = "";
         controller.value = "";
-        status.classList.remove("success", "error");
-        Array.from(document.forms).filter(i => i !== form).forEach(i => i.dispatchEvent(new Event("reset")));
+        status.classList.value = "";
         try {
-            await ready();
-            let bran = passcode.value as string;
-            let _signify = new SignifyClient(KERIA_ADMIN, bran.padEnd(21, "_"), Tier.low, KERIA_BOOT);
+            let bran = passcode.value;
+            let _signify = await create_client(config, bran);
             await _signify.connect();
-            status.classList.add("success");
-            status.value = "connected";
-            agent.value = _signify.agent!.pre;
-            controller.value = _signify.controller.pre;
             signify = _signify;
-            Array.from(document.forms).filter(i => i !== form).forEach(i => (i.elements.namedItem("refresh") as HTMLButtonElement).dispatchEvent(new Event("click")));
             await save_passcode(bran);
-            await load_history();
+            dispatch_form_event(new CustomEvent(REFRESH_EVENT));
         } catch (e) {
             console.error(e);
-            status.classList.add("error");
             status.value = `error ${e}`;
+            await remove_passcode(passcode.value);
+            dispatch_form_event(new CustomEvent(REFRESH_EVENT));
         }
     });
     // register
@@ -76,31 +68,50 @@ export async function load_client() {
         status.value = "";
         agent.value = "";
         controller.value = "";
-        status.classList.remove("success", "error");
-        Array.from(document.forms).filter(i => i !== form).forEach(i => i.dispatchEvent(new Event("reset")));
+        status.classList.value = "";
         try {
-            await ready();
             let bran = passcode.value as string;
-            let _signify = new SignifyClient(KERIA_ADMIN, bran.padEnd(21, "_"), Tier.low, KERIA_BOOT);
+            let _signify = await create_client(config, bran);
             let res = await _signify.boot();
             if (!res.ok) throw new Error(await res.text());
             form.dispatchEvent(new SubmitEvent("submit"));
         } catch (e) {
             console.error(e);
-            status.classList.add("error");
             status.value = `error ${e}`;
+            dispatch_form_event(new CustomEvent(REFRESH_EVENT));
         }
-    });
-    form.addEventListener("reset", async (e: Event) => {
-        status.classList.remove("success", "error");
-        signify = null;
-        Array.from(document.forms).filter(i => i !== form).forEach(i => i.dispatchEvent(new Event("reset")));
-        await sleep(0);
-        passcode.value = random_seed();
-        await load_history();
     });
     history.addEventListener("change", e => {
         passcode.value = history.value;
         form.dispatchEvent(new SubmitEvent("submit"));
     });
+    form.addEventListener("reset", async (e: Event) => {
+        e.preventDefault();
+        signify = null;
+        status.value = "";
+        passcode.value = "";
+        dispatch_form_event(new CustomEvent(REFRESH_EVENT));
+    });
+    form.addEventListener(REFRESH_EVENT, async (e: Event) => {
+        if (signify !== null) {
+            status.value = "connected";
+            status.classList.value = "success";
+            agent.value = signify.agent!.pre;
+            controller.value = signify.controller.pre;
+            passcode.value = signify.bran.replace(/_+$/, "");
+        } else {
+            if (status.value === "") {
+                status.classList.value = "";
+            } else {
+                status.classList.value = "error";
+            }
+            agent.value = "";
+            controller.value = "";
+            if (passcode.value === "") {
+                passcode.value = random_seed();
+            }
+        }
+        await load_history();
+    });
+    form.dispatchEvent(new CustomEvent(REFRESH_EVENT));
 }
