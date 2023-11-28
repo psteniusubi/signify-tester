@@ -3,9 +3,8 @@
 
 <head>
   <title>Signify Client</title>
-  
-  <script type="module" crossorigin src="/signify-tester/assets/index-233888ee.js"></script>
-  <link rel="stylesheet" href="/signify-tester/assets/index-d10f1920.css">
+  <script type="module" crossorigin src="/signify-tester/assets/index-bFbKHWeY.js"></script>
+  <link rel="stylesheet" crossorigin href="/signify-tester/assets/index-PROSV-Dz.css">
 </head>
 
 <body>
@@ -51,9 +50,11 @@
     <h1>Identifiers</h1>
     <table>
       <thead>
+        <th>&nbsp;</th>
         <th>Name</th>
         <th>ID</th>
-        <th>OOBI</th>
+        <th>Agent OOBI</th>
+        <th>Witness OOBI</th>
       </thead>
       <tbody></tbody>
     </table>
@@ -62,6 +63,10 @@
         <label>
           Name
           <input type="text" name="name" title="name" placeholder="name" autocomplete="off" />
+        </label>
+        <label>
+          Salt
+          <input type="text" name="salt" title="salt" placeholder="salt" autocomplete="off" />
         </label>
       </div>
       <div>
@@ -74,6 +79,7 @@
     <h1>Contacts</h1>
     <table>
       <thead>
+        <th>&nbsp;</th>
         <th>Name</th>
         <th>ID</th>
         <th>OOBI</th>
@@ -98,8 +104,23 @@
       </div>
     </form>
   </section>
-  <section>
+  <section id="multisig">
     <h1>Multi-Sig Group</h1>
+    <form autocomplete="off">
+      <div>
+        <label>
+          Name
+          <input type="text" name="name" title="name" placeholder="name" autocomplete="off" />
+        </label>
+      </div>
+      <div>
+        <button type="submit" title="Create Group">Create</button>
+        <button type="button" name="refresh" title="Refresh">Refresh</button>
+      </div>
+    </form>
+  </section>
+  <section id="reply">
+    <h1>Requests to Accept</h1>
   </section>
   <section>
     <h1>Issued Credentials</h1>
@@ -107,7 +128,10 @@
   <section>
     <h1>Received Credentials</h1>
   </section>
-
+  <section id="notifications">
+    <h1>Notifications</h1>
+    <div class="code"></div>
+  </section>
 </body>
 
 </html>
