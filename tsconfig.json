@@ -23,7 +23,7 @@
   },
   "include": [
     "src",
-    "signify-ts/src"
+    "../signify-ts/src"
   ],
   "exclude": []
 }
