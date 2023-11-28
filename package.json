@@ -20,6 +20,7 @@
   },
   "dependencies": {
     "signify-ts": "file:../signify-ts",
+    "buffer": "^6.0.3",
     "urlsafe-base64": "^1.0.0"
   }
 }
